@@ -17,6 +17,29 @@
     <title>С огоньком!</title>
 </head>
 
+<style>
+    @media (max-width: 700px) {
+        .logo-name a img {
+            max-width: 80px; /* или другое значение по вашему выбору */
+            max-height: 20px; /* автоматически подстраивает высоту */
+        }
+
+        .logo-name {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .brand-logo {
+            display: none;
+        }
+
+        .main-nav {
+            display: none;
+        }
+    }
+</style>
+
 <body>
 <!-- Navigation -->
 <nav class="mobile-nav main-nav">
@@ -56,11 +79,9 @@
             <a href="#about">
                 <li class="btn">О нас</li>
             </a>
-        </ul>
-        <hr>
-        <ul class="contacts">
-                <li class="contact-info">ул. Ленина, 97</li>
-                <li class="contact-info">+79949192939</li>
+            <hr>
+            <li class="contact-info">ул. Ленина, 97</li>
+            <li class="contact-info">+79949192939</li>
         </ul>
         <div class="social">
             <a href="#home" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
@@ -74,30 +95,28 @@
 </nav>
 <div class="mobile-nav--reveal">
     <ul class="mobile-nav--links">
-        <a href="#home">
-            <li class="btn btn-active">Home</li>
+        <a href="#menu">
+            <li class="btn btn-active">Меню</li>
         </a>
         <a href="#about">
-            <li class="btn">About Us</li>
+            <li class="btn">Галерея</li>
         </a>
         <a href="#menu">
-            <li class="btn">Menu</li>
+            <li class="btn">Акции</li>
         </a>
         <a href="#gallery">
-            <li class="btn">Gallery</li>
+            <li class="btn">Блог</li>
         </a>
         <a href="#home">
-            <li class="btn">Parties & Events</li>
+            <li class="btn">Контакты</li>
         </a>
         <a href="#home">
-            <li class="btn">Blog</li>
+            <li class="btn">О нас</li>
         </a>
-        <a href="#home">
-            <li class="btn">Contact Us</li>
-        </a>
-        <a href="#home">
-            <li class="btn">Reservation</li>
-        </a>
+    </ul>
+    <ul class="contacts">
+        <li class="contact-info">ул. Ленина, 97</li>
+        <li class="contact-info">+79949192939</li>
     </ul>
     <div class="social">
         <a href="#home" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
@@ -116,14 +135,6 @@
             <a href="#menu" class="btn btn-home btn-cta">Меню</a>
             <a href="#home" class="btn btn-home btn-other">Забронировать столик</a>
         </header>
-        {{--        <div class="slide-controller">--}}
-        {{--            <a href="#home" class="btn">--}}
-        {{--                <div class="arrow arrow-left"><i class="fas fa-angle-left"></i></div>--}}
-        {{--            </a>--}}
-        {{--            <a href="#home" class="btn">--}}
-        {{--                <div class="arrow arrow-left"><i class="fas fa-angle-right"></i></div>--}}
-        {{--            </a>--}}
-        {{--        </div>--}}
     </div>
 </section>
 <!-- About -->
@@ -305,7 +316,6 @@
 
 
     </div>
-{{--    <a href="#" class="btn btn-menu btn-menu--alt">View Entire Menu</a>--}}
 </section>
 
 
@@ -977,20 +987,18 @@ font-family: 'Merriweather', serif;
         height: auto;
     }
 
-    @media (min-width: 769px) {
+    @media (min-width: 700px) {
         section,
         footer {
             margin-left: 250px;
         }
 
         .logo {
+            display: block;
             border: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: none;
-            padding: none;
-            line-height: initial;
             border-bottom: 3px solid #c7b9a9;
         }
 
@@ -1215,4 +1223,5 @@ font-family: 'Merriweather', serif;
         }
     });
 </script>
+
 
