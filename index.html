@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<link rel="stylesheet" href="{{ asset('test.css') }}">
+<link rel="stylesheet" href="public/test.css">
 
 <head>
     <meta charset="UTF-8">
@@ -22,7 +22,6 @@
 </head>
 
 <body>
-<!-- Navigation -->
 <nav class="mobile-nav main-nav">
     <div class="logo">
         <a href="#">
@@ -30,6 +29,11 @@
                 <a href="#home">
                     <img src="https://i.postimg.cc/mrk7PKtQ/crop-image-online-com-1713747213-64714b6318d9e66dd501-Y1vm-I11-J.png" alt="logo" >
                 </a>
+                <div class="dostavka-edi-desktop">
+                    <a href="#">
+                        Доставка еды
+                    </a>
+                </div>
                 <a href="#home">
                     <h3></h3>
                 </a>
@@ -62,7 +66,7 @@
             </a>
         </ul>
         <hr>
-        <ul class="contacts">
+        <ul class="desktop-contacts">
             <li class="contact-info">ул. Ленина, 97</li>
             <li class="contact-info">+79949192939</li>
         </ul>
@@ -76,32 +80,31 @@
 
     <i class="hamburger btn fas fa-bars"></i>
 </nav>
+
 <div class="mobile-nav--reveal">
     <ul class="mobile-nav--links">
         <a href="#home">
-            <li class="btn btn-active">Home</li>
+            <li class="btn btn-active">Меню</li>
         </a>
         <a href="#about">
-            <li class="btn">About Us</li>
+            <li class="btn">Галерея</li>
         </a>
         <a href="#menu">
-            <li class="btn">Menu</li>
+            <li class="btn">Акции</li>
         </a>
         <a href="#gallery">
-            <li class="btn">Gallery</li>
+            <li class="btn">Блог</li>
         </a>
         <a href="#home">
-            <li class="btn">Parties & Events</li>
+            <li class="btn">Контакты</li>
         </a>
         <a href="#home">
-            <li class="btn">Blog</li>
+            <li class="btn">О нас</li>
         </a>
-        <a href="#home">
-            <li class="btn">Contact Us</li>
-        </a>
-        <a href="#home">
-            <li class="btn">Reservation</li>
-        </a>
+    </ul>
+    <ul class="mobile-contacts">
+        <li class="contact-info">ул. Ленина, 97</li>
+        <li class="contact-info">+79949192939</li>
     </ul>
     <div class="social">
         <a href="#home" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
@@ -110,7 +113,7 @@
         <p>&copy; Copyright 2019</p>
     </div>
 </div>
-<!-- Home  -->
+
 <section id="home">
     <div class="overlay">
         <header id="main-header">
@@ -118,19 +121,11 @@
             <h1 class="subtitle-primary">Welcome!</h1>
             <h3 class="subtitle-secondary">The Best Coffee Around</h3>
             <a href="#menu" class="btn btn-home btn-cta">Меню</a>
-            <a href="#home" class="btn btn-home btn-other">Забронировать столик</a>
+            <a href="#home" class="btn btn-home btn-other">Забронировать</a>
         </header>
-        {{--        <div class="slide-controller">--}}
-        {{--            <a href="#home" class="btn">--}}
-            {{--                <div class="arrow arrow-left"><i class="fas fa-angle-left"></i></div>--}}
-            {{--            </a>--}}
-        {{--            <a href="#home" class="btn">--}}
-            {{--                <div class="arrow arrow-left"><i class="fas fa-angle-right"></i></div>--}}
-            {{--            </a>--}}
-        {{--        </div>--}}
     </div>
 </section>
-<!-- About -->
+
 <section id="about">
     <header class="section-header">
         <h4 class="subtitle-script">Welcome</h4>

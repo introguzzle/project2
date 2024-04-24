@@ -1,29 +1,3 @@
-@media (min-width: 400px) and (max-width: 1000px) {
-    .main-nav {
-        display: none;
-    }
-
-    .brand-logo {
-        display: none;
-    }
-
-    body {
-        overflow-x: hidden;
-    }
-
-    .flex-wrapper {
-        justify-content: center;
-    }
-
-    .mobile-nav--reveal {
-        padding-top: 75px;
-    }
-
-    .logo-name img {
-        width: 200px;
-        height: 60px;
-    }
-}
 
 /* Fonts
 font-family: 'Oswald', sans-serif;
@@ -37,17 +11,41 @@ font-family: 'Merriweather', serif;
     padding: 0;
     box-sizing: border-box;
     text-decoration: none;
-    list-style-type: none;
     font-family: 'Oswald', sans-serif;
+    list-style-type: none;
 }
 
 /* Logo */
 .logo {
-    margin-left: 15px;
     display: flex;
     padding: 5px 15px;
     line-height: 20px;
     border: 2px solid #8d847b;
+    text-align: center; /* Выравнивание текста по центру */
+    align-items: center; /* Выравнивание по вертикали */
+    justify-content: center; /* Выравнивание по горизонтали */
+}
+
+.dostavka-edi-desktop a {
+    font-size: 25px;
+    color: #FFFFFF;
+}
+
+.dostavka-edi-mobile a {
+    font-size: 25px;
+    color: #FFFFFF;
+}
+
+@media (min-width: 800px) {
+    .dostavka-edi-mobile {
+        display: none;
+    }
+}
+
+@media (max-width: 800px) {
+    .dostavka-edi-desktop {
+        display: none;
+    }
 }
 
 .mug {
@@ -85,16 +83,20 @@ font-family: 'Merriweather', serif;
 }
 
 .mobile-nav {
-    width: 100%;
+    width: 100vw;
+    max-width: 100vw;
     background: #3d3833;
-    height: 75px;
+    height: 70px;
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     color: white;
     z-index: 100;
     position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 
@@ -166,7 +168,7 @@ font-family: 'Merriweather', serif;
 
 /* Sections */
 #home {
-    height: 50vh;
+    height: 100vh;
     background-size: contain;
     background: url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg") no-repeat center;
     position: relative;
@@ -190,7 +192,6 @@ font-family: 'Merriweather', serif;
 
 #services {
     height: auto;
-    background-size: 50vh;
     background: url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');
 }
 
@@ -216,8 +217,6 @@ footer {
 .overlay {
     height: 100%;
     width: 100%;
-    background: rgb(100, 100, 100);
-
 }
 
 .slide-controller {
@@ -422,7 +421,6 @@ hr {
 
 /*  Containers */
 .service-container {
-    background-color: #1a202c;
     text-transform: uppercase;
     font-size: 1.1rem;
     width: 50%;
@@ -432,8 +430,7 @@ hr {
 }
 
 .service-container--icon {
-    font-size: 3rem;
-    padding: 10px 0;
+    font-size: 3.5rem;
 }
 
 .service-container--text {
@@ -519,8 +516,6 @@ footer{
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        margin: none;
-        padding: none;
         line-height: initial;
         border-bottom: 3px solid #c7b9a9;
     }
@@ -540,7 +535,7 @@ footer{
     }
 
     #home {
-        height: 100vh;
+
     }
 
     #main-header .subtitle-script {
@@ -562,10 +557,6 @@ footer{
         line-height: 70px;
     }
 
-    .logo {
-        margin: 25px;
-    }
-
     .mobile-nav {
         width: 250px;
         height: 100vh;
@@ -582,7 +573,7 @@ footer{
     }
 
     .main-nav {
-        padding-top: 50px;
+        padding-top: 30px;
     }
 
     .nav-links {
@@ -635,7 +626,14 @@ footer{
     }
 
     .service-container {
-        width: 25%;
+        text-transform: uppercase;
+        font-size: 1.1rem;
+        width: 50%;
+        height: 50%;
+        color: white;
+        text-align: center;
+        border-radius: 10px; /* Округленные углы */
+        margin-bottom: 20px; /* Добавлен отступ между сервисами */
     }
 
 
@@ -728,7 +726,18 @@ footer{
 
 
 
-.contacts {
+.desktop-contacts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.desktop-contacts li {
+    font-size: 25px;
+    text-decoration: none;
+}
+
+.mobile-contacts {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -851,4 +860,78 @@ footer {
 
 .footer-section ul li a:hover {
     color: #ffffff;
+}
+
+.brand-logo.logo-name {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 0;
+}
+
+@media (max-width: 800px) {
+    .logo-name img {
+        width: 180px;
+        height: 60px;
+    }
+
+    #main-header {
+        top: 40%;
+    }
+
+    .logo {
+        border: none;
+    }
+
+    .desktop-contacts {
+        display: none;
+    }
+
+    .brand-logo.logo-name {
+        display: flex;
+        justify-content: center;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    body {
+        overflow-x: visible;
+        width: 100vw;
+        max-width: 100vw;
+    }
+
+    .flex-wrapper {
+        justify-content: center;
+    }
+
+    .mobile-nav--reveal {
+        padding-top: 75px;
+    }
+
+    footer {
+        padding: 20px 0;
+    }
+
+    .footer-container {
+        flex-direction: column;
+    }
+
+    .footer-section {
+        margin: 0;
+        text-align: center;
+    }
+
+    .footer-section h2 {
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        font-size: 1.5rem;
+    }
+
+    .footer-section ul li {
+        margin-bottom: 10px;
+    }
+
+    .footer-section ul li a {
+        font-size: 1rem;
+    }
 }
