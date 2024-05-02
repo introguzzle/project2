@@ -88,7 +88,7 @@ font-family: 'Merriweather', serif;
     background: #3d3833;
     height: 70px;
     display: flex;
-    justify-content: space-between;
+    justify-content: end;
     align-items: center;
     color: white;
     z-index: 100;
@@ -103,10 +103,26 @@ font-family: 'Merriweather', serif;
 .hamburger {
     background: #fff;
     color: #111;
-    padding: 15px;
-    font-size: 1.5rem;
-    margin-right: 15px;
+    padding: 13px;
+    font-size: 1.4rem;
+    margin-right: 13px;
     border-radius: 5px;
+}
+
+.fas:hover.btn:hover {
+    background: #666;
+}
+
+.hamburger:hover {
+    background: #666;
+}
+
+.fas:active.btn:active {
+    background: rgb(66, 66, 66);
+}
+
+.hamburger:active {
+    background: rgb(66, 66, 66);
 }
 
 .mobile-nav--reveal {
@@ -175,7 +191,7 @@ font-family: 'Merriweather', serif;
 }
 
 #home .overlay {
-    background-color: rgba(0, 0, 0, 0.5); /* Прозрачный черный цвет */
+    background-color: rgba(0, 0, 0, 0.5);
     background-size: cover;
     width: 100%;
     height: 100%;
@@ -192,12 +208,13 @@ font-family: 'Merriweather', serif;
 
 #services {
     height: auto;
-    background: url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');
+    background: rgba(0, 0, 0, 0.5)
+    url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');
+    background-size: cover;
 }
 
 .services-logo {
-    height: auto;
-    background: url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');
+
 }
 
 #gallery {
@@ -318,6 +335,10 @@ footer {
 .btn {
     transition: ease-in-out .3s;
     cursor: pointer;
+}
+
+.btn-cart {
+    position: relative;
 }
 
 .btn:hover {
@@ -568,6 +589,10 @@ footer{
         display: block;
     }
 
+    .mobile-cart {
+        visibility: hidden;
+    }
+
     .hamburger {
         visibility: hidden;
     }
@@ -612,9 +637,7 @@ footer{
     }
 
     #services {
-        height: auto;
-        background: url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');
-        background-size: cover;
+
     }
 
     #services .section-header {
@@ -750,17 +773,6 @@ footer{
     margin-top: 10px; /* Добавим отступ сверху */
 }
 
-.item-price,
-.order-btn {
-    flex-grow: 1;
-    text-align: center;
-    margin: 0 5px;
-    font-family: 'Fira Sans', sans-serif;
-    font-size: 18px; /* Установим одинаковый размер шрифта */
-    width: 120px;
-    max-width: 120px;
-}
-
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -791,6 +803,15 @@ footer{
     font-size: 18px;
 }
 
+.item-info form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 18px;
+}
+
 .item-price {
     flex-grow: 1;
     text-align: center;
@@ -799,26 +820,6 @@ footer{
     font-size: 18px;
     width: 120px;
     max-width: 120px;
-}
-
-.order-btn {
-    padding: 5px 0;
-    background-color: #e6342a;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-
-    flex-grow: 1;
-    text-align: center;
-    margin: 0 5px;
-    font-family: 'Fira Sans', sans-serif;
-    width: 120px;
-    max-width: 120px;
-}
-
-.order-btn:hover {
-    background-color: #c70000;
 }
 
 footer {
@@ -869,14 +870,53 @@ footer {
     margin-bottom: 0;
 }
 
+@media only screen and (max-width: 800px) {
+    .desktop-text {
+        display: none;
+    }
+    .mobile-text {
+        display: block;
+    }
+}
+
+@media only screen and (min-width: 801px) {
+    .desktop-text {
+        display: block;
+    }
+    .mobile-text {
+        display: none;
+    }
+}
+
 @media (max-width: 800px) {
-    .logo-name img {
-        width: 180px;
-        height: 60px;
+    .btn-reveal {
+        font-size: 30px;
+    }
+
+    .contact-info-reveal {
+        font-size: 35px;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 4px 8px;
+        font-size: 12px;
     }
 
     #main-header {
-        top: 40%;
+        top: 50vh;
+    }
+
+    .logo-name img {
+        width: 100%; /* Занимает 100% ширины родительского блока */
+        height: auto;
+        max-width: 150px;
+        max-height: 60px;
     }
 
     .logo {
@@ -885,6 +925,26 @@ footer {
 
     .desktop-contacts {
         display: none;
+    }
+
+    .logo-name {
+        text-align: center;
+    }
+
+    .logo-name img {
+        margin: 0 auto;
+        display: block;
+    }
+
+    .brand-logo {
+        text-align: center;
+    }
+
+    .hamburger {
+        float: right;
+        position: relative;
+        cursor: pointer;
+        display: inline-block;
     }
 
     .brand-logo.logo-name {

@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,26 +19,28 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::match(['get'], '/login', [AuthController::class, 'viewLogin']);
+Route::match(['post'], '/login', [AuthController::class, 'login'])->name('login');
 
-Route::get("/home", function() {
-    return "home";
-});
+Route::match(['get'], 'registration', [AuthController::class, 'viewRegistration']);
+Route::match(['post'], 'registration', [AuthController::class, 'register'])->name('register');
+Route::match(['get'], '/auth/check-login-credential', [AuthController::class, 'isLoginPresent']);
 
-Route::get("/1337", function () {
-    return view('test');
-});
+Route::match(['get'], '/home', [HomeController::class, 'index'])->name('home');
+Route::match(['get'], '/', [HomeController::class, 'index']);
 
-Route::get("/1338", function() {
-    return view('test2');
-});
+Route::match(['get'], '/product/{id}', [ProductController::class, 'index']);
+Route::match(['get'], '/get/products-by-category/{category_id}', [ProductController::class, 'acquireProductViewsByCategory']);
+Route::match(['get'], '/get/category-name/{category_id}', [ProductController::class, 'acquireCategoryName']);
+Route::match(['get'], '/get/product/{product_id}', [ProductController::class, 'acquireProductView']);
 
-Route::get("/1339", function() {
-    return view('admin');
-});
+Route::middleware(['auth'])->group(function () {
+    Route::match(['get'], '/cart', [CartController::class, 'index'])->name('cart');
+    Route::match(['post'], '/cart', [CartController::class, 'update'])->name('cart.add');
+    Route::match(['get'], '/get/cart-quantity', [CartController::class, 'acquireTotalQuantity'])->name('cart.total-quantity');
 
-Route::get("/1340", function() {
-    return view('test3');
+    Route::match(['get'], '/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::match(['post'], '/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::match(['get'], '/checkout', [OrderController::class, 'index'])->name('checkout');
 });
