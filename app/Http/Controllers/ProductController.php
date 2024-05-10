@@ -47,7 +47,7 @@ class ProductController extends Controller
             return redirect('404');
         }
 
-        $productView = $this->productService->acquireProductViewById($id);
+        $productView = $this->productService->createProductViewById($id);
 
         if ($productView === null) {
             return redirect('404');
@@ -103,7 +103,7 @@ class ProductController extends Controller
     {
         return $this->cartService->appendQuantityToProductView(
             Auth::getProfile(),
-            $this->productService->acquireProductViewById($productId)
+            $this->productService->createProductViewById($productId)
         );
     }
 
@@ -115,7 +115,7 @@ class ProductController extends Controller
     {
         return $this->cartService->appendQuantityToProductViews(
             Auth::getProfile(),
-            $this->productService->acquireProductViewsByCategory($categoryId)
+            $this->productService->createProductViewsByCategory($categoryId)
         );
     }
 }

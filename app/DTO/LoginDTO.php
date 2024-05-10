@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class LoginDTO
 {
+    use FromRequest;
     private ?string $phone;
     private ?string $email;
     private ?string $password;
@@ -49,10 +50,5 @@ class LoginDTO
     public function getRemember(): bool
     {
         return $this->remember;
-    }
-
-    public static function fromRequest(Request $request): static
-    {
-        return Requests::compact($request, static::class);
     }
 }

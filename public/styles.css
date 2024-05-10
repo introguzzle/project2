@@ -190,8 +190,8 @@ font-family: 'Merriweather', serif;
     height: 100vh;
     background:
         linear-gradient(
-            rgba(0, 0, 0, 0.4),
-            rgba(0, 0, 0, 0.7)
+            rgba(0, 0, 0, 0.7),
+            rgba(0, 0, 0, 0.9)
         ),
 
         url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
@@ -218,8 +218,8 @@ font-family: 'Merriweather', serif;
     background:
         /* top, transparent black, faked with gradient */
         linear-gradient(
-            rgba(0, 0, 0, 0.4),
-            rgba(0, 0, 0, 0.7)
+            rgba(0, 0, 0, 0.7),
+            rgba(0, 0, 0, 0.9)
         ),
             /* bottom, image */
         url('https://i.pinimg.com/originals/98/71/73/9871736ff820184ca0d478e4f44a3b30.jpg');

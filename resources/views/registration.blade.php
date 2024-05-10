@@ -50,6 +50,19 @@
             </header>
         </div>
     </section>
+
+    <style>
+        #home {
+            background:
+                linear-gradient(
+                    rgba(0, 0, 0, 0.7),
+                    rgba(0, 0, 0, 0.9)
+                ),
+
+                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background-size: cover;
+        }
+    </style>
 @endsection
 
 <script>

@@ -64,11 +64,6 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Identity::class,
         ],
-
-        'identity' => [
-            'driver' => 'database',
-            'model' => App\Providers\IdentityProvider::class,
-        ],
     ],
 
     /*

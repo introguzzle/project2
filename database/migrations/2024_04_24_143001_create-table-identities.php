@@ -20,7 +20,8 @@ return new class extends Migration
 
             $blueprint->string('login')->unique();
             $blueprint->string('password');
-            $blueprint->string('remember_token')->nullable();
+            $blueprint->rememberToken();
+            $blueprint->timestamp('email_verified_at')->nullable();
 
             $blueprint->timestamps();
         });

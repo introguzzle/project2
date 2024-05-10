@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Category;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -13,7 +12,8 @@ class ProductService
     /**
      * @return Product[]
      */
-    public function acquireAll(): array
+    public
+    function acquireAll(): array
     {
         return Product::all()->all();
     }
@@ -22,22 +22,9 @@ class ProductService
     /**
      * @return ProductView[]
      */
-    public function acquireAllProductViews(): array
+    public
+    function createAllProductViews(): array
     {
-//        return array_map(
-//            fn(Product $product) => new ProductView($product,
-//                Image::query()
-//                    ->where('id', '=', ProductImage::query()
-//                        ->where('product_id', '=',
-//                            $product->getAttribute('id'))
-//                        ->first()
-//                        ->getAttribute('image_id')
-//                    )
-//
-//                    ->first()->getAttribute('path')
-//            ), $this->acquireAll()
-//        );
-
         return array_map(fn(Product $product) => new ProductView(
             $product,
             $product->getRelation('images')->all()[0]['path']
@@ -46,14 +33,54 @@ class ProductService
     }
 
     /**
+     * @param ProductView[] $productViews
      * @return ProductView[]
      */
 
-    public function acquireProductViewsByCategory(
+    public
+    function appendImagesToProductViews(
+        array $productViews
+    ): array
+    {
+        array_walk($productViews, function(ProductView $productView) {
+            $productView->setPath(Image::query()
+                ->where('id', '=', ProductImage::query()
+                    ->where('product_id', '=',
+                        $productView->getProduct()->getAttribute('id'))
+                    ->first()
+                    ->getAttribute('image_id')
+                )
+                ->first()->getAttribute('path')
+            );
+        });
+
+        return $productViews;
+    }
+
+    /**
+     * @param ProductView $productView
+     * @return ProductView
+     */
+
+    public
+    function appendImageToProductView(
+        ProductView $productView
+    ): ProductView
+    {
+        $views[] = $productView;
+        return $this->appendImagesToProductViews($views)[0];
+    }
+
+    /**
+     * @return ProductView[]
+     */
+
+    public
+    function createProductViewsByCategory(
         int|string $categoryId
     ): array
     {
-        return array_values(array_filter($this->acquireAllProductViews(),
+        return array_values(array_filter($this->createAllProductViews(),
             function(ProductView $productView) use ($categoryId) {
                 return $productView->getProduct()->getAttribute('category_id') == $categoryId;
             }
@@ -64,9 +91,12 @@ class ProductService
      * @param int|string $id
      * @return ProductView|null
      */
-    public function acquireProductViewById(int|string $id): ?ProductView
+    public
+    function createProductViewById(
+        int|string $id
+    ): ?ProductView
     {
-        foreach ($this->acquireAllProductViews() as $productView) {
+        foreach ($this->createAllProductViews() as $productView) {
             if ($productView->getProduct()->getAttribute('id') == $id)
                 return $productView;
         }

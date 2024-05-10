@@ -3,21 +3,26 @@
 namespace App\Services;
 
 use App\DTO\LoginDTO;
+use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
+use App\DTO\UpdateIdentityDTO;
 use App\Exceptions\ServiceException;
-use App\Mail\Verification;
+use App\Mail\PasswordResetMail;
 use App\Mail\VerificationMail;
 use App\Models\Identity;
+use App\Models\PasswordResetToken;
 use App\Models\Profile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Laravel\Ui\AuthRouteMethods;
 use Throwable;
 
-class RegistrationService
+class IdentityService
 {
-    public function login(LoginDTO $dto): bool
+    public function authenticate(LoginDTO $dto): bool
     {
         $login = $dto->getEmail() ?: $dto->getPhone();
 
@@ -89,7 +94,7 @@ class RegistrationService
      * @return bool
      */
 
-    public function isLoginPresent(string $login): bool
+    public function checkLoginPresence(string $login): bool
     {
         return Identity::query()
             ->where('login', '=', $login)
@@ -117,13 +122,96 @@ class RegistrationService
         /**
          * @var Identity $identity
          */
-        $identity = (fn($object): ?Identity => $object)(Identity::query()->find($id));
+        $identity = Identity::query()->find($id);
 
-        if (Verification::emailMatchesHash($identity->getEmailForVerification(), $hash)) {
+        if ($identity === null) {
+            return false;
+        }
+
+        $emailMatchesHash = Verification::emailMatchesHash(
+            $identity->getEmailForVerification(),
+            $hash
+        );
+
+        if ($emailMatchesHash) {
             $identity->markEmailAsVerified();
             return true;
         }
 
         return false;
+    }
+
+    public function updateIdentity(
+        Identity $identity,
+        UpdateIdentityDTO $dto
+    ): bool
+    {
+        if (!Hash::check($dto->getCurrentPassword(), $identity->getAuthPassword())) {
+            return false;
+        }
+
+        $identity->updatePassword($dto->getNewPassword());
+        return true;
+    }
+
+    public function sendPasswordResetLink(string $login): bool
+    {
+        $query = Identity::query()
+            ->where('login', '=', $login);
+
+        if (!$query->exists()) {
+            return false;
+        }
+
+        $token    = Str::random(100);
+        $identity = $query->first();
+
+        DB::table('password_reset_tokens')->insert([
+            'identity_id' => $identity->getKey(),
+            'token' => $token,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        Mail::send(new PasswordResetMail($login, $token));
+
+        return true;
+    }
+
+    public function isValidToken(string $token): bool
+    {
+        $query  = PasswordResetToken::query()->where('token', '=', $token);
+        $active = $query->get()->first()->isActive();
+
+        return $query->exists() && $active;
+    }
+
+    public function updatePasswordWithToken(PasswordResetDTO $dto): bool
+    {
+        /**
+         * @var PasswordResetToken $passwordResetToken
+         */
+        $passwordResetToken = PasswordResetToken::query()
+            ->where('token', '=', $dto->getToken())
+            ->get()
+            ->first();
+
+        if ($passwordResetToken === null) {
+            return false;
+        }
+
+        $identity = Identity::find($passwordResetToken->getIdentityId());
+
+        DB::beginTransaction();
+
+        try {
+            $identity->updatePassword($dto->getPassword());
+            $passwordResetToken->setExpired();
+        } catch (Throwable) {
+            DB::rollBack();
+        }
+
+        DB::commit();
+        return true;
     }
 }

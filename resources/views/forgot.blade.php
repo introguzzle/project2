@@ -5,7 +5,7 @@
         <div class="overlay">
             <header id="main-header" class="register-header">
                 <h2 class="register-title">Восстановление</h2>
-                <form action="{{route('forget.post')}}" method="POST" class="register-form">
+                <form action="{{route('forgot.post')}}" method="POST" class="register-form">
                     @csrf
                     <div class="form-group form-group-1 form-group-email">
                         <label for="login" class="form-label"><i id="label-icon" class="fas fa-envelope"></i></label>
@@ -18,6 +18,11 @@
                             <span id="checkbox-text">Использовать телефон</span>
                         </label>
                     </div>
+                    @if (session()->has('fail'))
+                    <div class="form-group" style="color: red; font-size: 1.2em; justify-content: center; align-items: center" >
+                        <span class="password-error">{{session()->get('fail')}}</span>
+                    </div>
+                    @endif
                     <button type="submit" class="btn btn-register">Далее</button>
                     <div class="form-group">
                         <a href="{{ route('login') }}">Вернуться обратно</a>

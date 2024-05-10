@@ -2,33 +2,87 @@
 
 namespace App\Services;
 
+use App\DTO\UpdateProfileDTO;
+use App\Exceptions\ServiceException;
 use App\Models\Identity;
 use App\Models\Profile;
 use App\ModelView\ProfileView;
-use Illuminate\Contracts\Auth\Authenticatable;
 
 class ProfileService
 {
-    public function acquireProfileByIdentity(Authenticatable $authenticatable): ?Profile
+    /**
+     * @param Identity $identity
+     * @return Profile|null
+     */
+
+    public function acquireProfileByIdentity(Identity $identity): ?Profile
     {
-        return $this->acquireProfileByLogin($authenticatable->getAuthIdentifier());
+        return $this->acquireByLogin($identity->getAuthIdentifier());
     }
 
-    public function acquireProfileByLogin(string $login): ?Profile
+    /**
+     * @param string $login
+     * @return Profile|null
+     */
+
+    public function acquireByLogin(string $login): ?Profile
     {
-        return Profile::query()->find(
+        return (fn($object): ?Profile => $object)(Profile::query()->find(
             Identity::query()
                 ->where('login', '=', $login)
                 ->first()
                 ->getAttribute('profile_id')
-        )->first();
+        ));
     }
 
-    public function acquireProfileView(Authenticatable $authenticatable): ?ProfileView
+    /**
+     * @param Identity $identity
+     * @return ProfileView|null
+     */
+
+    public function createProfileViewByIdentity(Identity $identity): ?ProfileView
     {
         return new ProfileView(
-            $this->acquireProfileByIdentity($authenticatable),
-            $authenticatable
+            $this->acquireProfileByIdentity($identity),
+            $identity
+        );
+    }
+
+    public function createProfileViewByProfile(Profile $profile): ?ProfileView
+    {
+        return new ProfileView(
+            $profile,
+            (fn($o): ?Identity => $o)(Identity::query()
+                ->where('profile_id', '=', $profile->getId())
+                ->first())
+        );
+    }
+
+    public function update(
+        ?Profile $profile,
+        UpdateProfileDTO $updateProfileDTO
+    ): void
+    {
+        if ($profile === null) {
+            throw new ServiceException('Profile is not present');
+        }
+
+        $profile->update([
+            'address' => $updateProfileDTO->getAddress(),
+            'birthday' => $updateProfileDTO->getBirthDay(),
+            'name' => $updateProfileDTO->getName()
+        ]);
+
+        $profile->save();
+    }
+
+    public function createProfileViewById(
+        int $profileId
+    ): ?ProfileView
+    {
+        return new ProfileView(
+            Profile::find($profileId),
+            Identity::query()->where('profile_id', '=', $profileId)->first()
         );
     }
 }

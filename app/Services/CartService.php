@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Exceptions\ServiceException;
 use App\Models\Cart;
 use App\Models\CartProduct;
 use App\Models\Product;
 use App\Models\Profile;
 use App\ModelView\ProductView;
-use Illuminate\Support\Arr;
 
 class CartService
 {
@@ -107,7 +107,7 @@ class CartService
      * @return ProductView[]
      */
 
-    public function acquireAllByProfile(?Profile $profile): array
+    public function createAllProductViewsByProfile(?Profile $profile): array
     {
         if ($profile === null) {
             return [];
@@ -117,9 +117,9 @@ class CartService
             $profile,
             array_map(
                 fn(CartProduct $cartProduct) => new ProductView(
-                    Product::query()
+                    (fn($product): Product => $product)(Product::query()
                         ->with('images')
-                        ->find($cartProduct->getAttribute('product_id')),
+                        ->find($cartProduct->getAttribute('product_id'))),
                     ''
                 ),
                 CartProduct::query()
@@ -201,10 +201,37 @@ class CartService
 
     public function acquireTotalQuantityByProfile(?Profile $profile): int
     {
+        $cart = $this->acquireCartByProfile($profile);
+
+        if ($cart === null) {
+            return 0;
+        }
+
         return CartProduct::query()
             ->where('cart_id', '=',
-                $this->acquireCartByProfile($profile)->getAttribute('id'))
+                $cart->getAttribute('id'))
             ->sum('quantity');
+    }
+
+    public function acquirePriceByProfile(Profile $profile): float
+    {
+        $cart = $this->acquireCartByProfile($profile);
+
+        if ($cart === null) {
+            throw new ServiceException();
+        }
+
+        return array_reduce(array_map(fn($cartProduct) =>
+            (float)Product::query()->find($cartProduct['product_id'])
+                ->getAttribute('price') * (float)$cartProduct['quantity'],
+
+            CartProduct::query()
+                ->where('cart_id', '=', $cart->getAttribute('id'))
+                ->get()
+                ->toArray()
+        ), function(float $acc, float $item) {
+                return $acc + $item;
+        }, 0.0);
     }
 
     /**
@@ -213,17 +240,39 @@ class CartService
      */
     public function acquireCartByProfile(Profile $profile): ?Cart
     {
-        return Cart::query()
-            ->where('profile_id', '=', $profile->getId())
-            ->first();
+        return (fn($o): ?Cart => $o)($profile->cart()->first());
     }
 
     /**
      * @param Profile $profile
-     * @return mixed
+     * @return mixed|null
      */
     public function acquireCartIdByProfile(Profile $profile): mixed
     {
-        return $this->acquireCartByProfile($profile)->getAttribute('id');
+        return $this->acquireCartByProfile($profile)?->getAttribute('id');
+    }
+
+    public function clearCartByProfile(Profile $profile): void
+    {
+        $cartId = $this->acquireCartIdByProfile($profile);
+
+        CartProduct::query()
+            ->where('cart_id', '=', $cartId)
+            ->delete();
+    }
+
+    /**
+     * @param Profile $profile
+     * @return ProductView[]
+     */
+
+    public function createAllProductViewsAndAppendQuantity(
+        Profile $profile
+    ): array
+    {
+        return $this->appendQuantityToProductViews(
+            $profile,
+            $this->createAllProductViewsByProfile($profile)
+        );
     }
 }

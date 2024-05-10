@@ -5,26 +5,33 @@
         <div class="overlay checkout-overlay">
             <header id="main-header" class="checkout-header">
                 <h2 class="checkout-title">Оформление заказа</h2>
-                <form action="{{ route('checkout') }}" method="POST" class="checkout-form">
+                <form action="{{ route('checkout.order') }}" method="POST" class="checkout-form">
                     @csrf
                     <div class="form-group">
                         <label for="name" class="form-label"><i class="fas fa-user"></i></label>
-                        <input type="text" id="name" name="name" class="form-input" placeholder="Ваше имя" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email" class="form-label"><i class="fas fa-envelope"></i></label>
-                        <input type="email" id="email" name="email" class="form-input" placeholder="Ваш email" required>
+                        <input type="text" id="name" name="name" class="form-input"
+                               placeholder="Введите имя" required
+                               value="{{$profileView->getProfile()->getName()}}">
                     </div>
 
                     <div class="form-group">
                         <label for="phone" class="form-label"><i class="fas fa-phone"></i></label>
-                        <input type="text" id="phone" name="phone" class="form-input" placeholder="Ваш номер телефона" required>
+                        <input type="text" id="phone" name="phone" class="form-input"
+                               placeholder="Ваш номер телефона" required
+                               value="{{$profileView->getIdentity()->getAttribute('login')}}">
                     </div>
 
                     <div class="form-group">
                         <label for="address" class="form-label"><i class="fas fa-map-marker-alt"></i></label>
-                        <input type="text" id="address" name="address" class="form-input" placeholder="Ваш адрес" required>
+                        <input type="text" id="address" name="address" class="form-input"
+                               placeholder="Ваш адрес" required
+                               value="{{$profileView->getProfile()->getAttribute('address')}}">
+                    </div>
+                    <input type="hidden" name="price" value="{{$price}}">
+                    <div class="form-group">
+                        @if (session('internal'))
+                            <span style="color: red">{{ session('internal') }}</span>
+                        @endif
                     </div>
 
                     <button type="submit" class="btn btn-checkout">Оформить заказ</button>
@@ -36,13 +43,22 @@
             </header>
         </div>
     </section>
+
+    <style>
+        #home {
+            background:
+                linear-gradient(
+                    rgba(0, 0, 0, 0.7),
+                    rgba(0, 0, 0, 0.9)
+                ),
+
+                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background-size: cover;
+        }
+    </style>
 @endsection
 
 <style>
-    #home .checkout-overlay {
-        background-color: rgba(0, 0, 0, 0.8) !important;
-    }
-
     .checkout-header {
         background: rgba(0, 0, 0, 0.7);
         border-top-left-radius: 30px;

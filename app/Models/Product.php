@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, FindById;
 
     protected $fillable = [
         'name',
@@ -42,5 +42,20 @@ class Product extends Model
         return $this
             ->belongsToMany(Cart::class, 'cart_product')
             ->using(CartProduct::class);
+    }
+
+    public function getName(): string
+    {
+        return $this->getAttribute('name');
+    }
+
+    public function getPrice(): float
+    {
+        return $this->getAttribute('price');
+    }
+
+    public function getCategoryId(): int
+    {
+        return $this->getAttribute('category_id');
     }
 }

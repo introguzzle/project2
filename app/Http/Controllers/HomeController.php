@@ -38,7 +38,7 @@ class HomeController extends Controller
 
     public function index(): View|Application|Factory|App
     {
-        $productViews = $this->productService->acquireAllProductViews();
+        $productViews = $this->productService->createAllProductViews();
         $productViews = $this->cartService->appendQuantityToProductViews(
             Auth::getProfile(),
             $productViews

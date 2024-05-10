@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateCartRequest;
-use App\ModelView\ProductView;
 use App\Services\CartService;
 use App\Utils\Auth;
 use Illuminate\Contracts\View\Factory;
@@ -11,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Foundation\Application as App;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CartController extends Controller
@@ -33,9 +33,20 @@ class CartController extends Controller
 
     public function index(): View|Application|Factory|App
     {
-        $productViews = $this->acquireAllByProfile();
+        $profile = Auth::getProfile();
 
-        return view('cart', compact('productViews'));
+        if ($profile === null) {
+            return redirect('login');
+        }
+
+        try {
+            $price = $this->cartService->acquirePriceByProfile($profile);
+        } catch (Throwable) {
+            $price = 0.0;
+        }
+
+        $productViews = $this->cartService->createAllProductViewsAndAppendQuantity($profile);
+        return view('cart', compact('productViews', 'price'));
     }
 
     /**
@@ -47,7 +58,7 @@ class CartController extends Controller
     {
         $profile = Auth::getProfile();
 
-        if (!$profile) {
+        if ($profile === null) {
             return $this->forbiddenResponse();
         }
 
@@ -65,11 +76,12 @@ class CartController extends Controller
                 $productId,
                 $gain
             );
-        } catch (Throwable) {
+        } catch (Throwable $t) {
             return $this->internalServerErrorResponse();
         }
 
-        return response()->json()
+        return response()
+            ->json()
             ->setData(['message' => 'Success']);
     }
 
@@ -79,30 +91,22 @@ class CartController extends Controller
 
     public function acquireTotalQuantity(): JsonResponse
     {
+        $notPresent = function(): JsonResponse {
+            return response()->json()->setData(0);
+        };
+
         if (!Auth::check()) {
-            return $this->forbiddenResponse();
+            return $notPresent();
         }
 
         try {
             $totalQuantity = $this->cartService->acquireTotalQuantityByProfile(Auth::getProfile());
         } catch (Throwable) {
-            return $this->internalServerErrorResponse();
+            return $notPresent();
         }
 
-        return response()->json()
+        return response()
+            ->json()
             ->setData($totalQuantity);
-    }
-
-    /**
-     * @return ProductView[]
-     */
-    public function acquireAllByProfile(): array
-    {
-        $profile = Auth::getProfile();
-
-        return $this->cartService->appendQuantityToProductViews(
-            $profile,
-            $this->cartService->acquireAllByProfile($profile)
-        );
     }
 }

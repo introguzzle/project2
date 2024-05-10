@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class RegistrationDTO
 {
+    use FromRequest;
     private ?string $name;
     private ?string $email;
 
@@ -51,10 +52,5 @@ class RegistrationDTO
     public function getPasswordConfirmation(): ?string
     {
         return $this->passwordConfirmation;
-    }
-
-    public static function fromRequest(Request $request): static
-    {
-        return Requests::compact($request, static::class);
     }
 }

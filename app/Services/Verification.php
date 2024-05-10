@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Mail;
+namespace App\Services;
 
 class Verification
 {
     private const string HASH_FUNCTION = 'sha1';
-    public static function hashEmail(string $email)
+    public static function hashEmail(string $email): string
     {
         return call_user_func(self::HASH_FUNCTION, $email);
     }

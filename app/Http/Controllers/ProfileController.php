@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\UpdateProfileDTO;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Utils\Auth;
 use Illuminate\Contracts\Foundation\Application as App;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 
 class ProfileController extends Controller
@@ -28,17 +33,30 @@ class ProfileController extends Controller
 
     public function index(): View|Application|Factory|App|RedirectResponse
     {
-        $authenticatable = Auth::user();
-
-        if (!$authenticatable) {
-            return redirect('404');
-        }
-
-        $profileView = $this->profileService->acquireProfileView(
-            $authenticatable
+        $profileView = $this->profileService->createProfileViewByIdentity(
+            Auth::getIdentity()
         );
 
         return view('profile', compact('profileView'));
+    }
+
+    public function update(UpdateProfileRequest $request): JsonResponse
+    {
+        try {
+            $this->profileService->update(
+                Auth::getProfile(),
+                UpdateProfileDTO::fromRequest($request)
+            );
+        } catch (Throwable) {
+            return response()
+                ->json()
+                ->setStatusCode(500)
+                ->setData(['error' => 'Internal server error']);
+        }
+
+        return response()
+            ->json()
+            ->setData(['success' => 'Success']);
     }
 }
 

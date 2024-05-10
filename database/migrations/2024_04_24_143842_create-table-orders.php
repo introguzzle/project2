@@ -24,6 +24,7 @@ return new class extends Migration
                 ->constrained('statuses')
                 ->cascadeOnDelete();
 
+            $blueprint->string('name');
             $blueprint->string('phone');
             $blueprint->string('address');
             $blueprint->decimal('price');

@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('profiles', function(Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string('name');
+            $blueprint->string('name')->nullable();
+            $blueprint->date('birthday')->nullable();
+            $blueprint->string('address')->nullable();
 
             $blueprint
                 ->foreignId('role_id')

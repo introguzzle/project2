@@ -17,12 +17,19 @@
                         <input type="password" id="password" name="password" class="form-input" placeholder="Введите пароль" required>
                     </div>
                     <span class="login-error">
-                       @if (isset($internal))
-                          <li>{{$internal}}</li>
-                       @endif
-                       @if (isset($errors) && $errors->has('login'))
-                          <li>{{$errors->first('login')}}</li>
-                       @endif
+                    @if (isset($internal))
+                            <li>{{$internal}}</li>
+                    @endif
+
+                    @if ($errors?->has('login'))
+                            <li>{{$errors->first('login')}}</li>
+                    @endif
+
+                    </span>
+                    <span class="success-message">
+                    @if (session()->has('success'))
+                        <li>{{session('success')}}</li>
+                    @endif
                     </span>
 
                     <div class="form-group remember-me">
@@ -33,7 +40,7 @@
                     <button type="submit" class="btn btn-login">Войти</button>
 
                     <div class="form-group">
-                        <a href="{{ route('register') }}">Забыли пароль?</a>
+                        <a href="{{ route('forgot') }}">Забыли пароль?</a>
                     </div>
                     <div class="form-group">
                         <a href="{{ route('register') }}">Не зарегистрированы?</a>
@@ -42,11 +49,30 @@
             </header>
         </div>
     </section>
+
+    <style>
+        #home {
+            background:
+                linear-gradient(
+                    rgba(0, 0, 0, 0.7),
+                    rgba(0, 0, 0, 0.9)
+                ),
+
+                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background-size: cover;
+        }
+    </style>
 @endsection
 
 <style>
     .login-error {
         color: red;
+        font-size: 1.2em;
+        display: block;
+    }
+
+    .success-message {
+        color: green;
         font-size: 1.2em;
         display: block;
     }

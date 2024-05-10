@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="{{ asset('test.css') }}">
-<script src="../../js/app.js"></script>
+<?php $time = now() ?>
+<link rel="stylesheet" href="{{ asset("styles.css") }}">
+<script src="{{asset('script.js')}}"></script>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ asset('test.css') }}">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="{{ asset('styles.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Merriweather|Oswald|Satisfy&display=swap" rel="stylesheet">
 
@@ -48,7 +47,7 @@
 
     <div class="main-nav">
         <ul class="nav-links">
-            <a href="#menu">
+            <a href="{{route('menu')}}">
                 <li class="btn btn-active">Меню</li>
             </a>
             @if (!\Illuminate\Support\Facades\Auth::check())
@@ -91,10 +90,12 @@
         </div>
     </div>
 
-    <div class="mobile-cart">
-        <i class="btn fas fa-shopping-cart"></i>
-        <span id="cart-count-2" class="cart-count-hamburger">0</span>
-    </div>
+    <a href="{{route('cart')}}">
+        <div class="mobile-cart">
+            <i class="btn fas fa-shopping-cart"></i>
+            <span id="cart-count-2" class="cart-count-hamburger">0</span>
+        </div>
+    </a>
 
     <div class="hamburger">
         <i class="btn fas fa-bars"></i>
@@ -102,6 +103,12 @@
 </nav>
 
 <style>
+    @media (max-width: 768px) {
+        .mobile-nav {
+            background: #3d3833;
+        }
+    }
+
     .cart-count-mobile-menu {
         font-size: 0.7em;
         background-color: rgb(255, 0, 0, 0.7);
@@ -249,11 +256,6 @@
 
     function changeCount(spanItemCount, count) {
         spanItemCount.textContent = count;
-        spanItemCount.classList.add('item-count-animation', 'item-count-color');
-
-        setTimeout(() => {
-            spanItemCount.classList.remove('item-count-animation', 'item-count-color');
-        }, 500);
     }
 
     function setTotalQuantity(count) {

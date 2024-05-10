@@ -23,13 +23,14 @@ class UpdateCartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'product_id' => 'required',
+            'gain' => 'required'
         ];
     }
 
     public function getProductId(): mixed
     {
-        return $this->input('product-id');
+        return $this->input('product_id');
     }
 
     public function getGain(): mixed

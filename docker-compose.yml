@@ -43,9 +43,8 @@ services:
         hostname: rabbitmq
         restart: always
         environment:
-            - RABBITMQ_DEFAULT_USER=rmuser
-            - RABBITMQ_DEFAULT_PASS=rmpassword
-            - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
         volumes:
             - ./rabbitmq:/var/lib/rabbitmq
         ports:

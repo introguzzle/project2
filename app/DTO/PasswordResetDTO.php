@@ -2,8 +2,9 @@
 
 namespace App\DTO;
 
-class PasswodResetDTO
+class PasswordResetDTO
 {
+    use FromRequest;
     private ?string $token;
     private ?string $password;
     private ?string $passwordConfirmation;

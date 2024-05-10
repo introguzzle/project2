@@ -5,13 +5,12 @@ namespace App\ModelView;
 use App\Models\Identity;
 use App\Models\Order;
 use App\Models\Profile;
-use Illuminate\Contracts\Auth\Authenticatable;
 use JsonSerializable;
 
 class ProfileView implements JsonSerializable
 {
     private Profile $profile;
-    private Authenticatable $authenticatable;
+    private Identity $identity;
 
     /**
      * @var Order[]
@@ -20,36 +19,40 @@ class ProfileView implements JsonSerializable
 
     /**
      * @param Profile $profile
-     * @param Authenticatable $authenticatable
+     * @param Identity $identity
      * @param Order[] $orders
      */
     public function __construct(
         Profile  $profile,
-        Authenticatable $authenticatable,
+        Identity $identity,
         array    $orders = []
     )
     {
         $this->profile = $profile;
-        $this->authenticatable = $authenticatable;
+        $this->identity = $identity;
         $this->orders = $orders;
     }
-
-    /**
-     * @return Profile
-     */
 
     public function getProfile(): Profile
     {
         return $this->profile;
     }
 
-    /**
-     * @return Authenticatable
-     */
-
-    public function getAuthenticatable(): Authenticatable
+    public function setProfile(Profile $profile): ProfileView
     {
-        return $this->authenticatable;
+        $this->profile = $profile;
+        return $this;
+    }
+
+    public function getIdentity(): Identity
+    {
+        return $this->identity;
+    }
+
+    public function setIdentity(Identity $identity): ProfileView
+    {
+        $this->identity = $identity;
+        return $this;
     }
 
     /**
@@ -61,6 +64,12 @@ class ProfileView implements JsonSerializable
         return $this->orders;
     }
 
+    public function setOrders(array $orders): ProfileView
+    {
+        $this->orders = $orders;
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -69,7 +78,7 @@ class ProfileView implements JsonSerializable
     {
         return [
             'profile' => $this->profile->toArray(),
-            'identity' => $this->authenticatable->toArray(),
+            'identity' => $this->identity->toArray(),
             'orders' => $this->orders
         ];
     }

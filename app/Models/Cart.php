@@ -12,6 +12,10 @@ class Cart extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'profile_id'
+    ];
+
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class, 'profile_id');

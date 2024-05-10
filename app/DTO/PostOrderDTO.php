@@ -5,8 +5,9 @@ namespace App\DTO;
 use App\Utils\Requests;
 use Illuminate\Http\Request;
 
-class OrderDTO
+class PostOrderDTO
 {
+    use FromRequest;
     private ?string $name;
     private ?string $phone;
     private ?string $address;
@@ -50,12 +51,5 @@ class OrderDTO
     public function getPrice(): mixed
     {
         return $this->price;
-    }
-
-
-
-    public static function fromRequest(Request $request): static
-    {
-        return Requests::compact($request, static::class);
     }
 }

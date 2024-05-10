@@ -6,7 +6,6 @@ namespace App\Providers;
 use App\Models\Identity;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 
 class IdentityProvider implements UserProvider
@@ -14,37 +13,35 @@ class IdentityProvider implements UserProvider
 
     public function retrieveById($identifier): ?Authenticatable
     {
-        return new Identity(Identity::query()->find($identifier)->getAttributes());
+        return Identity::query()
+            ->where('login', '=', $identifier)
+            ->first();
     }
 
-    public function retrieveByToken($identifier, $token): Builder|Authenticatable|null
+    public function retrieveByToken($identifier, $token): ?Authenticatable
     {
         return Identity::query()
-            ->where('id', '=', $identifier)
-            ->where('remember_token', '=' , $token)
+            ->where('login', '=', $identifier)
+            ->where('remember_token', '=', $token)
             ->first();
     }
 
     public function updateRememberToken(Authenticatable $user, $token): void
     {
         Identity::query()
-            ->where('id', '=' , $user->getAuthIdentifier())
+            ->where('login', '=' , $user->getAuthIdentifier())
             ->update(['remember_token' => $token]);
     }
 
-    public function retrieveByCredentials(array $credentials): Authenticatable|null
+    public function retrieveByCredentials(array $credentials): ?Authenticatable
     {
-        $login = $credentials['login'] ?? null;
-
-        return new Identity(
-            Identity::query()
-                ->where('login', '=', $login)
-                ->first()
-                ->getAttributes()
-        );
+        return $this->retrieveById($credentials['login']);
     }
 
-    public function validateCredentials(Authenticatable $user, array $credentials): bool
+    public function validateCredentials(
+        Authenticatable $user,
+        array $credentials
+    ): bool
     {
         return Hash::check(
             $credentials['password'],

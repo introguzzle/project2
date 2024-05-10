@@ -23,9 +23,9 @@ class RegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name"                  => "required",
-            "password"              => "required|confirmed",
-            "password_confirmation" => "required"
+            'name'                  => 'required',
+            'password'              => 'required',
+            'password_confirmation' => 'required'
         ];
     }
 
@@ -35,7 +35,21 @@ class RegistrationRequest extends FormRequest
             'name.required'                  => 'Это поле обязательно для заполнения',
             'password.required'              => 'Это поле обязательно для заполнения',
             'password_confirmation.required' => 'Это поле обязательно для заполнения',
-            'password.confirmed'             => 'Пароли должны совпадать'
         ];
+    }
+
+    public function getNameInput(): string
+    {
+        return $this->string('name')->toString();
+    }
+
+    public function getPasswordInput(): string
+    {
+        return $this->string('password')->toString();
+    }
+
+    public function getPasswordConfirmationInput(): string
+    {
+        return $this->string('password_confirmation')->toString();
     }
 }

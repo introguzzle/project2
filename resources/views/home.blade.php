@@ -83,23 +83,28 @@
             <div class="grid-container fade-in-menu">
                 @foreach ($productViews as $productView)
                     @php
-                        $name = $productView->getProduct()->getAttribute('name')
+                        $name = $productView->getProduct()->getAttribute('name');
+                        $id = $productView->getProduct()->getAttribute('id');
                     @endphp
 
                     @if ($productView->getProduct()->getAttribute('category_id') === 1)
                         <div class="grid-item">
-                            <img src="{{$productView->getPath()}}"
-                                 alt="{{ $name }}">
+                            <a href="{{route("product", ['id' => $id])}}">
+                                <img
+                                     src="{{$productView->getPath()}}"
+                                     alt="{{ $name }}"
+                                >
+                            </a>
                             <h3>{{ $name }}</h3>
                             <p>{{ $productView->getProduct()->getAttribute('short_description') }}</p>
                             <div class="item-info">
                                 <p class="item-price">{{ $productView->getProduct()->getAttribute('price') }}</p>
                                 <div class="btn-container">
-                                    <button onclick="updateProductCount(this, {{$productView->getProduct()->getAttribute('id')}} , '-1')" class="btn-count">-</button>
-                                    <span id="item-count-{{ $productView->getProduct()->getAttribute('id') }}" class="item-count">
+                                    <button onclick="updateProductCount(this, {{$id}} , '-1')" class="btn-count">-</button>
+                                    <span id="item-count-{{ $id }}" class="item-count">
                                         {{$productView->getQuantity()}}
                                     </span>
-                                    <button onclick="updateProductCount(this, {{$productView->getProduct()->getAttribute('id')}} ,'1')" class="btn-count">+</button>
+                                    <button onclick="updateProductCount(this, {{$id}} ,'1')" class="btn-count">+</button>
                                 </div>
                             </div>
                         </div>
@@ -161,23 +166,28 @@
                     data.forEach(productView => {
                         const div = document.createElement('div');
                         div.classList.add('grid-item');
+
                         div.innerHTML = `
-                    <img src="${productView['path']}" alt="${productView['product']['name']}">
-                    <h3>${productView['product']['name']}</h3>
-                    <p>${productView['product']['short_description']}</p>
-                    <div class="item-info">
-                        <p class="item-price">${productView['product']['price']}</p>
-                        <div class="btn-container">
-                            <button onclick="updateProductCount(this, ${productView['product']['id']} , '-1')" class="btn-count">-</button>
-                            <span id="item-count-${productView['product']['id']}" class="item-count">
-                                ${productView['quantity']}
-                            </span>
-                            <button onclick="updateProductCount(this, ${productView['product']['id']} , '1')" class="btn-count">+</button>
-                        </div>
-                    </div>
-                `;
+                            <a href="/product/${productView['product']['id']}">
+                                <img src="${productView['path']}" alt="${productView['product']['name']}">
+                            </a>
+                            <h3>${productView['product']['name']}</h3>
+                            <p>${productView['product']['short_description']}</p>
+                            <div class="item-info">
+                                <p class="item-price">${productView['product']['price']}</p>
+                                <div class="btn-container">
+                                    <button onclick="updateProductCount(this, ${productView['product']['id']} , '-1')" class="btn-count">-</button>
+                                    <span id="item-count-${productView['product']['id']}" class="item-count">
+                                        ${productView['quantity']}
+                                    </span>
+                                    <button onclick="updateProductCount(this, ${productView['product']['id']} , '1')" class="btn-count">+</button>
+                                </div>
+                            </div>
+                        `;
+
                         productContainer.appendChild(div);
                     });
+
                     productContainer.classList.add('fade-in-menu');
                 })
                 .catch(error => console.error('Error fetching products:', error));
@@ -192,7 +202,7 @@
             const url = "{{ route('cart.add') }}";
 
             const formData = new FormData();
-            formData.append('product-id', productId);
+            formData.append('product_id', productId);
             formData.append('gain', gain);
 
             xhr.open("POST", url, true);

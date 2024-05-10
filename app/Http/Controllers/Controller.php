@@ -11,17 +11,59 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    public const string INTERNAL_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
+    protected array $internal = ['error' => self::INTERNAL_ERROR_MESSAGE];
+
+    /**
+     * @param string $message
+     * @return string[]
+     */
+    public function success(string $message = 'Success'): array
+    {
+        return ['success' => $message];
+    }
+
+    /**
+     * @param string $message
+     * @return string[]
+     */
+
+    public function error(string $message = 'Unknown error'): array
+    {
+        return ['error' => $message, 'fail' => $message];
+    }
+
     public function internalServerErrorResponse(): JsonResponse
     {
-        return response()->json()
+        return response()
+            ->json()
             ->setData(['error' => 'Internal server error'])
             ->setStatusCode(500);
     }
 
     public function forbiddenResponse(): JsonResponse
     {
-        return response()->json()
+        return response()
+            ->json()
             ->setData(['error' => 'Forbidden'])
             ->setStatusCode(403);
+    }
+
+    /**
+     * @return never
+     */
+
+    public function abortExpired(): never
+    {
+        abort(403, 'Expired');
+    }
+
+    /**
+     * @return never
+     */
+
+    public function abortNotFound(): never
+    {
+        abort(404, 'Not found');
     }
 }

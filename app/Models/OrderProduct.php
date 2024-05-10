@@ -3,15 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OrderProduct extends Model
+class OrderProduct extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'order_product';
     protected $fillable = [
-        'quantity'
+        'quantity',
+        'order_id',
+        'product_id'
     ];
 
     public function order(): BelongsTo
