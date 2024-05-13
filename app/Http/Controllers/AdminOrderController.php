@@ -34,7 +34,7 @@ class AdminOrderController extends Controller
     /**
      * @throws Exception
      */
-    public function index(): View|Application|Factory|JsonResponse|App
+    public function showOrders(): View|Application|Factory|JsonResponse|App
     {
         if (request()->ajax()) {
             return DataTables::of(
@@ -45,7 +45,7 @@ class AdminOrderController extends Controller
                     return '<button type="button"
                                     data-id="'.$row['order']['id'].'"
                                     class="finalize btn btn-success btn-sm"
-                                    style="width: 120px">Выполнить
+                                    style="width: 120px">Завершить
                            </button>
                             <button type="button"
                                     data-id="'.$row['order']['id'].'"
@@ -58,7 +58,7 @@ class AdminOrderController extends Controller
                     return route('admin.associated.profile', ['id' => $row['order']['profile_id']]);
                 })
                 ->addColumn('details-link', function(array $row) {
-                    return route('admin.associated.details', ['id' => $row['order']['id']]);
+                    return route('admin.associated.order', ['id' => $row['order']['id']]);
                 })
                 ->toJson();
         }
@@ -66,19 +66,19 @@ class AdminOrderController extends Controller
         return view('admin.orders');
     }
 
-    public function profile(int $profileId): View|Application|Factory|App
+    public function showProfile(int $profileId): View|Application|Factory|App
     {
         $profileView = $this->profileService->createProfileViewById($profileId);
         return view('admin.associated.profile', compact('profileView'));
     }
 
-    public function details(int $orderId): View|Application|Factory|App
+    public function showOrder(int $orderId): View|Application|Factory|App
     {
         $orderView = $this->orderService->createOrderViewById($orderId);
-        return view('admin.associated.details', compact('orderView'));
+        return view('admin.associated.order', compact('orderView'));
     }
 
-    public function finalize(): JsonResponse
+    public function complete(): JsonResponse
     {
         // TODO
         return response()->json()->setData(['success' => 'Success']);

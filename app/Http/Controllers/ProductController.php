@@ -88,10 +88,10 @@ class ProductController extends Controller
      * @param int|string $categoryId
      * @return JsonResponse
      */
-    public function acquireCategoryName(int|string $categoryId): JsonResponse
+    public function acquireCategory(int|string $categoryId): JsonResponse
     {
         return response()->json()->setData(
-            $this->categoryService->acquireCategoryName($categoryId)
+            $this->categoryService->acquireCategory($categoryId)
         );
     }
 

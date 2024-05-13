@@ -5,7 +5,7 @@
         <div class="overlay">
             <header id="main-header" class="register-header">
                 <h2 class="register-title">Восстановление</h2>
-                <form action="{{route('forgot.post')}}" method="POST" class="register-form">
+                <form action="{{route('forgot-password.post')}}" method="POST" class="register-form">
                     @csrf
                     <div class="form-group form-group-1 form-group-email">
                         <label for="login" class="form-label"><i id="label-icon" class="fas fa-envelope"></i></label>

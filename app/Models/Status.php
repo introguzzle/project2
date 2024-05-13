@@ -11,8 +11,6 @@ class Status extends Model
     public const string AWAITING = 'Ожидание';
     public const string DONE = 'Выполнено';
 
-    use HasFactory;
-
     protected $fillable = [
         'name'
     ];

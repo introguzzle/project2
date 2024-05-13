@@ -57,6 +57,7 @@ class OrderService
                 '=',
                 Status::acquireAwaiting()->getAttribute('id')
             )
+            ->orderBy('id')
             ->get()
             ->all();
     }
@@ -172,7 +173,11 @@ class OrderService
 
     public function acquireAll(int $limit = 100): array
     {
-        return Order::query()->limit($limit)->get()->all();
+        return Order::query()
+            ->limit($limit)
+            ->orderBy('id')
+            ->get()
+            ->all();
     }
 
     /**
@@ -282,6 +287,7 @@ class OrderService
 
                 OrderProduct::query()
                     ->where('order_id', '=', $order->getAttribute('id'))
+                    ->orderBy('product_id')
                     ->get()
                     ->all()
             )

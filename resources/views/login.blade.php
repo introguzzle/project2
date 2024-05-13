@@ -40,7 +40,7 @@
                     <button type="submit" class="btn btn-login">Войти</button>
 
                     <div class="form-group">
-                        <a href="{{ route('forgot') }}">Забыли пароль?</a>
+                        <a href="{{ route('forgot-password') }}">Забыли пароль?</a>
                     </div>
                     <div class="form-group">
                         <a href="{{ route('register') }}">Не зарегистрированы?</a>

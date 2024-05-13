@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Exceptions\ServiceException;
 use App\Models\Cart;
 use App\Models\CartProduct;
 use App\Models\Product;
@@ -14,33 +13,32 @@ class CartService
     /**
      * @param Profile $profile
      * @param int|string $productId
-     * @param int|string $gain
+     * @param int|string $quantityChange
      * @return void
      */
     public function update(
         Profile $profile,
         int|string $productId,
-        int|string $gain
+        int|string $quantityChange
     ): void
     {
-        $cart = Cart::query()
-            ->where('profile_id', '=', $profile->getAttribute('id'))
-            ->first();
+        $query = Cart::query()
+            ->where('profile_id', '=', $profile->getAttribute('id'));
 
-        if (!$this->profileOwnsCart($profile)) {
-            $this->create($profile);
-        }
+        $cart = $query->exists()
+            ? $query->first()
+            : $this->createCartByProfile($profile);
+
+        $change = (int)$quantityChange;
 
         $cartId = $cart->getAttribute('id');
+        $where  = CartProduct::query()
+            ->where('cart_id', '=', $cartId)
+            ->where('product_id', '=', $productId);
 
-        if ($this->cartProductAlreadyExists($cartId, $productId)) {
-
-            $cartProduct = CartProduct::query()
-                ->where('cart_id', '=', $cartId)
-                ->where('product_id', '=', $productId)
-                ->first();
-
-            $newQuantity = $cartProduct->getAttribute('quantity') + (int)$gain;
+        if ($where->exists()) {
+            $cartProduct = $where->first();
+            $newQuantity = ((int)$cartProduct->getAttribute('quantity')) + $change;
 
             if ($newQuantity <= 0) {
                 $cartProduct->delete();
@@ -48,61 +46,27 @@ class CartService
                 $cartProduct->update(['quantity' => $newQuantity]);
             }
 
-        } else if ((int)$gain > 0) {
-            $cartProduct = new CartProduct([
-                'quantity' => $gain
-            ]);
+        } else if ($change > 0) {
+            $cartProduct = new CartProduct(['quantity' => $change]);
 
             $cartProduct->cart()->associate($cart);
-            $cartProduct->product()->associate(Product::query()
-                ->where('id', '=', $productId)
-                ->first()
-            );
+            $cartProduct->product()->associate(Product::find((int)$productId));
 
             $cartProduct->save();
         }
     }
 
     /**
-     * @param int|string $cartId
-     * @param int|string $productId
-     * @return bool
-     */
-
-    public function cartProductAlreadyExists(
-        int|string $cartId,
-        int|string $productId
-    ): bool
-    {
-        return CartProduct::query()
-            ->where('cart_id', '=', $cartId)
-            ->where('product_id', '=', $productId)
-            ->exists();
-    }
-
-    /**
      * @param Profile $profile
-     * @return bool
+     * @return Cart
      */
-    private function profileOwnsCart(Profile $profile): bool
+    private function createCartByProfile(Profile $profile): Cart
     {
-        return Cart::query()
-            ->where('profile_id', '=', $profile->getId())
-            ->exists();
+        return Cart::query()->create(['profile_id' => $profile->getId()]);
     }
 
     /**
-     * @param Profile $profile
-     * @return void
-     */
-    private function create(Profile $profile): void
-    {
-        Cart::query()->create([
-            'profile_id' => $profile->getId()
-        ]);
-    }
-
-    /**
+     *
      * @param Profile|null $profile
      * @return ProductView[]
      */
@@ -113,31 +77,38 @@ class CartService
             return [];
         }
 
-        $productViews = $this->appendQuantityToProductViews(
-            $profile,
-            array_map(
-                fn(CartProduct $cartProduct) => new ProductView(
-                    (fn($product): Product => $product)(Product::query()
-                        ->with('images')
-                        ->find($cartProduct->getAttribute('product_id'))),
-                    ''
-                ),
-                CartProduct::query()
-                    ->where(
-                        'cart_id',
-                        '=',
-                        $this->acquireCartIdByProfile($profile))
-                    ->get()
-                    ->all()
-            )
+        // Получаем все продукты из корзины пользователя
+        $cartProducts = CartProduct::query()
+            ->where('cart_id', '=', $this->acquireCartIdByProfile($profile))
+            ->orderBy('product_id')
+            ->get()
+            ->all();
+
+        // Функция для преобразования каждого продукта корзины в представление продукта
+        $toProductViewsClosure = fn(CartProduct $cartProduct) => new ProductView(
+        // Получаем информацию о продукте из базы данных
+            (fn($product): Product => $product)(Product::query()
+                ->with('images')
+                ->find($cartProduct->getAttribute('product_id'))),
+            ''
         );
 
-        array_walk($productViews, function(ProductView $view) {
+        // Преобразуем каждый продукт корзины в представление продукта
+        $productViews = $this->appendQuantityToProductViews(
+            $profile,
+            array_map($toProductViewsClosure, $cartProducts)
+        );
+
+        // Функция для установки пути к изображению для каждого представления продукта
+        $setPathClosure = function(ProductView $view) {
             $view->setPath(
+            // Устанавливаем путь к первому изображению продукта
                 $view->getProduct()->getRelation('images')->first()['path']
             );
-        });
+        };
 
+        // Устанавливаем путь к изображению для каждого представления продукта
+        array_walk($productViews, $setPathClosure);
         return $productViews;
     }
 
@@ -199,7 +170,7 @@ class CartService
      * @return int
      */
 
-    public function acquireTotalQuantityByProfile(?Profile $profile): int
+    public function computeTotalQuantityByProfile(?Profile $profile): int
     {
         $cart = $this->acquireCartByProfile($profile);
 
@@ -213,25 +184,31 @@ class CartService
             ->sum('quantity');
     }
 
-    public function acquirePriceByProfile(Profile $profile): float
+    public function computePriceByProfile(Profile $profile): float
     {
         $cart = $this->acquireCartByProfile($profile);
 
         if ($cart === null) {
-            throw new ServiceException();
+            $this->createCartByProfile($profile);
         }
 
-        return array_reduce(array_map(fn($cartProduct) =>
-            (float)Product::query()->find($cartProduct['product_id'])
-                ->getAttribute('price') * (float)$cartProduct['quantity'],
+        $cartProductsByCart = CartProduct::query()
+            ->where('cart_id', '=', $cart->getAttribute('id'))
+            ->get()
+            ->toArray();
 
-            CartProduct::query()
-                ->where('cart_id', '=', $cart->getAttribute('id'))
-                ->get()
-                ->toArray()
-        ), function(float $acc, float $item) {
-                return $acc + $item;
-        }, 0.0);
+        $pricesOfCartProductsByCart = array_map(fn($cartProduct) =>
+            (float)Product::find($cartProduct['product_id'])->getAttribute('price')
+                * (float)$cartProduct['quantity'],
+
+            $cartProductsByCart
+        );
+
+        $reduce = function(float $acc, float $item) {
+            return $acc + $item;
+        };
+
+        return array_reduce($pricesOfCartProductsByCart, $reduce, 0.0);
     }
 
     /**

@@ -24,7 +24,7 @@ class Profile extends Model
 
     public function role(): BelongsTo
     {
-        return $this->belongsTo(Role::class, 'id');
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     public function cart(): HasOne

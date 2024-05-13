@@ -72,7 +72,7 @@
 
         const login = phone !== '' ? phone : email;
 
-        fetch(`/auth/check-login-credential?login=${login}`)
+        fetch(`/api/check-login-credential?login=${login}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);

@@ -21,7 +21,7 @@
                 </div>
                 <button type="submit" class="btn btn-edit-profile">Редактировать профиль</button>
                 <h2 class="credentials-title">Учётные данные</h2>
-                <form action="{{route('identity.password.update')}}" method="POST">
+                <form action="{{route('identity.update')}}" method="POST" class="password-form">
                     @csrf
                     <div class="credentials-info">
                         <div class="credential-item">
@@ -58,10 +58,10 @@
                         </div>
 
                         @if (session()->has('fail') || session()->has('success'))
-                        <div class="credential-item" style="justify-content: center; align-items: center" >
-                            <span class="password-error">{{session()->get('fail')}}</span>
-                            <span class="password-success">{{session()->get('success')}}</span>
-                        </div>
+                            <div class="credential-item" style="justify-content: center; align-items: center" >
+                                <span class="password-error">{{session()->get('fail')}}</span>
+                                <span class="password-success">{{session()->get('success')}}</span>
+                            </div>
                         @endif
 
                         <button type="submit" class="btn btn-new-password">Сохранить</button>
@@ -96,6 +96,10 @@
         .password-success {
             color: green;
             font-size: 1.3em;
+        }
+
+        .password-form {
+            max-width: 100%;
         }
     </style>
 
@@ -255,7 +259,7 @@
 
         .profile-info, .credentials-info {
             width: 100%;
-            max-width: 800px;
+            max-width: 100%;
         }
 
         .info-item, .credential-item {
@@ -277,8 +281,8 @@
             color: white;
             font-size: 1.2em;
             flex: 1;
-            overflow: hidden; /
-        text-overflow: ellipsis;
+            overflow: hidden;
+            text-overflow: ellipsis;
             text-align: left;
         }
 

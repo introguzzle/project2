@@ -42,7 +42,7 @@ class OrderController extends Controller
     public function index(): View|Application|Factory|App
     {
         $profileView = $this->profileService->createProfileViewByProfile(Auth::getProfile());
-        $price = $this->cartService->acquirePriceByProfile(Auth::getProfile());
+        $price = $this->cartService->computePriceByProfile(Auth::getProfile());
 
         return view('checkout', compact('profileView', 'price'));
     }

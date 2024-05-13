@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php $time = now() ?>
-<link rel="stylesheet" href="{{ asset("styles.css") }}">
-<script src="{{asset('script.js')}}"></script>
+<link rel="stylesheet" href="{{ asset("styles.css", true) }}">
+<script src="{{asset('script.js', true)}}"></script>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ asset('styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles.css', true) }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Merriweather|Oswald|Satisfy&display=swap" rel="stylesheet">
 
@@ -103,6 +102,10 @@
 </nav>
 
 <style>
+    .btn:active {
+        color: black;
+    }
+
     @media (max-width: 768px) {
         .mobile-nav {
             background: #3d3833;
@@ -127,10 +130,10 @@
         background-color: rgb(255, 0, 0, 0.7);
         color: white;
         border-radius: 50%;
-        padding: 4px 8px; /* Измените размер отступов, чтобы увеличить размер span */
-        font-size: 16px; /* Увеличьте размер шрифта */
-        transform: scale(1.2); /* Увеличьте размер текста без изменения размера круга */
-        transform-origin: center; /* Установите точку преобразования в центр элемента */
+        padding: 4px 8px;
+        font-size: 16px;
+        transform: scale(1.2);
+        transform-origin: center;
         right: auto;
     }
 
@@ -246,7 +249,7 @@
 
     document.addEventListener("DOMContentLoaded", async function() {
         try {
-            const cartQuantityResponse = await fetch(`/get/cart-quantity`);
+            const cartQuantityResponse = await fetch(`{{route('api.cart.total-quantity')}}`);
             const cartQuantityData = await cartQuantityResponse.json();
             setTotalQuantity(cartQuantityData);
         } catch (error) {

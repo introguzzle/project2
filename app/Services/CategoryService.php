@@ -73,4 +73,14 @@ class CategoryService
 
         return $result;
     }
+
+    /**
+     * @param int|string $categoryId
+     * @return Category|null
+     */
+
+    public function acquireCategory(int|string $categoryId): ?Category
+    {
+        return Category::find($categoryId);
+    }
 }

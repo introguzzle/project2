@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Laravel\Ui\AuthRouteMethods;
 use Throwable;
 
 class IdentityService
@@ -180,10 +179,10 @@ class IdentityService
 
     public function isValidToken(string $token): bool
     {
-        $query  = PasswordResetToken::query()->where('token', '=', $token);
-        $active = $query->get()->first()->isActive();
-
-        return $query->exists() && $active;
+        return PasswordResetToken::query()
+            ->where('token', '=', $token)
+            ->where('active', '=', true)
+            ->exists();
     }
 
     public function updatePasswordWithToken(PasswordResetDTO $dto): bool

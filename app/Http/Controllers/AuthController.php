@@ -14,6 +14,7 @@ use App\Http\Requests\UpdateIdentityRequest;
 use App\Models\PasswordResetToken;
 use App\Services\IdentityService;
 
+use App\Services\TelegramService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -67,7 +68,7 @@ class AuthController extends Controller
     ): Application|Redirector|App|RedirectResponse
     {
         if ($this->identityService->sendPasswordResetLink($request->getLoginInput())) {
-            return redirect('/forgot/success');
+            return redirect('/forgot-password/success');
 
         } else {
             return back()->with('fail', 'Что-то пошло не так. Пожалуйста, попробуйте еще раз');

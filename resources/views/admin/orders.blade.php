@@ -3,15 +3,21 @@
 <head>
     <title>Заказы</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"/>
     <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+
     <style>
         #this-table {
             width: 80vw;
             overflow: auto;
         }
     </style>
+
 </head>
 <body>
 
@@ -109,15 +115,13 @@
             });
         };
 
-        // Обработчик клика по кнопке "Завершить"
         $('#this-table').on('click', '.finalize', function() {
             let id = $(this).data('id');
-            sendPostRequest("{{ route('admin.orders.finalize') }}", {id: id}, function(response) {
+            sendPostRequest("{{ route('admin.orders.complete') }}", {id: id}, function(response) {
                 console.log(response);
             });
         });
 
-        // Обработчик клика по кнопке "Удалить"
         $('#this-table').on('click', '.delete', function() {
             let id = $(this).data('id');
             sendPostRequest("{{ route('admin.orders.delete') }}", {id: id}, function(response) {

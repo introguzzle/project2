@@ -10,7 +10,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Contracts\Foundation\Application as App;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CartController extends Controller
@@ -31,7 +30,7 @@ class CartController extends Controller
      * @return View|Application|Factory|App
      */
 
-    public function index(): View|Application|Factory|App
+    public function showCart(): View|Application|Factory|App
     {
         $profile = Auth::getProfile();
 
@@ -40,7 +39,7 @@ class CartController extends Controller
         }
 
         try {
-            $price = $this->cartService->acquirePriceByProfile($profile);
+            $price = $this->cartService->computePriceByProfile($profile);
         } catch (Throwable) {
             $price = 0.0;
         }
@@ -54,7 +53,7 @@ class CartController extends Controller
      * @return JsonResponse
      */
 
-    public function update(UpdateCartRequest $request): JsonResponse
+    public function updateQuantity(UpdateCartRequest $request): JsonResponse
     {
         $profile = Auth::getProfile();
 
@@ -68,21 +67,19 @@ class CartController extends Controller
             return response()->json(['error' => 'Product ID not provided'], 400);
         }
 
-        $gain = $request->getGain();
+        $quantityChange = $request->getQuantityChange();
 
         try {
             $this->cartService->update(
                 $profile,
                 $productId,
-                $gain
+                $quantityChange
             );
-        } catch (Throwable $t) {
+        } catch (Throwable) {
             return $this->internalServerErrorResponse();
         }
 
-        return response()
-            ->json()
-            ->setData(['message' => 'Success']);
+        return response()->json()->setData(['message' => 'Success']);
     }
 
     /**
@@ -91,22 +88,23 @@ class CartController extends Controller
 
     public function acquireTotalQuantity(): JsonResponse
     {
-        $notPresent = function(): JsonResponse {
-            return response()->json()->setData(0);
-        };
-
-        if (!Auth::check()) {
-            return $notPresent();
-        }
-
         try {
-            $totalQuantity = $this->cartService->acquireTotalQuantityByProfile(Auth::getProfile());
+            $totalQuantity = $this->cartService->computeTotalQuantityByProfile(Auth::getProfile());
         } catch (Throwable) {
-            return $notPresent();
+            return response()->json()->setData(0);
         }
 
-        return response()
-            ->json()
-            ->setData($totalQuantity);
+        return response()->json()->setData($totalQuantity);
+    }
+
+    public function acquireTotalPrice(): JsonResponse
+    {
+        try {
+            $priceByProfile = $this->cartService->computePriceByProfile(Auth::getProfile());
+            return response()->json()->setData($priceByProfile);
+
+        } catch (Throwable) {
+            $this->abortNotFound();
+        }
     }
 }

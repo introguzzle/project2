@@ -89,14 +89,16 @@
 
                     @if ($productView->getProduct()->getAttribute('category_id') === 1)
                         <div class="grid-item">
-                            <a href="{{route("product", ['id' => $id])}}">
-                                <img
-                                     src="{{$productView->getPath()}}"
-                                     alt="{{ $name }}"
-                                >
-                            </a>
-                            <h3>{{ $name }}</h3>
-                            <p>{{ $productView->getProduct()->getAttribute('short_description') }}</p>
+                            <div class="item-header">
+                                <a href="{{route("product", ['id' => $id])}}">
+                                    <img
+                                         src="{{$productView->getPath()}}"
+                                         alt="{{ $name }}"
+                                    >
+                                </a>
+                                <h3>{{ $name }}</h3>
+                                <p>{{ $productView->getProduct()->getAttribute('short_description') }}</p>
+                            </div>
                             <div class="item-info">
                                 <p class="item-price">{{ $productView->getProduct()->getAttribute('price') }}</p>
                                 <div class="btn-container">
@@ -139,7 +141,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            fetch(`/get/cart-quantity`)
+            fetch(`{{route('api.cart.total-quantity')}}`)
                 .then(response => response.json())
                 .then(data => {
                     setTotalQuantity(data);
@@ -152,27 +154,30 @@
             document.getElementById('subtitle-category').classList.remove('fade-in-menu');
             productContainer.classList.remove('fade-in-menu');
 
-            fetch(`/get/category-name/${categoryId}`)
+            fetch(`/api/category/${categoryId}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('subtitle-category').textContent = data;
+                    document.getElementById('subtitle-category').textContent = data['name'];
                     document.getElementById('subtitle-category').classList.add('fade-in-menu');
                 });
 
-            fetch(`/get/products-by-category/${categoryId}`)
+            fetch(`/api/products/${categoryId}`)
                 .then(response => response.json())
                 .then(data => {
                     productContainer.innerHTML = '';
+
                     data.forEach(productView => {
                         const div = document.createElement('div');
                         div.classList.add('grid-item');
 
                         div.innerHTML = `
-                            <a href="/product/${productView['product']['id']}">
-                                <img src="${productView['path']}" alt="${productView['product']['name']}">
-                            </a>
-                            <h3>${productView['product']['name']}</h3>
-                            <p>${productView['product']['short_description']}</p>
+                            <div class="item-header"
+                                <a href="/product/${productView['product']['id']}">
+                                    <img src="${productView['path']}" alt="${productView['product']['name']}">
+                                </a>
+                                <h3>${productView['product']['name']}</h3>
+                                <p>${productView['product']['short_description']}</p>
+                            </div>
                             <div class="item-info">
                                 <p class="item-price">${productView['product']['price']}</p>
                                 <div class="btn-container">
@@ -193,17 +198,17 @@
                 .catch(error => console.error('Error fetching products:', error));
         }
 
-        function updateProductCount(button, productId, gain) {
+        function updateProductCount(button, productId, quantityChange) {
             button.parentNode.querySelector('.item-count')
                 .classList
                 .remove('item-count-animation', 'item-count-color');
 
             const xhr = new XMLHttpRequest();
-            const url = "{{ route('cart.add') }}";
+            const url = "{{ route('cart.update-quantity') }}";
 
             const formData = new FormData();
             formData.append('product_id', productId);
-            formData.append('gain', gain);
+            formData.append('quantity_change', quantityChange);
 
             xhr.open("POST", url, true);
             xhr.setRequestHeader("X-CSRF-TOKEN", "{{ csrf_token() }}");
@@ -211,13 +216,13 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     const countSpan = button.parentNode.querySelector('.item-count');
 
-                    fetch(`/get/product/${productId}`)
+                    fetch(`/api/product/${productId}`)
                         .then(response => response.json())
                         .then(data => {
                             countSpan.classList.add('item-count-animation', 'item-count-color');
                             countSpan.textContent = data['quantity'];
 
-                            fetch(`/get/cart-quantity`)
+                            fetch(`{{route('api.cart.total-quantity')}}`)
                                 .then(response => response.json())
                                 .then(data => {
                                     setTotalQuantity(data);
@@ -331,7 +336,7 @@
     }
 
     .item-count-animation {
-        animation: pulse 0.5s;
+        animation: pulse 0.3s;
     }
 
 
@@ -351,6 +356,11 @@
     .btn-menu {
         border-radius: 5px;
         border: #cbd5e0;
+    }
+
+    .grid-item h3,
+    .grid-item p {
+        word-wrap: break-word;
     }
 
     .btn-inactive:hover.btn-menu:hover {
@@ -388,6 +398,21 @@
     @media (max-width: 768px) {
         .item-info {
             justify-content: center !important;
+        }
+    }
+
+    .grid-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .grid-item {
+        flex: 1 0 auto;
+    }
+
+    @media (min-width: 769px) {
+        .grid-container {
+            align-items: stretch;
         }
     }
 </style>
