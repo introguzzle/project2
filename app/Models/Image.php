@@ -11,7 +11,8 @@ class Image extends Model
     use HasFactory;
 
     protected $fillable = [
-        'path'
+        'path',
+        'main'
     ];
 
     protected $hidden = [

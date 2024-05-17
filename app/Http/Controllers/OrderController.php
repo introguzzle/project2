@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DTO\PostOrderDTO;
 use App\Http\Requests\OrderRequest;
+use App\Http\Resources\OrderResource;
 use App\Services\CartService;
 use App\Services\OrderService;
 use App\Services\ProfileService;
@@ -18,22 +19,18 @@ use Throwable;
 
 class OrderController extends Controller
 {
-    private ProfileService $profileService;
     private OrderService $orderService;
     private CartService $cartService;
 
     /**
-     * @param ProfileService $profileService
      * @param OrderService $orderService
      * @param CartService $cartService
      */
     public function __construct(
-        ProfileService $profileService,
         OrderService $orderService,
         CartService $cartService
     )
     {
-        $this->profileService = $profileService;
         $this->orderService = $orderService;
         $this->cartService = $cartService;
     }
@@ -41,10 +38,10 @@ class OrderController extends Controller
 
     public function index(): View|Application|Factory|App
     {
-        $profileView = $this->profileService->createProfileViewByProfile(Auth::getProfile());
+        $profile = Auth::getProfile();
         $price = $this->cartService->computePriceByProfile(Auth::getProfile());
 
-        return view('checkout', compact('profileView', 'price'));
+        return view('checkout', compact('profile', 'price'));
     }
 
     public function order(
@@ -57,9 +54,9 @@ class OrderController extends Controller
                 PostOrderDTO::fromRequest($request)
             );
 
-        } catch (Throwable) {
+        } catch (Throwable $t) {
             return redirect('checkout')->with(
-                'internal', 'Internal server error'
+                'internal', $t->getMessage()
             );
         }
 

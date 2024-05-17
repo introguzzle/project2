@@ -15,6 +15,7 @@ return new class extends Migration
             $blueprint->id();
             $blueprint
                 ->foreignId('profile_id')
+                ->index()
                 ->constrained('profiles')
                 ->cascadeOnDelete();
             $blueprint->timestamps();

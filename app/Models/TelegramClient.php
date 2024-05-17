@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TelegramClient extends Model
 {
-    use HasFactory, FindById;
+    use HasFactory, ModelTrait;
 
     protected $table = 'telegram_clients';
 
@@ -15,6 +16,37 @@ class TelegramClient extends Model
         'chat_id',
         'first_name',
         'username',
-        'type'
+        'type',
+        'has_access',
+        'profile_id'
     ];
+
+    public function profile(): BelongsTo
+    {
+        return $this->belongsTo(Profile::class, 'profile_id');
+    }
+
+    public function getRelatedProfile(): ?Profile
+    {
+        $collection = $this->profile()->get();
+        return $collection->isEmpty() ? null : $collection->first();
+    }
+
+    public function hasAccess(): bool
+    {
+        return $this->getAttribute('has_access');
+    }
+
+    public static function findByChatId(int|string $chatId): ?static
+    {
+        return static::hint()(static::query()
+            ->where('chat_id', '=', (int)$chatId)
+            ->first()
+        );
+    }
+
+    public function grantAccess(): bool
+    {
+        return $this->update(['has_access' => true]);
+    }
 }

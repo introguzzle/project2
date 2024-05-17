@@ -81,35 +81,35 @@
 
         <div class="menu-wrapper fade-in-menu">
             <div class="grid-container fade-in-menu">
-                @foreach ($productViews as $productView)
+                @foreach ($products as $product)
                     @php
-                        $name = $productView->getProduct()->getAttribute('name');
-                        $id = $productView->getProduct()->getAttribute('id');
+                        $name = $product->name;
+                        $id = $product->id;
                     @endphp
 
-                    @if ($productView->getProduct()->getAttribute('category_id') === 1)
-                        <div class="grid-item">
-                            <div class="item-header">
-                                <a href="{{route("product", ['id' => $id])}}">
-                                    <img
-                                         src="{{$productView->getPath()}}"
-                                         alt="{{ $name }}"
-                                    >
-                                </a>
-                                <h3>{{ $name }}</h3>
-                                <p>{{ $productView->getProduct()->getAttribute('short_description') }}</p>
-                            </div>
-                            <div class="item-info">
-                                <p class="item-price">{{ $productView->getProduct()->getAttribute('price') }}</p>
-                                <div class="btn-container">
-                                    <button onclick="updateProductCount(this, {{$id}} , '-1')" class="btn-count">-</button>
-                                    <span id="item-count-{{ $id }}" class="item-count">
-                                        {{$productView->getQuantity()}}
-                                    </span>
-                                    <button onclick="updateProductCount(this, {{$id}} ,'1')" class="btn-count">+</button>
-                                </div>
+                    @if ($product->category_id === 1)
+                    <div class="grid-item">
+                        <div class="item-header">
+                            <a href="{{route("product", ['id' => $id])}}">
+                                <img
+                                     src="{{$product->getMainImage()->path}}"
+                                     alt="{{ $name }}"
+                                >
+                            </a>
+                            <h3>{{ $name }}</h3>
+                            <p>{{ $product->short_description }}</p>
+                        </div>
+                        <div class="item-info">
+                            <p class="item-price">{{ $product->price }}</p>
+                            <div class="btn-container">
+                                <button onclick="updateProductCount(this, {{$id}} , '-1')" class="btn-count">-</button>
+                                <span id="item-count-{{ $id }}" class="item-count">
+                                    {{$product->getCartQuantity(\App\Utils\Auth::getProfile()?->getRelatedCart())}}
+                                </span>
+                                <button onclick="updateProductCount(this, {{$id}} ,'1')" class="btn-count">+</button>
                             </div>
                         </div>
+                    </div>
                     @endif
                 @endforeach
             </div>
@@ -140,7 +140,7 @@
     </section>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", () => {
             fetch(`{{route('api.cart.total-quantity')}}`)
                 .then(response => response.json())
                 .then(data => {
@@ -166,26 +166,28 @@
                 .then(data => {
                     productContainer.innerHTML = '';
 
-                    data.forEach(productView => {
+                    const products = data['data'];
+
+                    products.forEach(product => {
                         const div = document.createElement('div');
                         div.classList.add('grid-item');
 
                         div.innerHTML = `
                             <div class="item-header"
-                                <a href="/product/${productView['product']['id']}">
-                                    <img src="${productView['path']}" alt="${productView['product']['name']}">
+                                <a href="/product/${product['id']}">
+                                    <img src="${product['path']}" alt="${product['name']}">
                                 </a>
-                                <h3>${productView['product']['name']}</h3>
-                                <p>${productView['product']['short_description']}</p>
+                                <h3>${product['name']}</h3>
+                                <p>${product['short_description']}</p>
                             </div>
                             <div class="item-info">
-                                <p class="item-price">${productView['product']['price']}</p>
+                                <p class="item-price">${product['price']}</p>
                                 <div class="btn-container">
-                                    <button onclick="updateProductCount(this, ${productView['product']['id']} , '-1')" class="btn-count">-</button>
-                                    <span id="item-count-${productView['product']['id']}" class="item-count">
-                                        ${productView['quantity']}
+                                    <button onclick="updateProductCount(this, ${product['id']} , '-1')" class="btn-count">-</button>
+                                    <span id="item-count-${product['id']}" class="item-count">
+                                        ${product['quantity']}
                                     </span>
-                                    <button onclick="updateProductCount(this, ${productView['product']['id']} , '1')" class="btn-count">+</button>
+                                    <button onclick="updateProductCount(this, ${product['id']} , '1')" class="btn-count">+</button>
                                 </div>
                             </div>
                         `;
@@ -199,9 +201,13 @@
         }
 
         function updateProductCount(button, productId, quantityChange) {
-            button.parentNode.querySelector('.item-count')
-                .classList
-                .remove('item-count-animation', 'item-count-color');
+            const countSpan = button.parentNode.querySelector('.item-count');
+
+            countSpan.classList.add('item-count-animation', 'item-count-color');
+            countSpan.textContent = parseInt(countSpan.textContent) + 1;
+
+            const cartCount = document.getElementById('cart-count-1');
+            setTotalQuantity(parseInt(cartCount.textContent) + 1);
 
             const xhr = new XMLHttpRequest();
             const url = "{{ route('cart.update-quantity') }}";
@@ -212,25 +218,37 @@
 
             xhr.open("POST", url, true);
             xhr.setRequestHeader("X-CSRF-TOKEN", "{{ csrf_token() }}");
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    const countSpan = button.parentNode.querySelector('.item-count');
-
                     fetch(`/api/product/${productId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            countSpan.classList.add('item-count-animation', 'item-count-color');
-                            countSpan.textContent = data['quantity'];
-
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(() => {
                             fetch(`{{route('api.cart.total-quantity')}}`)
-                                .then(response => response.json())
-                                .then(data => {
-                                    setTotalQuantity(data);
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                })
+                                .catch(error => {
+                                    window.location.href = "{{route('login')}}";
                                 });
+                        })
+                        .catch(error => {
+                            window.location.href = "{{route('login')}}";
                         });
                 }
             };
             xhr.send(formData);
+            xhr.onerror = () => window.location.href = "{{route('login')}}";
+
+            countSpan.addEventListener('animationend', () => {
+                countSpan.classList.remove('item-count-animation', 'item-count-color');
+            }, {once: true});
         }
 
         function changeCount(spanItemCount, count) {

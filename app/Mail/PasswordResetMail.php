@@ -19,21 +19,21 @@ class PasswordResetMail extends Mailable
 
     public const int DEFAULT_EXPIRE_MINUTES = 10;
 
-    private string $login;
+    private string $email;
     private string $token;
 
     /**
      * Create a new message instance.
      */
     public function __construct(
-        string $login,
+        string $email,
         string $token
     )
     {
-        $this->login = $login;
+        $this->email = $email;
         $this->token = $token;
 
-        $this->to($login);
+        $this->to($email);
         $this->replyTo(Config::get('mail.mailers.smtp.username'));
     }
 

@@ -18,9 +18,6 @@
 
         body {
             font-family: Arial, sans-serif;
-        }
-
-        .order-details {
             border-collapse: collapse;
             width: 100%;
         }
@@ -35,15 +32,6 @@
         .order-details th {
             background-color: #f2f2f2;
         }
-
-        @media screen and (max-width: 600px) {
-            .order-details th,
-            .order-details td {
-                width: auto;
-                display: block;
-                text-align: center;
-            }
-        }
     </style>
 </head>
 <body>
@@ -56,21 +44,27 @@
             <th>ID</th>
             <th>Статус</th>
             <th>Сумма</th>
+            <th>Кол-во</th>
+
             <th>Телефон</th>
             <th>Адрес</th>
+
             <th>Дата создания</th>
             <th>Дата обновления</th>
         </tr>
         </thead>
         <tbody>
         <tr>
-            <td>{{ $orderView->getOrder()->id }}</td>
-            <td>{{ $orderView->getOrder()->status->name }}</td>
-            <td>{{ $orderView->getOrder()->price }}</td>
-            <td>{{ $orderView->getOrder()->phone }}</td>
-            <td>{{ $orderView->getOrder()->address }}</td>
-            <td>{{ $orderView->getOrder()->created_at }}</td>
-            <td>{{ $orderView->getOrder()->updated_at }}</td>
+            <td>{{ $order->id }}</td>
+            <td>{{ $order->status->name}}</td>
+            <td>{{ $order->total_amount }}</td>
+            <td>{{ $order->total_quantity }}</td>
+
+            <td>{{ $order->phone }}</td>
+            <td>{{ $order->address }}</td>
+
+            <td>{{ $order->created_at }}</td>
+            <td>{{ $order->updated_at }}</td>
         </tr>
         </tbody>
     </table>
@@ -87,13 +81,13 @@
         </tr>
         </thead>
         <tbody>
-        @foreach($orderView->getProductViews() as $productView)
+        @foreach($order->products as $product)
             <tr>
-                <td>{{ $productView->getProduct()->getId() }}</td>
-                <td>{{ $productView->getProduct()->getName() }}</td>
-                <td>{{ $productView->getProduct()->category()->first()['name'] }}</td>
-                <td>{{ $productView->getProduct()->getPrice() }}</td>
-                <td>{{ $productView->getQuantity() }}</td>
+                <td>{{ $product->getId() }}</td>
+                <td>{{ $product->getName() }}</td>
+                <td>{{ $product->category()->first()['name'] }}</td>
+                <td>{{ $product->getPrice() }}</td>
+                <td>{{ $product->getOrderQuantity($order) }}</td>
             </tr>
         @endforeach
         </tbody>

@@ -38,14 +38,10 @@ class CartController extends Controller
             return redirect('login');
         }
 
-        try {
-            $price = $this->cartService->computePriceByProfile($profile);
-        } catch (Throwable) {
-            $price = 0.0;
-        }
+        $products = $this->cartService->acquireAllByProfile($profile);
+        $price = $this->cartService->computePriceByProfile($profile);
 
-        $productViews = $this->cartService->createAllProductViewsAndAppendQuantity($profile);
-        return view('cart', compact('productViews', 'price'));
+        return view('cart', compact('products', 'price'));
     }
 
     /**

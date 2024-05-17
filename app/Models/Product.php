@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
-    use HasFactory, FindById;
+    use HasFactory, ModelTrait;
 
     protected $fillable = [
         'name',
@@ -37,11 +38,38 @@ class Product extends Model
             ->using(ProductImage::class);
     }
 
+    public function getMainImage(): ?Image
+    {
+        return $this->hasOneThrough(
+            Image::class,
+            ProductImage::class,
+            'product_id',
+            'id',
+            'id',
+            'image_id'
+        )->where('main', '=', true)->first();
+    }
+
     public function carts(): BelongsToMany
     {
         return $this
             ->belongsToMany(Cart::class, 'cart_product')
+            ->withPivot('quantity')
             ->using(CartProduct::class);
+    }
+
+    public function cartProduct(Cart $cart): HasOne
+    {
+        return $this
+            ->hasOne(CartProduct::class)
+            ->where('cart_id', '=', $cart->getAttribute('id'));
+    }
+
+    public function orderProduct(Order $order): HasOne
+    {
+        return $this
+            ->hasOne(OrderProduct::class)
+            ->where('order_id', '=', $order->getAttribute('id'));
     }
 
     public function getName(): string
@@ -57,5 +85,29 @@ class Product extends Model
     public function getCategoryId(): int
     {
         return $this->getAttribute('category_id');
+    }
+
+    public function getCartQuantity(?Cart $cart): int
+    {
+        if ($cart === null) {
+            return 0;
+        }
+
+        return $this->cartProduct($cart)->get()
+            ?->first()
+            ?->getAttribute('quantity')
+            ?? 0;
+    }
+
+    public function getOrderQuantity(?Order $order): int
+    {
+        if ($order === null) {
+            return 0;
+        }
+
+        return $this->orderProduct($order)->get()
+            ?->first()
+            ?->getAttribute('quantity')
+            ?? 0;
     }
 }

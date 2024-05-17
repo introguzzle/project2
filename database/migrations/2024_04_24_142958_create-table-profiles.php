@@ -19,6 +19,7 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('role_id')
+                ->index()
                 ->default(1)
                 ->constrained('roles')
                 ->cascadeOnDelete();

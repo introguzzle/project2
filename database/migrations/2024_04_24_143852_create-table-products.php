@@ -18,6 +18,7 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('category_id')
+                ->index()
                 ->constrained('categories')
                 ->cascadeOnDelete();
 

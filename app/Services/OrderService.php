@@ -4,38 +4,36 @@ namespace App\Services;
 
 use App\DTO\PostOrderDTO;
 use App\Exceptions\ServiceException;
+use App\Mail\TelegramOrderNotification;
 use App\Models\CartProduct;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
 use App\Models\Profile;
 use App\Models\Status;
-use App\ModelView\OrderView;
-use App\ModelView\ProductView;
-use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Collection;
+
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class OrderService
 {
-    /**
-     * @var CartService
-     */
     private CartService $cartService;
-    private ProductService $productService;
+    private TelegramService $telegramService;
 
     /**
      * @param CartService $cartService
-     * @param ProductService $productService
+     * @param TelegramService $telegramService
      */
     public function __construct(
         CartService $cartService,
-        ProductService $productService
+        TelegramService $telegramService
     )
     {
         $this->cartService = $cartService;
-        $this->productService = $productService;
+        $this->telegramService = $telegramService;
     }
 
     public function setOrderStatus(
@@ -47,50 +45,26 @@ class OrderService
     }
 
     /**
-     * @return Order[]
-     */
-
-    public function acquireAllActiveOrders(): array
-    {
-        return Order::query()
-            ->where('status_id',
-                '=',
-                Status::acquireAwaiting()->getAttribute('id')
-            )
-            ->orderBy('id')
-            ->get()
-            ->all();
-    }
-
-    /**
      * @return Collection
      */
 
-    public function createLatestOrderViewsAndSerialize(): Collection
+    public function acquireLatest(): Collection
     {
-        $data = $this->createOrderViews(
-            Order::query()->latest()->get()->all()
-        );
+        return Order::query()->latest()->get();
+    }
 
-        return collect($data)->map(function(OrderView $item) {
+    public function acquireLatestAndSerialize(): \Illuminate\Support\Collection
+    {
+        $orders = $this->acquireLatest()->all();
+
+        return collect($orders)->map(function(Order $order) {
             return [
-                'order' => $item->getOrder(),
-                'status' => $item->getStatus(),
-                'profile' => $item->getProfile(),
-                'productsViews' => $item->getProductViews(),
+                'order' => $order,
+                'status' => $order->getRelatedStatus(),
+                'profile' => $order->getRelatedProfile()
             ];
         });
     }
-
-    /**
-     * @return OrderView[]
-     */
-
-    public function createAllActiveOrderViews(): array
-    {
-        return $this->createOrderViews($this->acquireAllActiveOrders());
-    }
-
 
     /**
      * @param Profile|null $profile
@@ -111,7 +85,7 @@ class OrderService
         DB::beginTransaction();
 
         try {
-            $order = $this->newOrder($orderDTO, $profile);
+            $order = $this->createOrder($orderDTO, $profile, 'Ожидание');
             $order->save();
 
             $this->fillOrderFromCart($profile, $order);
@@ -123,6 +97,8 @@ class OrderService
         }
 
         DB::commit();
+
+        $this->telegramService->sendToAll($this->createNotification($order));
     }
 
     /**
@@ -147,162 +123,68 @@ class OrderService
         Order $order
     ): void
     {
-        $cartProducts = CartProduct::query()
-            ->where('cart_id', '=',
-                $this->cartService->acquireCartIdByProfile($profile))
-            ->get()
-            ->all();
+        /**
+         * @var Collection<Product> $productCollection
+         */
+        $cart = $profile->getRelatedCart();
+        $productCollection = $cart->products()->get();
 
-        if (empty($cartProducts)) {
+        if ($productCollection->isEmpty()) {
             throw new ServiceException('Cart is actually empty');
         }
 
-        array_walk($cartProducts, function($cartProduct) use ($order) {
-            (new OrderProduct([
-                'product_id' => $cartProduct['product_id'],
-                'quantity' => $cartProduct['quantity']
-            ]))->order()
-                ->associate($order)
-                ->save();
+        $productCollection->each(function(Product $product) use ($order, $cart) {
+            $orderProduct = new OrderProduct([
+                'product_id' => $product->getId(),
+                'quantity' => $product->getCartQuantity($cart)
+            ]);
+
+            $orderProduct->order()->associate($order)->save();
         });
-    }
-
-    /**
-     * @return Order[]
-     */
-
-    public function acquireAll(int $limit = 100): array
-    {
-        return Order::query()
-            ->limit($limit)
-            ->orderBy('id')
-            ->get()
-            ->all();
-    }
-
-    /**
-     * @return object[]
-     */
-
-    public function acquireAllAndJoinStatus(): array
-    {
-        return DB::table('orders')
-            ->select(['orders.*', 'statuses.name'])
-            ->join('statuses', function(JoinClause $join) {
-                  $join->on('orders.status_id', '=', 'statuses.id');
-            })->get()->all();
-    }
-
-    /**
-     * @param Order[] $orders
-     * @return OrderView[]
-     */
-
-    public function createOrderViews(array $orders): array
-    {
-        return array_map(fn(Order $order) => $this->createOrderView($order), $orders);
-    }
-
-    /**
-     * @param int $limit
-     * @return OrderView[]
-     */
-
-    public function createAllOrderViews(int $limit = 100): array
-    {
-        return $this->createOrderViews($this->acquireAll($limit));
-    }
-
-    /**
-     * @param OrderView[] $orderViews
-     * @return OrderView[]
-     */
-
-    public function appendImagesToOrderViews(
-        array $orderViews
-    ): array
-    {
-        array_walk($orderViews, function(OrderView $orderView) {
-            $this->productService->appendImagesToProductViews(
-                $orderView->getProductViews()
-            );
-        });
-
-        return $orderViews;
-    }
-
-    /**
-     * @param int $limit
-     * @return OrderView[]
-     */
-
-    public function createAllOrderViewsAndAppendImages(int $limit = 100): array
-    {
-        return $this->appendImagesToOrderViews($this->createAllOrderViews($limit));
     }
 
     /**
      * @param PostOrderDTO $orderDTO
      * @param Profile $profile
+     * @param string|Status $status
      * @return Order
      */
-    public function newOrder(
+    public function createOrder(
         PostOrderDTO $orderDTO,
-        Profile $profile
+        Profile $profile,
+        string|Status $status,
     ): Order
     {
         $order = new Order([
             'name' => $orderDTO->getName(),
             'phone' => $orderDTO->getPhone(),
             'address' => $orderDTO->getAddress(),
-            'price' => $orderDTO->getPrice()
+            'total_amount' => $this->computeTotalAmount($profile),
+            'total_quantity' => $this->computeTotalQuantity($profile),
+            'description' => ''
         ]);
 
         $order->profile()->associate($profile);
-        $order->status()->associate(Status::acquireAwaiting());
+        $order->status()->associate($status instanceof Status
+            ? $status
+            : Status::acquireByName($status)
+        );
 
         return $order;
     }
 
-    /**
-     * @param Order $order
-     * @return OrderView
-     */
-
-    public function createOrderView(
-        Order $order
-    ): OrderView
+    private function computeTotalQuantity(Profile $profile): int
     {
-        return new OrderView(
-            $order,
-            Status::find($order->getStatusId()),
-            Profile::find($order->getProfileId()),
-            array_map(fn(OrderProduct $orderProduct) => new ProductView(
-                (fn($object): Product => $object)(Product::query()
-                    ->find($orderProduct->getAttribute('product_id'))
-                ),
-                '',
-                $orderProduct->getAttribute('quantity')
-            ),
-
-                OrderProduct::query()
-                    ->where('order_id', '=', $order->getAttribute('id'))
-                    ->orderBy('product_id')
-                    ->get()
-                    ->all()
-            )
-        );
+        return $this->cartService->computeTotalQuantityByProfile($profile);
     }
 
-    /**
-     * @param int $id
-     * @return OrderView
-     */
-
-    public function createOrderViewById(
-        int $id
-    ): OrderView
+    private function computeTotalAmount(Profile $profile): float
     {
-        return $this->createOrderView(Order::find($id));
+        return $this->cartService->computePriceByProfile($profile);
+    }
+
+    private function createNotification(Order $order): TelegramOrderNotification
+    {
+        return new TelegramOrderNotification($order);
     }
 }

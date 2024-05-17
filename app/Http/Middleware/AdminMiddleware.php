@@ -19,11 +19,11 @@ class AdminMiddleware
         $profile = Auth::getProfile();
 
         if ($profile === null) {
-            return redirect('login');
+            return redirect('/login');
         }
 
         if (!$profile->isAdmin()) {
-            return redirect('login');
+            return redirect('/login');
         }
 
         return $next($request);

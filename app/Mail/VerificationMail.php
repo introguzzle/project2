@@ -25,6 +25,7 @@ class VerificationMail extends Mailable
     )
     {
         $this->identity = $identity;
+
         $this->to($identity->getEmailForVerification());
         $this->replyTo(Config::get('mail.mailers.smtp.username'));
     }

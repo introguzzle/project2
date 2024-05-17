@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
-    use HasFactory, FindById;
+    use HasFactory, ModelTrait;
 
     protected $fillable = [
         'name'

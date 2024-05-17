@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('telegram_access_tokens', function(Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->integer('token');
-            $blueprint->foreignId('profile_id')
+            $blueprint->unsignedInteger('token');
+
+            $blueprint
+                ->foreignId('profile_id')
+                ->index()
                 ->constrained('profiles')
                 ->cascadeOnDelete();
 

@@ -11,10 +11,8 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\UpdateIdentityRequest;
-use App\Models\PasswordResetToken;
 use App\Services\IdentityService;
 
-use App\Services\TelegramService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -191,7 +189,7 @@ class AuthController extends Controller
         try {
             $this->identityService->register(RegistrationDTO::fromRequest($request));
         } catch (Throwable) {
-            return redirect('registration')->with($this->internal);
+            return back()->with($this->internal);
         }
 
         return redirect('login')

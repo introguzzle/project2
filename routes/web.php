@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
@@ -22,6 +22,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
+
+Route::get('/email/need-verify', function() {
+    return '123';
+})->name('verification.notice');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
 Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('forgot-password.post');
@@ -57,12 +61,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['admin'])->prefix('/admin')->group(function() {
-    Route::get('/orders', [AdminOrderController::class, 'showOrders'])->name('admin.orders');
-    Route::get('/profile/{id}', [AdminOrderController::class, 'showProfile'])->name('admin.associated.profile');
-    Route::get('/order/{id}', [AdminOrderController::class, 'showOrder'])->name('admin.associated.order');
+    Route::get('/', [AdminController::class, 'showAdmin'])->name('admin.admin');
+    Route::get('/get-token', [AdminController::class, 'getToken'])->name('admin.token');
 
-    Route::post('/orders/complete', [AdminOrderController::class, 'complete'])->name('admin.orders.complete');
-    Route::post('/orders/delete', [AdminOrderController::class, 'delete'])->name('admin.orders.delete');
+    Route::get('/orders', [AdminController::class, 'showOrders'])->name('admin.orders');
+    Route::get('/orders/modal/{id}', [AdminController::class, 'showModal'])->name('admin.orders.modal');
+    Route::get('/profile/{id}', [AdminController::class, 'showProfile'])->name('admin.associated.profile');
+    Route::get('/order/{id}', [AdminController::class, 'showOrder'])->name('admin.associated.order');
+
+    Route::post('/orders/complete', [AdminController::class, 'complete'])->name('admin.orders.complete');
+    Route::post('/orders/delete', [AdminController::class, 'delete'])->name('admin.orders.delete');
 });
 
 // TODO move to api
@@ -70,9 +78,9 @@ Route::middleware(['admin'])->prefix('/admin')->group(function() {
 Route::get('/api/cart-quantity', [CartController::class, 'acquireTotalQuantity'])->name('api.cart.total-quantity');
 Route::get('/api/cart-total-price', [CartController::class, 'acquireTotalPrice'])->name('api.cart.total-price');
 
-Route::get('/api/products/{category_id}', [ProductController::class, 'acquireProductViewsByCategory'])->name('api.products');
-Route::get('/api/category/{category_id}', [ProductController::class, 'acquireCategory'])->name('api.category');
-Route::get('/api/product/{product_id}', [ProductController::class, 'acquireProductView'])->name('api.product');
+Route::get('/api/products/{category_id}', [ProductController::class, 'acquireProductCollection'])->name('api.products');
+Route::get('/api/category/{category_id}', [ProductController::class, 'acquireCategoryResource'])->name('api.category');
+Route::get('/api/product/{product_id}', [ProductController::class, 'acquireProductResource'])->name('api.product');
 
 Route::get('/api/check-login-credential', [AuthController::class, 'checkLoginPresence'])->name('api.login.check');
 

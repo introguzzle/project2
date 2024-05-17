@@ -22,9 +22,25 @@ return new class extends Migration
 
         foreach (array_keys($this->initProducts()) as $productId) {
             DB::table('product_image')->insert([
-                ['product_id' => $productId, 'image_id' => $imageId] + $this->timestamps()
+                ['product_id' => $productId, 'image_id' => $imageId, 'main' => true] + $this->timestamps()
             ]);
         }
+
+        $profileId = DB::table('profiles')->insertGetId([
+            'name' => 'admin',
+            'role_id' => 2,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        DB::table('identities')->insert([
+            [
+                'profile_id' => $profileId,
+                'password' => '$2y$12$YLvmYgn60AYj8kpwAiBxyuBbJpKvO4XBM0v0.iAmV0jn2rLKeDgty',
+                'email' => 'deimosfromsolarsystem@gmail.com',
+                'email_verified_at' => now()
+            ] + $this->timestamps()
+        ]);
     }
 
     private function timestamps(): array
@@ -78,7 +94,11 @@ return new class extends Migration
 
     public function initImages(): int
     {
-        return DB::table('images')->insertGetId(['path' => 'https://media.dodostatic.net/image/r:584x584/11EE7D61706D472F9A5D71EB94149304.avif', 'created_at' => now(), 'updated_at' => now()]);
+        return DB::table('images')->insertGetId([
+            'path' => 'https://media.dodostatic.net/image/r:584x584/11EE7D61706D472F9A5D71EB94149304.avif',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 
     /**

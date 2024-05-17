@@ -16,11 +16,13 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('cart_id')
+                ->index()
                 ->constrained('carts')
                 ->cascadeOnDelete();
 
             $blueprint
                 ->foreignId('product_id')
+                ->index()
                 ->constrained('products')
                 ->cascadeOnDelete();
 

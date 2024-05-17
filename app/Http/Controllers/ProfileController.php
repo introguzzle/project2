@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DTO\UpdateProfileDTO;
 use App\Http\Requests\UpdateProfileRequest;
+use App\ModelView\ProfileView;
 use App\Services\ProfileService;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
@@ -33,11 +34,9 @@ class ProfileController extends Controller
 
     public function index(): View|Application|Factory|App|RedirectResponse
     {
-        $profileView = $this->profileService->createProfileViewByIdentity(
-            Auth::getIdentity()
-        );
+        $profile = Auth::getProfile();
 
-        return view('profile', compact('profileView'));
+        return view('profile', compact('profile'));
     }
 
     public function update(UpdateProfileRequest $request): JsonResponse

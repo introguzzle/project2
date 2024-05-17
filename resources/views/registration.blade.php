@@ -19,20 +19,19 @@
                         <label for="phone" class="form-label"><i class="fas fa-phone"></i></label>
                         <input type="text" id="phone" name="phone" class="form-input" placeholder="Введите телефон">
                     </div>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="choose-input" onclick="toggleInput()">
+                        <label for="choose-input" class="checkbox-custom">Использовать телефон</label>
+                    </div>
                     <span id="login-error" style="color: red; display: block; font-size: 1.2em">
                         @foreach ($errors->all() as $error)
                             <li class="register-error">{{ $error }}</li>
                         @endforeach
 
-                        @if (isset($internal))
-                            <li class="register-error">{{ $internal }}</li>
+                        @if (isset($error))
+                            <li class="register-error">{{ $error }}</li>
                         @endif
                     </span>
-
-                    <div class="form-group checkbox-group">
-                        <input type="checkbox" id="choose-input" onclick="toggleInput()">
-                        <label for="choose-input" class="checkbox-custom">Использовать телефон</label>
-                    </div>
 
                     <div class="form-group form-group-2">
                         <label for="password" class="form-label"><i class="fas fa-lock"></i></label>

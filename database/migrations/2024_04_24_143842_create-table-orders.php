@@ -16,18 +16,23 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('profile_id')
+                ->index()
                 ->constrained('profiles')
                 ->cascadeOnDelete();
 
             $blueprint
                 ->foreignId('status_id')
+                ->index()
                 ->constrained('statuses')
                 ->cascadeOnDelete();
 
             $blueprint->string('name');
             $blueprint->string('phone');
             $blueprint->string('address');
-            $blueprint->decimal('price');
+            $blueprint->text('description')->nullable();
+
+            $blueprint->integer('total_quantity');
+            $blueprint->decimal('total_amount');
             $blueprint->timestamps();
         });
     }

@@ -15,6 +15,7 @@ return new class extends Migration
             $blueprint->id();
             $blueprint
                 ->foreignId('identity_id')
+                ->index()
                 ->constrained('identities')
                 ->cascadeOnDelete();
 

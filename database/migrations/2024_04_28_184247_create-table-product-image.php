@@ -16,14 +16,17 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('product_id')
+                ->index()
                 ->constrained('products')
                 ->cascadeOnDelete();
 
             $blueprint
                 ->foreignId('image_id')
+                ->index()
                 ->constrained('images')
                 ->cascadeOnDelete();
 
+            $blueprint->boolean('main');
             $blueprint->timestamps();
         });
     }

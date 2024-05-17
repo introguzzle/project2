@@ -16,11 +16,13 @@ return new class extends Migration
 
             $blueprint
                 ->foreignId('order_id')
+                ->index()
                 ->constrained('orders')
                 ->cascadeOnDelete();
 
             $blueprint
                 ->foreignId('product_id')
+                ->index()
                 ->constrained('products')
                 ->cascadeOnDelete();
 

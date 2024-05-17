@@ -11,21 +11,21 @@
                         <label for="name" class="form-label"><i class="fas fa-user"></i></label>
                         <input type="text" id="name" name="name" class="form-input"
                                placeholder="Введите имя" required
-                               value="{{$profileView->getProfile()->getName()}}">
+                               value="{{ $profile->name  }}">
                     </div>
 
                     <div class="form-group">
                         <label for="phone" class="form-label"><i class="fas fa-phone"></i></label>
                         <input type="text" id="phone" name="phone" class="form-input"
                                placeholder="Ваш номер телефона" required
-                               value="{{$profileView->getIdentity()->getAttribute('login')}}">
+                               value="{{ $profile->phone }}">
                     </div>
 
                     <div class="form-group">
                         <label for="address" class="form-label"><i class="fas fa-map-marker-alt"></i></label>
                         <input type="text" id="address" name="address" class="form-input"
                                placeholder="Ваш адрес" required
-                               value="{{$profileView->getProfile()->getAttribute('address')}}">
+                               value="{{ $profile->address  }}">
                     </div>
                     <input type="hidden" name="price" value="{{$price}}">
                     <div class="form-group">

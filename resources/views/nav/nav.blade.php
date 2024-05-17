@@ -26,7 +26,7 @@
                 <a href="{{route('home')}}">
                     <img src="https://i.postimg.cc/mrk7PKtQ/crop-image-online-com-1713747213-64714b6318d9e66dd501-Y1vm-I11-J.png" alt="logo" >
                 </a>
-                <div class="dostavka-edi-desktop">
+                <div class="delivery-text-desktop">
                     <a href="#">
                         Доставка еды
                     </a>
@@ -89,15 +89,17 @@
         </div>
     </div>
 
-    <a href="{{route('cart')}}">
+    <div class="mobile-buttons">
         <div class="mobile-cart">
-            <i class="btn fas fa-shopping-cart"></i>
-            <span id="cart-count-2" class="cart-count-hamburger">0</span>
+            <a href="{{route('cart')}}" style="color: black">
+                <i class="btn fas fa-shopping-cart"></i>
+                <span id="cart-count-2" class="cart-count-hamburger">0</span>
+            </a>
         </div>
-    </a>
 
-    <div class="hamburger">
-        <i class="btn fas fa-bars"></i>
+        <div class="hamburger">
+            <i class="btn fas fa-bars"></i>
+        </div>
     </div>
 </nav>
 
@@ -122,6 +124,10 @@
         line-height: 1.5;
         position: absolute;
         right: -20px;
+    }
+
+    .mobile-buttons {
+        display: flex;
     }
 
     .cart-count-hamburger {

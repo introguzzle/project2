@@ -6,7 +6,6 @@ use App\Models\Cart;
 use App\Models\CartProduct;
 use App\Models\Product;
 use App\Models\Profile;
-use App\ModelView\ProductView;
 
 class CartService
 {
@@ -22,14 +21,15 @@ class CartService
         int|string $quantityChange
     ): void
     {
-        $query = Cart::query()
-            ->where('profile_id', '=', $profile->getAttribute('id'));
-
-        $cart = $query->exists()
-            ? $query->first()
-            : $this->createCartByProfile($profile);
-
         $change = (int)$quantityChange;
+
+        if ($change === 0) {
+            return;
+        }
+
+        $cart = Cart::query()->firstOrCreate(
+            ['profile_id' => $profile->getAttribute('id')]
+        );
 
         $cartId = $cart->getAttribute('id');
         $where  = CartProduct::query()
@@ -60,109 +60,25 @@ class CartService
      * @param Profile $profile
      * @return Cart
      */
-    private function createCartByProfile(Profile $profile): Cart
+    private function createCart(Profile $profile): Cart
     {
-        return Cart::query()->create(['profile_id' => $profile->getId()]);
+        $t = fn($o): Cart => $o;
+        return $t(Cart::query()->create(['profile_id' => $profile->getId()]));
     }
 
     /**
      *
      * @param Profile|null $profile
-     * @return ProductView[]
+     * @return Product[]
      */
 
-    public function createAllProductViewsByProfile(?Profile $profile): array
+    public function acquireAllByProfile(?Profile $profile): array
     {
         if ($profile === null) {
             return [];
         }
 
-        // Получаем все продукты из корзины пользователя
-        $cartProducts = CartProduct::query()
-            ->where('cart_id', '=', $this->acquireCartIdByProfile($profile))
-            ->orderBy('product_id')
-            ->get()
-            ->all();
-
-        // Функция для преобразования каждого продукта корзины в представление продукта
-        $toProductViewsClosure = fn(CartProduct $cartProduct) => new ProductView(
-        // Получаем информацию о продукте из базы данных
-            (fn($product): Product => $product)(Product::query()
-                ->with('images')
-                ->find($cartProduct->getAttribute('product_id'))),
-            ''
-        );
-
-        // Преобразуем каждый продукт корзины в представление продукта
-        $productViews = $this->appendQuantityToProductViews(
-            $profile,
-            array_map($toProductViewsClosure, $cartProducts)
-        );
-
-        // Функция для установки пути к изображению для каждого представления продукта
-        $setPathClosure = function(ProductView $view) {
-            $view->setPath(
-            // Устанавливаем путь к первому изображению продукта
-                $view->getProduct()->getRelation('images')->first()['path']
-            );
-        };
-
-        // Устанавливаем путь к изображению для каждого представления продукта
-        array_walk($productViews, $setPathClosure);
-        return $productViews;
-    }
-
-    /**
-     * @param ProductView[] $productViews
-     * @return ProductView[]
-     */
-
-    public function appendQuantityToProductViews(
-        ?Profile $profile,
-        array $productViews
-    ): array
-    {
-        if ($profile === null) {
-            return $productViews;
-        }
-
-        $cartId = $this->acquireCartByProfile($profile)
-            ?->getAttribute('id');
-
-        if (!$cartId) {
-            return $productViews;
-        }
-
-        array_walk($productViews, function(ProductView $view) use ($cartId) {
-            $view->setQuantity(CartProduct::query()
-                ->where('cart_id', '=', $cartId)
-                ->where(
-                    'product_id',
-                    '=',
-                    $view->getProduct()->getAttribute('id'))
-                ->first()
-                ?->getAttribute('quantity') ?? 0);
-        });
-
-        return $productViews;
-    }
-
-    /**
-     * @param Profile|null $profile
-     * @param ProductView $productView
-     * @return ProductView
-     */
-    public function appendQuantityToProductView(
-        ?Profile $profile,
-        ProductView $productView
-    ): ProductView
-    {
-        if ($profile === null) {
-            return $productView;
-        }
-
-        $views[] = $productView;
-        return $this->appendQuantityToProductViews($profile, $views)[0];
+        return $profile->getRelatedCart()?->products()->get()->all() ?? [];
     }
 
     /**
@@ -172,84 +88,38 @@ class CartService
 
     public function computeTotalQuantityByProfile(?Profile $profile): int
     {
-        $cart = $this->acquireCartByProfile($profile);
+        $cart = $profile->getRelatedCart();
 
         if ($cart === null) {
             return 0;
         }
 
         return CartProduct::query()
-            ->where('cart_id', '=',
-                $cart->getAttribute('id'))
+            ->where('cart_id', '=', $cart->getAttribute('id'))
             ->sum('quantity');
     }
 
     public function computePriceByProfile(Profile $profile): float
     {
-        $cart = $this->acquireCartByProfile($profile);
+        $cart = $profile->getRelatedCart();
 
         if ($cart === null) {
-            $this->createCartByProfile($profile);
+            $this->createCart($profile);
+            return 0.0;
         }
 
-        $cartProductsByCart = CartProduct::query()
-            ->where('cart_id', '=', $cart->getAttribute('id'))
-            ->get()
-            ->toArray();
-
-        $pricesOfCartProductsByCart = array_map(fn($cartProduct) =>
-            (float)Product::find($cartProduct['product_id'])->getAttribute('price')
-                * (float)$cartProduct['quantity'],
-
-            $cartProductsByCart
-        );
-
-        $reduce = function(float $acc, float $item) {
-            return $acc + $item;
-        };
-
-        return array_reduce($pricesOfCartProductsByCart, $reduce, 0.0);
-    }
-
-    /**
-     * @param Profile $profile
-     * @return Cart|null
-     */
-    public function acquireCartByProfile(Profile $profile): ?Cart
-    {
-        return (fn($o): ?Cart => $o)($profile->cart()->first());
-    }
-
-    /**
-     * @param Profile $profile
-     * @return mixed|null
-     */
-    public function acquireCartIdByProfile(Profile $profile): mixed
-    {
-        return $this->acquireCartByProfile($profile)?->getAttribute('id');
+        return (float)$cart->products()->get()->sum(function(Product $product) use ($cart) {
+            $quantity = $product->getCartQuantity($cart);
+            return $quantity * $product->getPrice();
+        });
     }
 
     public function clearCartByProfile(Profile $profile): void
     {
-        $cartId = $this->acquireCartIdByProfile($profile);
+        $cartId = $profile->getRelatedCart()->getAttribute('id');
 
         CartProduct::query()
             ->where('cart_id', '=', $cartId)
             ->delete();
-    }
-
-    /**
-     * @param Profile $profile
-     * @return ProductView[]
-     */
-
-    public function createAllProductViewsAndAppendQuantity(
-        Profile $profile
-    ): array
-    {
-        return $this->appendQuantityToProductViews(
-            $profile,
-            $this->createAllProductViewsByProfile($profile)
-        );
     }
 }

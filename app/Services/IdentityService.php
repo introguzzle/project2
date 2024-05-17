@@ -7,6 +7,7 @@ use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
 use App\DTO\UpdateIdentityDTO;
 use App\Exceptions\ServiceException;
+use App\Jobs\SendVerificationMailJob;
 use App\Mail\PasswordResetMail;
 use App\Mail\VerificationMail;
 use App\Models\Identity;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -23,12 +25,20 @@ class IdentityService
 {
     public function authenticate(LoginDTO $dto): bool
     {
-        $login = $dto->getEmail() ?: $dto->getPhone();
+        $remember = $dto->getRemember() ?? false;
+        $password = $dto->getPassword();
 
-        return Auth::attempt(
-            ['login' => $login, 'password' => $dto->getPassword()],
-            $dto->getRemember() ?? false
-        );
+        if (($email = $dto->getEmail()) !== null) {
+            return Auth::attempt(
+                ['email' => $email, 'password' => $password],
+                $remember
+            );
+        } else {
+            return Auth::attempt(
+                ['phone' => $dto->getPhone(), 'password' => $password],
+                $remember
+            );
+        }
     }
 
     /**
@@ -40,10 +50,10 @@ class IdentityService
         DB::beginTransaction();
 
         try {
-            $profile = $this->newProfile($dto);
+            $profile = $this->createProfile($dto);
             $profile->save();
 
-            $identity = $this->newIdentity($dto);
+            $identity = $this->createIdentity($dto);
             $identity->profile()->associate($profile);
             $identity->save();
         } catch (Throwable $t) {
@@ -58,7 +68,11 @@ class IdentityService
 
         DB::commit();
 
-        $this->sendEmailVerification($identity);
+        if ($identity->getEmail()) {
+            $this->sendEmailVerification($identity);
+        } else {
+            $identity->markEmailAsVerified();
+        }
     }
 
     /**
@@ -66,7 +80,7 @@ class IdentityService
      * @return Profile
      */
 
-    private function newProfile(RegistrationDTO $dto): Profile
+    private function createProfile(RegistrationDTO $dto): Profile
     {
         return new Profile([
             'name' => $dto->getName()
@@ -78,14 +92,15 @@ class IdentityService
      * @return Identity
      */
 
-    private function newIdentity(RegistrationDTO $dto): Identity
+    private function createIdentity(RegistrationDTO $dto): Identity
     {
-        $login = $dto->getEmail() ?: $dto->getPhone();
+        $password = Hash::make($dto->getPassword());
 
-        return new Identity([
-                'login'    => $login,
-                'password' => Hash::make($dto->getPassword())
-        ]);
+        if (($email = $dto->getEmail()) !== null) {
+            return new Identity(['email' => $email, 'password' => $password]);
+        } else {
+            return new Identity(['phone' => $dto->getPhone(), 'password' => $password]);
+        }
     }
 
     /**
@@ -95,9 +110,7 @@ class IdentityService
 
     public function checkLoginPresence(string $login): bool
     {
-        return Identity::query()
-            ->where('login', '=', $login)
-            ->exists();
+        return Identity::findByAnyCredential($login) !== null;
     }
 
     /**
@@ -107,7 +120,8 @@ class IdentityService
 
     private function sendEmailVerification(Identity $identity): void
     {
-        Mail::send(new VerificationMail($identity));
+        $verificationMail = new VerificationMail($identity);
+        Queue::push(new SendVerificationMailJob($verificationMail));
     }
 
     /**
@@ -118,10 +132,7 @@ class IdentityService
 
     public function verifyEmail(string $id, string $hash): bool
     {
-        /**
-         * @var Identity $identity
-         */
-        $identity = Identity::query()->find($id);
+        $identity = Identity::find((int)$id);
 
         if ($identity === null) {
             return false;
@@ -153,10 +164,10 @@ class IdentityService
         return true;
     }
 
-    public function sendPasswordResetLink(string $login): bool
+    public function sendPasswordResetLink(string $email): bool
     {
         $query = Identity::query()
-            ->where('login', '=', $login);
+            ->where('email', '=', $email);
 
         if (!$query->exists()) {
             return false;
@@ -172,7 +183,8 @@ class IdentityService
             'updated_at' => now()
         ]);
 
-        Mail::send(new PasswordResetMail($login, $token));
+        $passwordResetMail = new PasswordResetMail($email, $token);
+        Mail::send($passwordResetMail);
 
         return true;
     }

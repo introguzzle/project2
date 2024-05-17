@@ -8,15 +8,15 @@
                 <div class="profile-info">
                     <div class="info-item">
                         <label for="name" class="info-label">Имя:</label>
-                        <span class="info-value">{{$profileView->getProfile()->getAttribute('name')}}</span>
+                        <span class="info-value">{{ $profile->name }}</span>
                     </div>
                     <div class="info-item">
                         <label for="birthday" class="info-label">Дата:</label>
-                        <span class="info-value">{{$profileView->getProfile()->getSerializedBirthday()}}</span>
+                        <span class="info-value">{{ $profile->getSerializedBirthday() }}</span>
                     </div>
                     <div class="info-item">
                         <label for="address" class="info-label">Адрес:</label>
-                        <span class="info-value">{{$profileView->getProfile()->getAttribute('address')}}</span>
+                        <span class="info-value">{{ $profile->address }}</span>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-edit-profile">Редактировать профиль</button>
@@ -26,11 +26,11 @@
                     <div class="credentials-info">
                         <div class="credential-item">
                             <label for="phone" class="credential-label">Телефон:</label>
-                            <span class="credential-value">+7 (999) 999-99-99</span>
+                            <span class="credential-value">{{ $profile->identity->phone }}</span>
                         </div>
                         <div class="credential-item">
                             <label for="email" class="credential-label">Почта:</label>
-                            <span class="credential-value">{{$profileView->getIdentity()->getAuthIdentifier()}}</span>
+                            <span class="credential-value">{{ $profile->identity->email }}</span>
                         </div>
                         <div class="credential-item">
                             <label for="current-password" class="credential-label">Текущий пароль:</label>

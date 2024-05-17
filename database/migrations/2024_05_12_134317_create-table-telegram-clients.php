@@ -13,14 +13,19 @@ return new class extends Migration
     {
         Schema::create('telegram_clients', function(Blueprint $blueprint) {
             $blueprint->id();
+
             $blueprint->bigInteger('chat_id');
             $blueprint->string('first_name')->nullable();
             $blueprint->string('username')->nullable();
             $blueprint->string('type')->nullable();
-            $blueprint->boolean('granted_access');
-//            $blueprint->foreignId('profile_id')
-//                ->constrained('profiles')
-//                ->cascadeOnDelete();
+            $blueprint->boolean('has_access');
+
+            $blueprint
+                ->foreignId('profile_id')
+                ->index()
+                ->nullable()
+                ->constrained('profiles')
+                ->cascadeOnDelete();
 
             $blueprint->timestamps();
         });

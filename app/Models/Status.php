@@ -7,9 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Status extends Model
 {
-    use HasFactory, FindById;
-    public const string AWAITING = 'Ожидание';
-    public const string DONE = 'Выполнено';
+    use HasFactory, ModelTrait;
+    public const string NEW = 'Новый';
+    public const string PENDING = 'Ожидание';
+    public const string CONFIRMED = 'Подтвержден';
+    public const string PROCESSING = 'В обработке';
+    public const string SHIPPED = 'Отправлен';
+    public const string DELIVERED = 'Доставлен';
+    public const string CANCELLED = 'Отменен';
+    public const string RETURNED = 'Возвращен';
+    public const string REFUNDED = 'Возврат средств';
+    public const string COMPLETED = 'Завершен';
+    public const string FAILED_DELIVERY = 'Доставка отменена';
 
     protected $fillable = [
         'name'
@@ -28,13 +37,8 @@ class Status extends Model
         return $this->getAttribute('name');
     }
 
-    public static function acquireAwaiting(): static
+    public static function acquireNew(): static
     {
-        return static::acquireByName(self::AWAITING);
-    }
-
-    public static function acquireDone(): static
-    {
-        return static::acquireByName(self::DONE);
+        return static::acquireByName(self::NEW);
     }
 }

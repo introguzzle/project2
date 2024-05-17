@@ -6,17 +6,20 @@ use DateTimeInterface as DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    use HasFactory, FindById;
+    use HasFactory, ModelTrait;
 
     protected $fillable = [
         'phone',
         'name',
         'address',
-        'price',
+        'description',
+        'total_quantity',
+        'total_amount',
         'profile_id',
         'status_id'
     ];
@@ -31,9 +34,22 @@ class Order extends Model
         return $this->belongsTo(Status::class, 'status_id');
     }
 
-    public function products(): HasMany
+    public function getRelatedProfile(): Profile
     {
-        return $this->hasMany(OrderProduct::class);
+        return $this->profile()->get()->all()[0];
+    }
+
+    public function getRelatedStatus(): Status
+    {
+        return $this->status()->get()->all()[0];
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this
+            ->belongsToMany(Product::class, 'order_product')
+            ->withPivot('quantity')
+            ->using(OrderProduct::class);
     }
 
     public function getPhone(): string
@@ -51,9 +67,14 @@ class Order extends Model
         return $this->getAttribute('address');
     }
 
-    public function getPrice(): float
+    public function getTotalAmount(): float
     {
-        return $this->getAttribute('price');
+        return $this->getAttribute('total_amount');
+    }
+
+    public function getTotalQuantity(): int
+    {
+        return $this->getAttribute('total_quantity');
     }
 
     public function getStatusId(): int

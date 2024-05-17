@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PasswordResetToken extends Model
 {
-    use HasFactory, FindById;
+    use HasFactory, ModelTrait;
 
     protected $table = 'password_reset_tokens';
 

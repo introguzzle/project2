@@ -7,18 +7,16 @@
                 <h2 class="cart-title">Корзина</h2>
                 <div class="cart-container">
                     <div class="cart-items">
-                        @foreach($productViews as $productView)
-                            @php
-                                $id = $productView->getProduct()->getAttribute('id');
-                            @endphp
-                            <div class="cart-item cart-item-{{$id}}">
+                        @foreach( $products as $product )
+                            @php( $id = $product->id )
+                            <div class="cart-item cart-item-{{ $id }}">
                                 <div class="item-details-container">
                                     <div class="item-details">
-                                        <h3 class="item-name">{{$productView->getProduct()->getAttribute('name')}}</h3>
-                                        <p class="cart-item-price">Цена: {{$productView->getProduct()->getAttribute('price')}}</p>
+                                        <h3 class="item-name">{{ $product->name }}</h3>
+                                        <p class="cart-item-price">Цена: {{ $product->price }}</p>
                                         <div class="item-quantity item-quantity-{{$id}}">
                                             <button class="quantity-btn decrease" onclick="changeQuantity(this, {{$id}}, '-1')">-</button>
-                                            <span class="quantity quantity-{{$id}}">{{$productView->getQuantity()}}</span>
+                                            <span class="quantity quantity-{{$id}}">{{$product->getCartQuantity(\App\Utils\Auth::getProfile()->getRelatedCart())}}</span>
                                             <button class="quantity-btn increase" onclick="changeQuantity(this, {{$id}}, '1')">+</button>
                                         </div>
                                     </div>
@@ -26,7 +24,7 @@
                             </div>
                         @endforeach
                     </div>
-                    @if (!empty($productViews))
+                    @if (!empty($products))
                         <div class="cart-total">
                             <p id="total-price">Итого: {{$price}}</p>
                             <form action="{{route('checkout')}}">

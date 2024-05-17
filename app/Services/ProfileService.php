@@ -6,20 +6,9 @@ use App\DTO\UpdateProfileDTO;
 use App\Exceptions\ServiceException;
 use App\Models\Identity;
 use App\Models\Profile;
-use App\ModelView\ProfileView;
 
 class ProfileService
 {
-    /**
-     * @param Identity $identity
-     * @return Profile|null
-     */
-
-    public function acquireProfileByIdentity(Identity $identity): ?Profile
-    {
-        return $this->acquireByLogin($identity->getAuthIdentifier());
-    }
-
     /**
      * @param string $login
      * @return Profile|null
@@ -29,34 +18,13 @@ class ProfileService
     {
         return (fn($object): ?Profile => $object)(Profile::query()->find(
             Identity::query()
-                ->where('login', '=', $login)
+                ->where('phone', '=', $login)
+                ->orWhere('email', '=', $login)
                 ->first()
                 ->getAttribute('profile_id')
         ));
     }
 
-    /**
-     * @param Identity $identity
-     * @return ProfileView|null
-     */
-
-    public function createProfileViewByIdentity(Identity $identity): ?ProfileView
-    {
-        return new ProfileView(
-            $this->acquireProfileByIdentity($identity),
-            $identity
-        );
-    }
-
-    public function createProfileViewByProfile(Profile $profile): ?ProfileView
-    {
-        return new ProfileView(
-            $profile,
-            (fn($o): ?Identity => $o)(Identity::query()
-                ->where('profile_id', '=', $profile->getId())
-                ->first())
-        );
-    }
 
     public function update(
         ?Profile $profile,
@@ -69,20 +37,10 @@ class ProfileService
 
         $profile->update([
             'address' => $updateProfileDTO->getAddress(),
-            'birthday' => $updateProfileDTO->getBirthDay(),
+            'birthday' => $updateProfileDTO->getBirthday(),
             'name' => $updateProfileDTO->getName()
         ]);
 
         $profile->save();
-    }
-
-    public function createProfileViewById(
-        int $profileId
-    ): ?ProfileView
-    {
-        return new ProfileView(
-            Profile::find($profileId),
-            Identity::query()->where('profile_id', '=', $profileId)->first()
-        );
     }
 }

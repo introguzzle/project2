@@ -14,12 +14,16 @@ return new class extends Migration
         Schema::create('identities', function(Blueprint $blueprint) {
             $blueprint->id();
 
-            $blueprint->foreignId('profile_id')
+            $blueprint
+                ->foreignId('profile_id')
+                ->index()
                 ->constrained('profiles')
                 ->cascadeOnDelete();
 
-            $blueprint->string('login')->unique();
+            $blueprint->string('phone')->unique()->nullable();
+            $blueprint->string('email')->unique()->nullable();
             $blueprint->string('password');
+
             $blueprint->rememberToken();
             $blueprint->timestamp('email_verified_at')->nullable();
 

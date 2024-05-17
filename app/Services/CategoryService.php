@@ -79,7 +79,7 @@ class CategoryService
      * @return Category|null
      */
 
-    public function acquireCategory(int|string $categoryId): ?Category
+    public function acquireById(int|string $categoryId): ?Category
     {
         return Category::find($categoryId);
     }

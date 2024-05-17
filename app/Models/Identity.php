@@ -13,10 +13,11 @@ use Illuminate\Support\Facades\Hash;
 
 class Identity extends Model implements MustVerifyEmail, Authenticatable
 {
-    use HasFactory, Notifiable, FindById;
+    use HasFactory, Notifiable, ModelTrait;
 
     protected $fillable = [
-        'login',
+        'email',
+        'phone',
         'password',
         'remember_token'
     ];
@@ -25,9 +26,14 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
         'password'
     ];
 
-    public function getLogin(): ?string
+    public function getEmail(): ?string
     {
-        return $this->getAttribute('login');
+        return $this->getAttribute('email');
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->getAttribute('phone');
     }
 
     public function profile(): BelongsTo
@@ -37,7 +43,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
 
     public function getAuthIdentifierName(): string
     {
-        return 'login';
+        return 'email';
     }
 
     public function getAuthIdentifier(): ?string
@@ -95,9 +101,23 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
         return $this->getAuthIdentifier();
     }
 
-    public function updatePassword(string $newPassword): void
+    public function updatePassword(string $rawPassword): void
     {
-        $this->forceFill(['password' => Hash::make($newPassword)]);
+        $this->forceFill(['password' => Hash::make($rawPassword)]);
         $this->save();
+    }
+
+    public function getRelatedProfile(): Profile
+    {
+        return $this->profile()->get()->all()[0];
+    }
+
+    public static function findByAnyCredential(string $credential): ?Profile
+    {
+        return (fn($o): ?Identity => $o)(Identity::query()
+            ->where('email', '=', $credential)
+            ->orWhere('phone', '=', $credential)
+            ->first()
+        )?->getRelatedProfile();
     }
 }
