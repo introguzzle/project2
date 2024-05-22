@@ -8,38 +8,25 @@ use Illuminate\Http\Request;
 class LoginDTO
 {
     use FromRequest;
-    private ?string $phone;
-    private ?string $email;
+    private ?string $login;
     private ?string $password;
     private bool $remember;
 
     /**
-     * @param string|null $phone
-     * @param string|null $email
+     * @param string|null $login
      * @param string|null $password
      * @param bool $remember
      */
-    public function __construct(
-        ?string $phone,
-        ?string $email,
-        ?string $password,
-        bool $remember
-    )
+    public function __construct(?string $login, ?string $password, bool $remember)
     {
-        $this->phone = $phone;
-        $this->email = $email;
+        $this->login = $login;
         $this->password = $password;
         $this->remember = $remember;
     }
 
-    public function getPhone(): ?string
+    public function getLogin(): ?string
     {
-        return $this->phone;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
+        return $this->login;
     }
 
     public function getPassword(): ?string
@@ -47,7 +34,7 @@ class LoginDTO
         return $this->password;
     }
 
-    public function getRemember(): bool
+    public function isRemember(): bool
     {
         return $this->remember;
     }

@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\Role;
+use App\Models\Status;
+use App\Utils\ModelRecordResolver;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 return new class extends Migration
@@ -26,6 +29,11 @@ return new class extends Migration
             ]);
         }
 
+        $this->initAdmin();
+    }
+
+    public function initAdmin(): void
+    {
         $profileId = DB::table('profiles')->insertGetId([
             'name' => 'admin',
             'role_id' => 2,
@@ -42,18 +50,20 @@ return new class extends Migration
             ] + $this->timestamps()
         ]);
     }
-
-    private function timestamps(): array
+    public function timestamps(): array
     {
         return ['created_at' => now(), 'updated_at' => now()];
     }
 
     public function initRoles(): void
     {
-        DB::table('roles')->insert([
-            ['name' => 'User'] + $this->timestamps(),
-            ['name' => 'Admin'] + $this->timestamps(),
-        ]);
+        $records = ModelRecordResolver::getRecords(Role::class);
+
+        foreach ($records as $record) {
+            DB::table('roles')->insert([
+                ['name' => $record] + $this->timestamps()
+            ]);
+        }
     }
 
     public function initCategories(): void
@@ -67,8 +77,12 @@ return new class extends Migration
 
     public function initStatuses(): void
     {
-        DB::table('statuses')->insert(['name' => 'Ожидание'] + $this->timestamps());
-        DB::table('statuses')->insert(['name' => 'Выполнено'] + $this->timestamps());
+        $records = ModelRecordResolver::getRecords(Status::class);
+
+        foreach ($records as $record) {
+            DB::table('statuses')
+                ->insert(['name' => $record] + $this->timestamps());
+        }
     }
 
     public function initProducts(): array
@@ -106,6 +120,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+
     }
 };

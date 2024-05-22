@@ -6,85 +6,147 @@ use App\DTO\LoginDTO;
 use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
 use App\DTO\UpdateIdentityDTO;
-use App\Exceptions\ServiceException;
+use App\Jobs\SendPasswordResetMailJob;
 use App\Jobs\SendVerificationMailJob;
 use App\Mail\PasswordResetMail;
 use App\Mail\VerificationMail;
 use App\Models\Identity;
 use App\Models\PasswordResetToken;
 use App\Models\Profile;
+use App\Models\Role;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Symfony\Component\VarDumper\VarDumper;
 use Throwable;
 
 class IdentityService
 {
     public function authenticate(LoginDTO $dto): bool
     {
-        $remember = $dto->getRemember() ?? false;
+        $login    = $dto->getLogin();
         $password = $dto->getPassword();
+        $remember = $dto->isRemember() ?? false;
 
-        if (($email = $dto->getEmail()) !== null) {
-            return Auth::attempt(
-                ['email' => $email, 'password' => $password],
-                $remember
-            );
-        } else {
-            return Auth::attempt(
-                ['phone' => $dto->getPhone(), 'password' => $password],
-                $remember
-            );
-        }
+        return Auth::attempt(['email' => $login, 'password' => $password], $remember)
+            || Auth::attempt(['phone' => $login, 'password' => $password], $remember);
     }
 
     /**
-     * @param RegistrationDTO $dto
-     * @return void
+     * Регистрация нового пользователя.
+     *
+     * @param RegistrationDTO $dto Объект DTO с данными регистрации.
+     * @param Role|string|int $role Идентификатор роли, имя роли или объект роли.
+     * @param bool $sendMail
+     * @param string|null $service
+     * @param int|string|null $serviceValue
+     *
+     * @return Identity|false Возвращает true, если регистрация успешна.
      */
-    public function register(RegistrationDTO $dto): void
+    public function register(
+        RegistrationDTO $dto,
+        Role|string|int $role,
+        bool $sendMail,
+        ?string $service = null,
+        int|string|null $serviceValue = null
+    ): Identity|false
     {
+        $resolvedRole = $this->resolveRole($role);
+
         DB::beginTransaction();
 
         try {
-            $profile = $this->createProfile($dto);
+            $profile = $this->createProfile(
+                $dto,
+                $resolvedRole,
+                $service,
+                $serviceValue
+            );
+
             $profile->save();
 
             $identity = $this->createIdentity($dto);
             $identity->profile()->associate($profile);
             $identity->save();
         } catch (Throwable $t) {
+            Log::error($t);
             DB::rollBack();
-
-            throw new ServiceException(
-                "Failed to save profile and then identity",
-                0,
-                $t
-            );
+            return false;
         }
 
         DB::commit();
 
-        if ($identity->getEmail()) {
+        if ($identity->getEmail() && $sendMail) {
             $this->sendEmailVerification($identity);
         } else {
             $identity->markEmailAsVerified();
         }
+
+        return $identity;
+    }
+
+    public function registerGuest(string $name): Identity|false
+    {
+        $name = 'guest_' . $name;
+
+        return $this->register(
+            new RegistrationDTO(
+                $name,
+                null,
+                null,
+                Str::random(),
+            ),
+            Role::GUEST,
+            false
+        );
     }
 
     /**
      * @param RegistrationDTO $dto
+     * @param Role $role
+     * @param string|null $service
+     * @param int|string|null $serviceValue
      * @return Profile
      */
 
-    private function createProfile(RegistrationDTO $dto): Profile
+    private function createProfile(
+        RegistrationDTO $dto,
+        Role $role,
+        ?string $service,
+        int|string|null $serviceValue
+    ): Profile
     {
-        return new Profile([
-            'name' => $dto->getName()
-        ]);
+        $attributes = ['name' => $dto->getName()];
+
+        if ($service && $serviceValue) {
+            $serviceAttribute = $service . '_id';
+            $attributes[$serviceAttribute] = $serviceValue;
+        }
+
+        $profile = new Profile($attributes);
+        $profile->role()->associate($role);
+
+        return $profile;
+    }
+
+    public function registerViaService(
+        RegistrationDTO $dto,
+        string $service,
+        int|string $serviceValue
+    ): Identity|false
+    {
+        return $this->register(
+            $dto,
+            Role::USER,
+            false,
+            $service,
+            $serviceValue
+        );
     }
 
     /**
@@ -108,9 +170,11 @@ class IdentityService
      * @return bool
      */
 
-    public function checkLoginPresence(string $login): bool
+    public function checkLoginPresence(
+        string $login
+    ): bool
     {
-        return Identity::findByAnyCredential($login) !== null;
+        return Identity::findProfile($login) !== null;
     }
 
     /**
@@ -130,7 +194,10 @@ class IdentityService
      * @return bool
      */
 
-    public function verifyEmail(string $id, string $hash): bool
+    public function verifyEmail(
+        string $id,
+        string $hash
+    ): bool
     {
         $identity = Identity::find((int)$id);
 
@@ -151,6 +218,12 @@ class IdentityService
         return false;
     }
 
+    /**
+     * @param Identity $identity
+     * @param UpdateIdentityDTO $dto
+     * @return bool
+     */
+
     public function updateIdentity(
         Identity $identity,
         UpdateIdentityDTO $dto
@@ -164,7 +237,14 @@ class IdentityService
         return true;
     }
 
-    public function sendPasswordResetLink(string $email): bool
+    /**
+     * @param string $email
+     * @return bool
+     */
+
+    public function requestPasswordReset(
+        string $email
+    ): bool
     {
         $query = Identity::query()
             ->where('email', '=', $email);
@@ -176,28 +256,38 @@ class IdentityService
         $token    = Str::random(100);
         $identity = $query->first();
 
-        DB::table('password_reset_tokens')->insert([
-            'identity_id' => $identity->getKey(),
-            'token' => $token,
-            'created_at' => now(),
-            'updated_at' => now()
+        PasswordResetToken::query()->create([
+            'identity_id' => $identity->getAttribute('id'),
+            'token' => $token
         ]);
 
-        $passwordResetMail = new PasswordResetMail($email, $token);
-        Mail::send($passwordResetMail);
+        $this->sendPasswordResetMail($email, $token);
 
         return true;
     }
 
-    public function isValidToken(string $token): bool
+    /**
+     * @param string $email
+     * @param string $token
+     * @return void
+     */
+
+    public function sendPasswordResetMail(
+        string $email,
+        string $token
+    ): void
     {
-        return PasswordResetToken::query()
-            ->where('token', '=', $token)
-            ->where('active', '=', true)
-            ->exists();
+        Queue::push(new SendPasswordResetMailJob(new PasswordResetMail($email, $token)));
     }
 
-    public function updatePasswordWithToken(PasswordResetDTO $dto): bool
+    /**
+     * @param PasswordResetDTO $dto
+     * @return bool
+     */
+
+    public function updatePassword(
+        PasswordResetDTO $dto
+    ): bool
     {
         /**
          * @var PasswordResetToken $passwordResetToken
@@ -218,11 +308,28 @@ class IdentityService
         try {
             $identity->updatePassword($dto->getPassword());
             $passwordResetToken->setExpired();
-        } catch (Throwable) {
+        } catch (Throwable $t) {
+            Log::error($t);
             DB::rollBack();
+            return false;
         }
 
         DB::commit();
         return true;
+    }
+
+    /**
+     * @param int|string|Role $role
+     * @return Role|null
+     */
+    public function resolveRole(int|string|Role $role): ?Role
+    {
+        return match (true) {
+            is_int($role)    => Role::find($role),
+            is_string($role) => Role::findByName($role),
+            $role instanceof Role  => $role,
+
+            default => throw new InvalidArgumentException('Invalid role type provided.')
+        };
     }
 }

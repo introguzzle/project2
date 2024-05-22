@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\PasswordMatchRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,16 +24,35 @@ class PasswordResetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'password'              => 'required',
-            'password_confirmation' => 'required',
-            'token'                 => 'required'
+            'password'  => [
+                'required',
+                'string',
+                'min:4'
+            ],
+
+            'password_confirmation' => [
+                'required',
+                'string',
+                'min:4',
+                new PasswordMatchRule('password')
+            ],
+
+            'token' => [
+                'required',
+                'string'
+            ],
         ];
     }
 
     public function messages(): array
     {
         return [
-
+            'password.required'              => 'Пароль обязателен для заполнения.',
+            'password.min'                   => 'Пароль должен содержать не менее 4 символов.',
+            'password.confirmed'             => 'Подтверждение пароля не совпадает.',
+            'password_confirmation.required' => 'Подтверждение пароля обязательно для заполнения.',
+            'password_confirmation.min'      => 'Подтверждение пароля должно содержать не менее 4 символов.',
+            'token.required'                 => 'Токен обязателен для заполнения.',
         ];
     }
 

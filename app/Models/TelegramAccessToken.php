@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 class TelegramAccessToken extends Model
 {
-    use HasFactory, ModelTrait;
+    use HasFactory;
 
     protected $table = 'telegram_access_tokens';
 
@@ -18,10 +17,22 @@ class TelegramAccessToken extends Model
         'profile_id',
     ];
 
-    public static function findToken(int $token): ?static
+    public static function findToken(int|string $token): ?static
     {
-        return (static::hint())(static::query()
+        return (fn($o): ?static => $o)(static::query()
             ->where('token', '=', $token)
+            ->first());
+    }
+
+    /**
+     * @param Profile $profile
+     * @return static|null
+     */
+
+    public static function findByProfile(Profile $profile): ?static
+    {
+        return (fn($o): ?static => $o)(static::query()
+            ->where('profile_id', '=', $profile->getId())
             ->first());
     }
 

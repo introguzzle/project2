@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\PasswordMatchRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,9 +24,20 @@ class UpdateIdentityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'current_password'          => 'required',
-            'new_password'              => 'required',
-            'new_password_confirmation' => 'required'
+            'current_password' => [
+                'required'
+            ],
+
+            'new_password' => [
+                'required',
+                'min:4'
+            ],
+
+            'new_password_confirmation' => [
+                'required',
+                'min:4',
+                new PasswordMatchRule('new_password')
+            ]
         ];
     }
 
@@ -38,6 +50,7 @@ class UpdateIdentityRequest extends FormRequest
         return [
             'current_password.required'          => 'Текущий пароль обязателен для заполнения',
             'new_password.required'              => 'Новый пароль обязателен для заполнения',
+            'new_password.min'                   => 'Новый пароль должен быть длиннее 4 символов',
             'new_password_confirmation.required' => 'Подтверждение нового пароля обязательно для заполнения',
         ];
     }

@@ -20,7 +20,8 @@ class RegistrationDTO
         ?string $email,
         ?string $phone,
         ?string $password,
-        ?string $passwordConfirmation)
+        ?string $passwordConfirmation = null
+    )
     {
         $this->name = $name;
         $this->email = $email;

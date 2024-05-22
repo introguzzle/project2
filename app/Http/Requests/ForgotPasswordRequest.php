@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\IdentityExistsRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,7 +24,10 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login' => 'required'
+            'login' => [
+                'required',
+                new IdentityExistsRule()
+            ]
         ];
     }
 

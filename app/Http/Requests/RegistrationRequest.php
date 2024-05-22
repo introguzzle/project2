@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\PasswordMatchRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,9 +24,23 @@ class RegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                  => 'required',
-            'password'              => 'required',
-            'password_confirmation' => 'required'
+            'name' => [
+                'required',
+                'string'
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:4'
+            ],
+
+            'password_confirmation' => [
+                'required',
+                'min:4',
+                'string',
+                new PasswordMatchRule('password')
+            ]
         ];
     }
 

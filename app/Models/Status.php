@@ -3,28 +3,71 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
 class Status extends Model
 {
-    use HasFactory, ModelTrait;
+    use HasFactory;
+
+    /**
+     * @DBRecord
+     */
     public const string NEW = 'Новый';
+
+    /**
+     * @DBRecord
+     */
     public const string PENDING = 'Ожидание';
+
+    /**
+     * @DBRecord
+     */
     public const string CONFIRMED = 'Подтвержден';
+
+    /**
+     * @DBRecord
+     */
     public const string PROCESSING = 'В обработке';
+
+    /**
+     * @DBRecord
+     */
     public const string SHIPPED = 'Отправлен';
+
+    /**
+     * @DBRecord
+     */
     public const string DELIVERED = 'Доставлен';
+
+    /**
+     * @DBRecord
+     */
     public const string CANCELLED = 'Отменен';
+
+    /**
+     * @DBRecord
+     */
     public const string RETURNED = 'Возвращен';
+
+    /**
+     * @DBRecord
+     */
     public const string REFUNDED = 'Возврат средств';
+
+    /**
+     * @DBRecord
+     */
     public const string COMPLETED = 'Завершен';
+
+    /**
+     * @DBRecord
+     */
     public const string FAILED_DELIVERY = 'Доставка отменена';
 
     protected $fillable = [
         'name'
     ];
 
-    public static function acquireByName(string $name): static
+    public static function getByName(string $name): static
     {
         return static::query()
             ->where('name', '=', $name)
@@ -37,8 +80,8 @@ class Status extends Model
         return $this->getAttribute('name');
     }
 
-    public static function acquireNew(): static
+    public static function getNewStatus(): static
     {
-        return static::acquireByName(self::NEW);
+        return static::getByName(self::NEW);
     }
 }

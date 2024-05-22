@@ -23,7 +23,18 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-
+            'login'    => ['required'],
+            'password' => ['required']
         ];
+    }
+
+    public function getLoginInput(): string
+    {
+        return $this->string('login')->toString();
+    }
+
+    public function getPasswordInput(): string
+    {
+        return $this->string('password')->toString();
     }
 }

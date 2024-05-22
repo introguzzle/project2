@@ -60,25 +60,10 @@ class CartService
      * @param Profile $profile
      * @return Cart
      */
-    private function createCart(Profile $profile): Cart
+    public function createCart(Profile $profile): Cart
     {
         $t = fn($o): Cart => $o;
         return $t(Cart::query()->create(['profile_id' => $profile->getId()]));
-    }
-
-    /**
-     *
-     * @param Profile|null $profile
-     * @return Product[]
-     */
-
-    public function acquireAllByProfile(?Profile $profile): array
-    {
-        if ($profile === null) {
-            return [];
-        }
-
-        return $profile->getRelatedCart()?->products()->get()->all() ?? [];
     }
 
     /**
@@ -86,7 +71,7 @@ class CartService
      * @return int
      */
 
-    public function computeTotalQuantityByProfile(?Profile $profile): int
+    public function getTotalQuantityByProfile(?Profile $profile): int
     {
         $cart = $profile->getRelatedCart();
 
@@ -99,7 +84,7 @@ class CartService
             ->sum('quantity');
     }
 
-    public function computePriceByProfile(Profile $profile): float
+    public function getTotalAmount(Profile $profile): float
     {
         $cart = $profile->getRelatedCart();
 
@@ -108,10 +93,7 @@ class CartService
             return 0.0;
         }
 
-        return (float)$cart->products()->get()->sum(function(Product $product) use ($cart) {
-            $quantity = $product->getCartQuantity($cart);
-            return $quantity * $product->getPrice();
-        });
+        return $cart->getTotalAmount();
     }
 
     public function clearCartByProfile(Profile $profile): void

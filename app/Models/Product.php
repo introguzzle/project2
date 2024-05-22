@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
-    use HasFactory, ModelTrait;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -109,5 +108,21 @@ class Product extends Model
             ?->first()
             ?->getAttribute('quantity')
             ?? 0;
+    }
+
+    /**
+     * @param Category|int $category
+     * @return static[]
+     */
+
+    public static function findAllByCategory(Category|int $category): array
+    {
+        return static::query()
+                ->where('category_id', '=', $category instanceof Category
+                    ? $category->getId()
+                    : $category
+                )
+                ->get()
+                ->all();
     }
 }

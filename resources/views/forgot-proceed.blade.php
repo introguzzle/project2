@@ -22,9 +22,9 @@
                             <li>{{$internal}}</li>
                         @endif
 
-                        @if ($errors?->has('login'))
-                            <li>{{$errors->first('login')}}</li>
-                        @endif
+                        @foreach($errors->all() as $error)
+                            <li>{{$error}}</li>
+                        @endforeach
 
                     </span>
                     <span class="success-message">

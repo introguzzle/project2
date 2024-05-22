@@ -6,16 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Profile;
+use App\Models\Role;
+use App\Models\Status;
 use App\Services\OrderService;
 use App\Services\ProfileService;
 use App\Services\TelegramService;
 use App\Utils\Auth;
+use App\Utils\ModelRecordResolver;
 use Exception;
 use Illuminate\Contracts\Foundation\Application as App;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
+use phpseclib3\System\SSH\Agent\Identity;
+use ReflectionClass;
 use Yajra\DataTables\Facades\DataTables;
 use function request;
 
@@ -90,8 +96,14 @@ class AdminController extends Controller
 
     public function getToken(): string
     {
-        $token = $this->telegramService->generateToken(Auth::getProfile());
-        return $token->getAttribute('token');
+        $token = $this->telegramService
+            ->generateToken(Auth::getProfile());
+
+        $id = Auth::getProfile()
+            ->getRelatedIdentity()
+            ->getId();
+
+        return "/auth $id " . $token->getAttribute('token');
     }
 
     public function showProfile(int $profileId): View|Application|Factory|App

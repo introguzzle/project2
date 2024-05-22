@@ -17,6 +17,11 @@ return new class extends Migration
             $blueprint->date('birthday')->nullable();
             $blueprint->string('address')->nullable();
 
+            $blueprint->text('vkontakte_id')->nullable();
+            $blueprint->text('google_id')->nullable();
+
+            $blueprint->string('avatar')->nullable();
+
             $blueprint
                 ->foreignId('role_id')
                 ->index()

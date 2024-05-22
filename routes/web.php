@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\API\GoogleController;
+use App\Http\Controllers\API\VKController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
@@ -21,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
+    ->middleware('not.expired')
     ->name('verification.verify');
 
 Route::get('/email/need-verify', function() {
@@ -28,11 +31,11 @@ Route::get('/email/need-verify', function() {
 })->name('verification.notice');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
-Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('forgot-password.post');
+Route::post('/forgot-password', [AuthController::class, 'requestPasswordReset'])->name('forgot-password.post');
 Route::get('/forgot-password/success', [AuthController::class, 'showForgotPasswordSuccess'])->name('forgot-password.success');
 
-Route::get('/reset-password/{token}', [AuthController::class, 'forwardPasswordResetFromTemporaryLink'])->name('password.reset');
-Route::post('/reset-password', [AuthController::class, 'handlePasswordReset'])->name('password.reset.post');
+Route::get('/reset-password/{token}', [AuthController::class, 'showPasswordResetForm'])->name('password.reset')->middleware('not.expired');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.reset.post');
 
 Route::get('/login', [AuthController::class, 'showLoginForm']);
 Route::post('/login', [AuthController::class, 'authenticate'])->name('login');
@@ -46,12 +49,11 @@ Route::get('/home#menu', [HomeController::class, 'index'])->name('menu');
 
 Route::get('/product/{id}', [ProductController::class, 'index'])->name('product');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/identity/update', [AuthController::class, 'update'])->name('identity.update');
 
     Route::get('/cart', [CartController::class, 'showCart'])->name('cart');
-    Route::post('/cart-products-update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -59,6 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/checkout', [OrderController::class, 'index'])->name('checkout');
     Route::post('/checkout', [OrderController::class, 'order'])->name('checkout.order');
 });
+
+Route::post('/cart-products-update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
 
 Route::middleware(['admin'])->prefix('/admin')->group(function() {
     Route::get('/', [AdminController::class, 'showAdmin'])->name('admin.admin');
@@ -84,3 +88,14 @@ Route::get('/api/product/{product_id}', [ProductController::class, 'acquireProdu
 
 Route::get('/api/check-login-credential', [AuthController::class, 'checkLoginPresence'])->name('api.login.check');
 
+Route::get('/auth/vk', [VKController::class, 'redirectToProvider'])
+    ->name('vk.auth');
+
+Route::get(env('VKONTAKTE_REDIRECT_URI'), [VKController::class, 'handleProviderCallback'])
+    ->name('vk.auth.redirect');
+
+Route::get('/auth/google', [GoogleController::class, 'redirectToProvider'])
+    ->name('google.auth');
+
+Route::get(env('GOOGLE_REDIRECT_URI'), [GoogleController::class, 'handleProviderCallback'])
+    ->name('google.auth.redirect');

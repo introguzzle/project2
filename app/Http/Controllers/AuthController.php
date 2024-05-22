@@ -10,25 +10,28 @@ use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\RegistrationRequest;
+use App\Http\Requests\TemporaryResourceRequest;
 use App\Http\Requests\UpdateIdentityRequest;
+use App\Models\Identity;
+use App\Models\PasswordResetToken;
+use App\Models\Role;
+use App\Models\TelegramAccessToken;
+use App\Models\TelegramClient;
 use App\Services\IdentityService;
 
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\Factory;
 use Throwable;
-use Illuminate\Contracts\Foundation\Application as App;
 
 class AuthController extends Controller
 {
-    private const string SUCCESS_REGISTRATION_MESSAGE = 'Письмо для подтверждения было отправлено на вашу почту';
-    private const string SUCCESS_LOGIN_MESSAGE = 'Вы успешно зашли в систему';
     private const string SUCCESS_LOGOUT_MESSAGE = 'Вы успешно вышли из системы';
     private const string SUCCESS_VERIFY_EMAIL_MESSAGE = 'Вы успешно подтвердили почту';
 
@@ -41,52 +44,45 @@ class AuthController extends Controller
         $this->identityService = $identityService;
     }
 
-    public function showLoginForm(): View|Application|Factory|App
+    public function showLoginForm(): View
     {
         return view('login');
     }
 
-    public function showRegistrationForm(): View|Application|Factory|App
+    public function showRegistrationForm(): View
     {
         return view('registration');
     }
 
-    public function showForgotPasswordForm(): View|Application|Factory|App
+    public function showForgotPasswordForm(): View
     {
         return view('forgot');
     }
 
-    public function showForgotPasswordSuccess(): View|Application|Factory|App
+    public function showForgotPasswordSuccess(): View
     {
         return view('forgot-success');
     }
 
-    public function sendPasswordResetLink(
+    public function requestPasswordReset(
         ForgotPasswordRequest $request
-    ): Application|Redirector|App|RedirectResponse
+    ): Redirector|RedirectResponse
     {
-        if ($this->identityService->sendPasswordResetLink($request->getLoginInput())) {
-            return redirect('/forgot-password/success');
+        return $this->try(
+            '/forgot-password/success',
+            'Письмо успешно отправлено',
+            'Не удалось отправить письмо для сброса пароля',
 
-        } else {
-            return back()->with('fail', 'Что-то пошло не так. Пожалуйста, попробуйте еще раз');
-        }
+            fn() => $this->identityService->requestPasswordReset($request->getLoginInput())
+        );
     }
 
-    public function forwardPasswordResetFromTemporaryLink(
-        Request $request,
-        string $token
-    ): View|Application|Factory|App
+    public function showPasswordResetForm(
+        TemporaryResourceRequest $request,
+        string                   $token
+    ): View
     {
-        if (!URL::signatureHasNotExpired($request)) {
-            $this->abortExpired();
-        }
-
-        try {
-            if (!$this->identityService->isValidToken($token)) {
-                $this->abortNotFound();
-            }
-        } catch (Throwable) {
+        if (!PasswordResetToken::isValid($token)) {
             $this->abortNotFound();
         }
 
@@ -96,52 +92,41 @@ class AuthController extends Controller
     /**
      * POST
      * @param PasswordResetRequest $request
-     * @return Application|Redirector|RedirectResponse|App
+     * @return Redirector|RedirectResponse
      */
 
-    public function handlePasswordReset(
+    public function resetPassword(
         PasswordResetRequest $request
-    ): Application|Redirector|RedirectResponse|App
+    ): Redirector|RedirectResponse
     {
-        if ($request->getPasswordInput() !== $request->getPasswordConfirmationInput()) {
-            return back()->with($this->error('Пароли должны совпадать'));
-        }
+        return $this->try(
+            '/login',
+            'Пароль успешно обновлен',
+            'Не удалось обновить пароль',
 
-        $redirect = redirect('/login');
-
-        try {
-            $this->identityService->updatePasswordWithToken(PasswordResetDTO::fromRequest($request));
-        } catch (Throwable) {
-            return $redirect->with($this->internal);
-        }
-
-        return $redirect->with($this->success('Пароль успешно сброшен'));
+            fn() => $this->identityService->updatePassword(PasswordResetDTO::fromRequest($request))
+        );
     }
 
     /**
      * GET METHOD
-     * @param Request $request
+     * @param TemporaryResourceRequest $request
      * @param string $id
      * @param string $hash
-     * @return Application|Redirector|RedirectResponse|App
+     * @return Redirector|RedirectResponse
      */
     public function verifyEmail(
-        Request $request,
+        TemporaryResourceRequest $request,
         string $id,
         string $hash
-    ): Application|Redirector|RedirectResponse|App
+    ): Redirector|RedirectResponse
     {
-        if (!URL::signatureHasNotExpired($request)) {
-            $this->abortExpired();
-        }
-
-        if ($this->identityService->verifyEmail($id, $hash)) {
-            return redirect('/login')
-                ->with($this->success(self::SUCCESS_VERIFY_EMAIL_MESSAGE));
-
-        } else {
+        if (!$this->identityService->verifyEmail($id, $hash)) {
             $this->abortNotFound();
         }
+
+        return redirect('/login')
+            ->with($this->success(self::SUCCESS_VERIFY_EMAIL_MESSAGE));
     }
 
     /**
@@ -163,40 +148,37 @@ class AuthController extends Controller
 
     public function authenticate(
         LoginRequest $request
-    ): Application|Redirector|RedirectResponse|App
+    ): Redirector|RedirectResponse
     {
-        try {
-            $result = $this->identityService->authenticate(LoginDTO::fromRequest($request));
+        return $this->try(
+            '/home',
+            'Вы успешно зашли в систему',
+            'Не удалось проверить данные',
 
-            if (!$result) {
-                return redirect('login')->withErrors([
-                    'login' => 'Не удалось проверить данные',
-                ]);
-            }
-
-        } catch (Throwable) {
-            return redirect('login')->with($this->internal);
-        }
-
-        return redirect('/')
-            ->with($this->success(self::SUCCESS_LOGIN_MESSAGE));
+            fn() => $this->identityService->authenticate(LoginDTO::fromRequest($request))
+        );
     }
 
     public function register(
         RegistrationRequest $request
-    ): Application|Redirector|RedirectResponse|App
+    ): Redirector|RedirectResponse
     {
-        try {
-            $this->identityService->register(RegistrationDTO::fromRequest($request));
-        } catch (Throwable) {
-            return back()->with($this->internal);
-        }
+        return $this->try(
+            '/login',
+            'Письмо для подтверждения было отправлено на вашу почту',
+            'Не удалось создать аккаунт',
 
-        return redirect('login')
-            ->with($this->success(self::SUCCESS_REGISTRATION_MESSAGE));
+            fn() => $this->identityService->register(
+                RegistrationDTO::fromRequest($request),
+                Role::USER,
+                true
+            )
+        );
     }
 
-    public function logout(Request $request): Application|Redirector|RedirectResponse|App
+    public function logout(
+        Request $request
+    ): Redirector|RedirectResponse
     {
         Auth::logout();
 
@@ -209,24 +191,47 @@ class AuthController extends Controller
 
     public function update(
         UpdateIdentityRequest $request
-    ): Application|Redirector|RedirectResponse|App
+    ): Redirector|RedirectResponse
     {
-        $redirect = redirect('/profile');
+        return $this->try(
+            '/profile',
+            'Пароль успешно обновлен',
+            'Не удалось обновить пароль',
 
-        if ($request->getNewPasswordInput() !== $request->getNewPasswordConfirmationInput()) {
-            return $redirect->with($this->error('Пароли не совпадают'));
-        }
-
-        try {
-            $this->identityService->updateIdentity(
+            fn() => $this->identityService->updateIdentity(
                 \App\Utils\Auth::getIdentity(),
                 UpdateIdentityDTO::fromRequest($request)
-            );
+            )
+        );
+    }
 
-        } catch (Throwable) {
-            return $redirect->with($this->internal);
+    /**
+     * Выполняет переданный callback и перенаправляет в зависимости от результата.
+     *
+     * @param string $successRedirect URL для перенаправления при успешном выполнении.
+     * @param string $successMessage Сообщение об успехе.
+     * @param string $failMessage Сообщение об ошибке.
+     * @param callable(): false $callback
+     * @return Redirector|RedirectResponse
+     */
+
+    public function try(
+        string   $successRedirect,
+        string   $successMessage,
+        string   $failMessage,
+        callable $callback
+    ): Redirector|RedirectResponse
+    {
+        try {
+            $return = $callback();
+            if ($return === false || $return === null) {
+                return Redirect::back()->with($this->fail($failMessage));
+            }
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
+            return Redirect::back()->with($this->internal);
         }
 
-        return $redirect->with($this->success('Пароль успешно обновлен'));
+        return Redirect::to($successRedirect)->with($this->success($successMessage));
     }
 }

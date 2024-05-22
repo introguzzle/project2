@@ -5,11 +5,16 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\TelegramClient;
 use App\Services\TelegramService;
-use GuzzleHttp\Exception\GuzzleException;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Log;
+
+use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\Chat;
+use Telegram\Bot\Objects\Message;
+use Telegram\Bot\Objects\Update;
+
 use Throwable;
 
 class TelegramController extends Controller
@@ -23,45 +28,52 @@ class TelegramController extends Controller
     public function __construct(TelegramService $telegramService)
     {
         $this->telegramService = $telegramService;
-        $this->restrictOtherBots = (bool)Env::get('TELEGRAM_RESTRICT_OTHER_BOTS', true);
+        $this->restrictOtherBots = (bool) env('TELEGRAM_RESTRICT_OTHER_BOTS', true);
     }
 
     public function webhook(Request $request): JsonResponse
     {
         try {
-            $this->save($request);
-            $this->handleWebhook($request);
-        } catch (Throwable $t) {
-            Log::error($t);
+            $update = new Update($request->toArray());
+
+            $this->save($update->message->chat);
+            $this->handleWebhook($update);
+
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
         }
 
         return response()->json()->setData(['status' => 'ok']);
     }
 
     /**
-     * @throws GuzzleException
+     * @throws TelegramSDKException
      */
-    public function handleWebhook(Request $request): void
+    public function handleWebhook(Update $update): void
     {
-        $updateData = $request->toArray();
-        $messageData = $updateData['message'];
+        /**
+         * @var Message $message
+         */
+        $message = $update->message;
 
-        if ($messageData['from']['is_bot'] && $this->restrictOtherBots) {
+        if ($message->from->isBot && $this->restrictOtherBots) {
             return;
         }
 
-        $chatId = $messageData['chat']['id'];
+        $response = $this->telegramService->generateResponse(
+            $message->chat->id,
+            $message->text,
+            $message->entities?->all() ?? []
+        );
 
-        $text = $messageData['text'];
-        $entities = $messageData['entities'] ?? null;
-
-        $response = $this->telegramService->generateResponse($chatId, $text, $entities);
-        $this->telegramService->sendMessage($chatId, $response);
+        $this->telegramService->sendMessage(
+            $message->chat->id,
+            $response
+        );
     }
 
-    public function save(Request $request): ?TelegramClient
+    public function save(Chat $chat): ?TelegramClient
     {
-        $chatData = $request->toArray()['message']['chat'];
-        return $this->telegramService->save($chatData);
+        return $this->telegramService->save($chat);
     }
 }

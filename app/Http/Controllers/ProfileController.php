@@ -46,7 +46,8 @@ class ProfileController extends Controller
                 Auth::getProfile(),
                 UpdateProfileDTO::fromRequest($request)
             );
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
             return response()
                 ->json()
                 ->setStatusCode(500)

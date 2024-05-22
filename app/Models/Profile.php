@@ -3,38 +3,71 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Profile extends Model
 {
-    use HasFactory, ModelTrait;
+    use HasFactory;
 
     protected $fillable = [
         'name',
         'address',
         'birthday',
-        'role_id'
+        'role_id',
+        'avatar',
+        'vkontakte_id',
+        'google_id'
     ];
 
     protected $casts = [
         'birthday' => 'date:d-m-Y',
     ];
+    public static function findByName(string $name): ?static
+    {
+        return (fn($o): ?static => $o)(static::query()
+            ->where('name', '=', $name)
+            ->first()
+        );
+    }
+
+    public static function findByService(
+        string     $authService,
+        int|string $value
+    ): ?static
+    {
+        return (fn($o): ?static => $o)(static::query()
+            ->where($authService . '_id', '=', $value)
+            ->first()
+        );
+    }
 
     public function identity(): HasOne
     {
         return $this->hasOne(Identity::class, 'profile_id');
     }
 
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'profile_id');
+    }
+
+    /**
+     * @return Order[]
+     */
+
+    public function getRelatedOrders(): array
+    {
+        return $this->getAttribute('orders')->all();
+    }
+
     /**
      * @return Identity
      */
-
     public function getRelatedIdentity(): Identity
     {
-        return $this->identity()->get()->all()[0];
+        return $this->identity()->get()->first();
     }
 
     public function role(): BelongsTo
@@ -56,18 +89,9 @@ class Profile extends Model
         return $this->hasOne(Cart::class, 'profile_id');
     }
 
-    /**
-     * @return Cart|null
-     */
-
     public function getRelatedCart(): ?Cart
     {
         return $this->cart()->get()->all()[0] ?? null;
-    }
-
-    public function getId(): mixed
-    {
-        return $this->getAttribute('id');
     }
 
     public function getName(): mixed

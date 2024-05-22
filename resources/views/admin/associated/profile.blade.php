@@ -73,15 +73,11 @@
             </thead>
             <tbody>
             <tr>
-                @php
-                    $view = $profileView;
-                    $profile = $profileView->getProfile();
-                @endphp
                 <td>{{ $profile->getAttribute('id') }}</td>
                 <td>{{ $profile->getAttribute('name') }}</td>
                 <td>{{ $profile->getAttribute('address') }}</td>
-                <td>{{ $view->getEmail() }}</td>
-                <td>{{ $view->getPhone() }}</td>
+                <td>{{ $profile->identity->getEmail() }}</td>
+                <td>{{ $profile->identity->getPhone() }}</td>
                 <td>{{ $profile->getAttribute('birthday') }}</td>
                 <td>{{ $profile->getAttribute('created_at') }}</td>
                 <td>{{ $profile->getAttribute('updated_at') }}</td>
@@ -105,7 +101,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($profileView->getOrders() as $order)
+                @foreach($profile as $order)
                 <tr>
                     <td>{{ $order->getAttribute('id') }}</td>
                     <td>{{ $order->getRelatedStatus()->getAttribute('name') }}</td>

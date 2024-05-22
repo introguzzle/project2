@@ -6,187 +6,184 @@ use App\Models\Identity;
 use App\Models\Profile;
 use App\Models\TelegramAccessToken;
 use App\Models\TelegramClient;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use App\Utils\BotCommand;
+
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Log;
+
 use Stringable;
+use Telegram\Bot\Api as TelegramBot;
+use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\Chat;
+use Telegram\Bot\Objects\Message;
+use Telegram\Bot\Objects\MessageEntity;
+use Telegram\Bot\Objects\WebhookInfo;
+use Throwable;
 
 class TelegramService
 {
-    protected const string ENDPOINT = 'https://api.telegram.org/bot';
-    protected string $token;
-
-    private static Client $client;
+    private string $token;
+    private TelegramBot $telegram;
 
     /**
      * @param string|null $token
+     * @throws TelegramSDKException
      */
     public function __construct(?string $token = null)
     {
         $this->token = $token ?? Env::get('TELEGRAM_BOT_TOKEN');
-
-        if (!isset(self::$client)) {
-            self::$client = new Client(['base_uri' => self::ENDPOINT . $this->token . '/']);
-        }
+        $this->telegram = new TelegramBot($this->token, false);
     }
 
     /**
-     * @throws GuzzleException
+     * @throws TelegramSDKException
      */
     public function sendMessage(
         string            $chatId,
         string|Stringable $text,
         string            $parseMode = 'html',
         bool              $disableWebpagePreview = true
-    ): string
+    ): Message
     {
-        $response = self::$client->request('POST', 'sendMessage', [
-            'form_params' => [
-                'chat_id' => $chatId,
-                'text' => $text instanceof Stringable ? $text->__toString() : $text,
-                'parse_mode' => $parseMode,
-                'disable_web_page_preview' => $disableWebpagePreview
-            ]
-        ]);
+        $params = [
+            'chat_id'                 => $chatId,
+            'text'                    => $text instanceof Stringable
+                ? $text->__toString()
+                : $text,
 
-        return $response->getBody()->getContents();
+            'parse_mode'              => $parseMode,
+            'disable_webpage_preview' => $disableWebpagePreview
+        ];
+
+        return $this->telegram->sendMessage($params);
     }
 
     /**
-     * @throws GuzzleException
+     * @throws TelegramSDKException
      */
     public function setWebhook(?string $webhook = null): string
     {
-        $response = self::$client->request('POST', 'setWebhook', [
-            'form_params' => [
-                'url' => $webhook ?? route('telegram.webhook'),
-            ]
-        ]);
+        $url = $webhook ?? route('telegram.webhook');
 
-        return $response->getBody()->getContents();
+        return $this->telegram->setWebhook(['url' => $url]);
     }
 
     /**
-     * @throws GuzzleException
+     * @throws TelegramSDKException
      */
-    public function getWebhookInfo(): string
+    public function getWebhookInfo(): WebhookInfo
     {
-        $response = self::$client->request('POST', 'getWebhookInfo');
-
-        return $response->getBody()->getContents();
+        return $this->telegram->getWebhookInfo();
     }
 
     /**
-     * @return string[]
+     * @param string|Stringable $message
+     * @param string $parseMode
+     * @param bool $disableWebpagePreview
+     * @return bool
      */
     public function sendToAll(
         string|Stringable $message,
         string            $parseMode = 'html',
         bool              $disableWebpagePreview = true
-    ): array
+    ): bool
     {
-        $contents = [];
-
-        foreach (TelegramClient::all()->all() as $telegramClient) {
-            if ($telegramClient->hasAccess()) {
-                $chatId = $telegramClient->getAttribute('chat_id');
-                try {
-                    $contents[] = $this->sendMessage(
-                        $chatId,
-                        $message,
-                        $parseMode,
-                        $disableWebpagePreview
-                    );
-                } catch (GuzzleException $guzzleException) {
-                    Log::error($guzzleException);
-                }
+        foreach (TelegramClient::allWithAccess() as $telegramClient) {
+            $chatId = $telegramClient->getAttribute('chat_id');
+            try {
+                $this->sendMessage(
+                    $chatId,
+                    $message,
+                    $parseMode,
+                    $disableWebpagePreview
+                );
+            } catch (TelegramSDKException $telegramSDKException) {
+                Log::error($telegramSDKException);
+                return false;
             }
         }
 
-        return $contents;
+        return true;
     }
 
-    public function save(array $chatData): ?TelegramClient
+    public function save(Chat $chat): ?TelegramClient
     {
-        $telegramClient = TelegramClient::query()
-            ->where('chat_id', '=', $chatData['id'])
-            ->first();
+        $telegramClient = TelegramClient::findByChatId($chat->id);
+
+        $data = [
+            'first_name' => $chat->firstName ?? null,
+            'username'   => $chat->username ?? null,
+            'type'       => $chat->type ?? null,
+        ];
 
         if ($telegramClient) {
-            $telegramClient->update([
-                'first_name' => $chatData['first_name'],
-                'username'   => $chatData['username'],
-                'type'       => $chatData['type'],
-            ]);
+            $telegramClient->update($data);
+
         } else {
             $telegramClient = TelegramClient::query()->create([
-                'chat_id'    => $chatData['id'],
-                'first_name' => $chatData['first_name'],
-                'username'   => $chatData['username'],
-                'type'       => $chatData['type'],
+                'chat_id'    => $chat->id,
                 'has_access' => false,
                 'profile_id' => null
-            ]);
+            ] + $data);
         }
 
-        return TelegramClient::hint()($telegramClient);
+        return $telegramClient;
     }
 
     public function generateToken(
         Profile $profile,
+        bool    $new = false
     ): TelegramAccessToken
     {
-        $token = TelegramAccessToken::query()
-            ->where('profile_id', '=', $profile->getId())
-            ->first();
+        $telegramAccessToken = TelegramAccessToken::findByProfile($profile);
 
-        if ($token) {
-            return (fn($t): TelegramAccessToken => $t)($token);
+        if (!$new && $telegramAccessToken) {
+            return $telegramAccessToken;
+        }
+
+        if ($new && $telegramAccessToken) {
+            $telegramClient = TelegramClient::findByProfile(
+                $telegramAccessToken->getRelatedProfile()
+            );
+
+            $telegramClient->restrict();
+            $telegramAccessToken->forceDelete();
         }
 
         $random = rand(1000, 9999);
 
-        $token = new TelegramAccessToken(['token' => $random]);
-        $token->profile()->associate($profile);
-        $token->save();
+        $telegramAccessToken = new TelegramAccessToken(['token' => $random]);
+        $telegramAccessToken->profile()->associate($profile);
+        $telegramAccessToken->save();
 
-        return $token;
+        return $telegramAccessToken;
     }
 
     /**
      * @param string $chatId
      * @param string $text
-     * @param array|null $entities
+     * @param MessageEntity[] $entities
      * @return string
      */
     public function generateResponse(
         string $chatId,
         string $text,
-        ?array $entities = null,
+        array  $entities = [],
     ): string
     {
         $telegramClient = TelegramClient::findByChatId($chatId);
 
-        if ($entities) {
-            $commandEntity = null;
+        foreach ($entities as $entity) {
+            if ($entity->type === 'bot_command') {
+                $command = new BotCommand($entity);
 
-            foreach ($entities as $entity) {
-                if ($entity['type'] === 'bot_command') {
-                    $commandEntity = $entity;
-                }
+                return $this->handleCommand(
+                    $telegramClient,
+                    $chatId,
+                    $command,
+                    $text
+                );
             }
-
-            if ($commandEntity === null) {
-                return 'Неизвестная команда';
-            }
-
-            return $this->handleCommand(
-                $telegramClient,
-                $chatId,
-                $commandEntity,
-                $text
-            );
         }
 
         if ($telegramClient?->hasAccess()) {
@@ -196,33 +193,38 @@ class TelegramService
         }
     }
 
-    /**
-     * @param TelegramClient|null $telegramClient
-     * @param string $chatId
-     * @param array $commandEntity
-     * @param string $text
-     * @return string
-     */
-
     private function handleCommand(
         ?TelegramClient $telegramClient,
-        string $chatId,
-        array $commandEntity,
-        string $text
+        string          $chatId,
+        BotCommand      $command,
+        string          $text
     ): string
     {
-        $command = substr($text, $commandEntity['offset'], $commandEntity['length']);
+        $commandName = substr(
+            $text,
+            $command->getOffset(),
+            $command->getLength()
+        );
 
-        if ($command === '/auth') {
+        if ($commandName === '/auth') {
             if ($telegramClient?->hasAccess()) {
                 return "Вы уже прошли аутентификацию";
             }
 
-            $credentials = substr($text, $commandEntity['length'] + 1);
-            list($login, $token) = explode(' ', $credentials);
+            try {
+                $credentials = substr(
+                    $text,
+                    $command->getLength() + 1
+                );
 
-            if ($name = $this->bindClient($chatId, $login, $token)) {
-                return "Привет, $name";
+                list($login, $token) = explode(' ', $credentials);
+
+                if ($name = $this->bindClient($chatId, $login, $token)) {
+                    return "Привет, $name";
+                }
+            } catch (Throwable $t) {
+                Log::error($t);
+                return 'Не удалось проверить данные';
             }
 
             return 'Не удалось проверить данные';
@@ -245,16 +247,25 @@ class TelegramService
         string $token
     ): ?string
     {
-        $byLogin = Identity::findByAnyCredential($login);
-        $byToken = TelegramAccessToken::findToken($token);
+        $profile = Identity::findProfile($login);
+        $telegramAccessToken = TelegramAccessToken::findToken($token);
 
-        if ($byLogin && $byToken && $byLogin->getId() === $byToken->getId()) {
+        if (!$profile || !$telegramAccessToken) {
+            return null;
+        }
+
+        $relatedProfile = $telegramAccessToken->getRelatedProfile();
+
+        $id    = (int) $profile->getId();
+        $other = (int) $relatedProfile->getId();
+
+        if ($id === $other) {
             $telegramClient = TelegramClient::findByChatId($chatId);
             $telegramClient->grantAccess();
-            $telegramClient->profile()->associate($byToken);
+            $telegramClient->profile()->associate($relatedProfile);
             $telegramClient->save();
 
-            return $byLogin->getName();
+            return $profile->getName();
         }
 
         return null;

@@ -9,12 +9,11 @@ class Auth extends \Illuminate\Support\Facades\Auth
 {
     public static function getProfile(): ?Profile
     {
-        if (self::user() === null && self::getUser() === null) {
+        if (self::isNotAuthenticated()) {
             return null;
         }
 
-        return (fn($o): ?Profile => $o)(Profile::query()
-            ->find(self::getIdentity()->getAttribute('profile_id')));
+        return self::getIdentity()->getRelatedProfile();
     }
 
     public static function isAuthenticated(): bool

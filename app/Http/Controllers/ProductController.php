@@ -3,47 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CategoryResource;
-use App\Http\Resources\OrderResource;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Models\Category;
 use App\Models\Product;
-use App\Services\CategoryService;
-use App\Services\ProductService;
-use App\Utils\Auth;
-use Illuminate\Contracts\View\Factory;
+use Closure;
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Contracts\Foundation\Application as App;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProductController extends Controller
 {
-    private ProductService $productService;
-    private CategoryService $categoryService;
-
-    /**
-     * @param ProductService $productService
-     * @param CategoryService $categoryService
-     */
-    public function __construct(
-        ProductService $productService,
-        CategoryService $categoryService,
-    )
-    {
-        $this->productService = $productService;
-        $this->categoryService = $categoryService;
-    }
-
-
     public function index(
         int|string $id
-    ): Application|View|Factory|Redirector|App|RedirectResponse
+    ): View|Redirector|RedirectResponse
     {
-        $product = Product::find($id);
+        $product = Product::find((int)$id);
 
         if ($product === null) {
             return redirect('404');
@@ -59,7 +37,7 @@ class ProductController extends Controller
 
     public function acquireProductCollection(int|string $categoryId): JsonResponse
     {
-        $products = $this->productService->acquireAllByCategory($categoryId);
+        $products = Product::findAllByCategory((int)$categoryId);
         return $this->try(fn() => new ProductCollection($products));
     }
 
@@ -69,7 +47,7 @@ class ProductController extends Controller
      */
     public function acquireProductResource(int|string $productId): JsonResponse
     {
-        $product = $this->productService->acquireById($productId);
+        $product = Product::find((int)$productId);
         return $this->try(fn() => new ProductResource($product));
     }
 
@@ -79,16 +57,21 @@ class ProductController extends Controller
      */
     public function acquireCategoryResource(int|string $categoryId): JsonResponse
     {
-        $category = $this->categoryService->acquireById($categoryId);
+        $category = Category::find((int)$categoryId);
         return $this->try(fn() => new CategoryResource($category));
     }
 
-    public function try(callable $setData): JsonResponse
+    /**
+     * @param Closure(): array  $setData
+     * @return JsonResponse
+     */
+
+    public function try(Closure $setData): JsonResponse
     {
         try {
             return response()->json()->setData($setData());
-        } catch (Throwable $t) {
-            Log::error($t);
+        } catch (Throwable $throwable) {
+            Log::error($throwable);
             return response()->json()->setStatusCode(500);
         }
     }

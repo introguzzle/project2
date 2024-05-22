@@ -39,7 +39,7 @@ class OrderController extends Controller
     public function index(): View|Application|Factory|App
     {
         $profile = Auth::getProfile();
-        $price = $this->cartService->computePriceByProfile(Auth::getProfile());
+        $price = $this->cartService->getTotalAmount(Auth::getProfile());
 
         return view('checkout', compact('profile', 'price'));
     }

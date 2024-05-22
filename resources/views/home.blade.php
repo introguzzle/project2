@@ -209,46 +209,50 @@
             const cartCount = document.getElementById('cart-count-1');
             setTotalQuantity(parseInt(cartCount.textContent) + 1);
 
-            const xhr = new XMLHttpRequest();
             const url = "{{ route('cart.update-quantity') }}";
 
             const formData = new FormData();
             formData.append('product_id', productId);
             formData.append('quantity_change', quantityChange);
 
-            xhr.open("POST", url, true);
-            xhr.setRequestHeader("X-CSRF-TOKEN", "{{ csrf_token() }}");
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    fetch(`/api/product/${productId}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(() => {
-                            fetch(`{{route('api.cart.total-quantity')}}`)
-                                .then(response => {
-                                    if (!response.ok) {
-                                        throw new Error('Network response was not ok');
-                                    }
-                                })
-                                .catch(error => {
-                                    window.location.href = "{{route('login')}}";
-                                });
-                        })
-                        .catch(error => {
-                            window.location.href = "{{route('login')}}";
-                        });
-                }
-            };
-            xhr.send(formData);
-            xhr.onerror = () => window.location.href = "{{route('login')}}";
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Access-Control-Allow-Credentials': true
+                },
+                body: formData,
+                credentials: 'include' // Включаем отправку куки вместе с запросом
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    return fetch(`/api/product/${productId}`, { credentials: 'include' })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    return fetch(`{{ route('api.cart.total-quantity') }}`, { credentials: 'include' })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .catch(error => console.error('Error:', error));
 
             countSpan.addEventListener('animationend', () => {
                 countSpan.classList.remove('item-count-animation', 'item-count-color');
-            }, {once: true});
+            }, { once: true });
         }
 
         function changeCount(spanItemCount, count) {

@@ -28,8 +28,8 @@
                             <li class="register-error">{{ $error }}</li>
                         @endforeach
 
-                        @if (isset($error))
-                            <li class="register-error">{{ $error }}</li>
+                        @if (isset($internal))
+                            <li class="register-error">{{ $internal }}</li>
                         @endif
                     </span>
 
@@ -75,8 +75,9 @@
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                if (data) {
-                    showError();
+                const exists = !!data; // Приведение data к boolean
+                if (exists) {
+                    showError('Этот логин уже занят');
                 } else {
                     handleRegister();
                 }
@@ -86,9 +87,9 @@
             });
     }
 
-    function showError() {
+    function showError(error) {
         const loginError = document.getElementById('login-error');
-        loginError.textContent = 'Этот логин уже занят';
+        loginError.textContent = error;
     }
 
     function handleRegister() {
@@ -105,12 +106,12 @@
 
         if (checkbox.checked) {
             if (!phoneValue) {
-                showError();
+                showError('Неправильный формат телефона');
                 return;
             }
         } else {
             if (!isEmailValid) {
-                showError();
+                showError('Неправильный формат почты');
                 return;
             }
         }

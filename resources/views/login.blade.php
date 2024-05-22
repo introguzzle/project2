@@ -8,34 +8,34 @@
                 <form action="{{ route('login') }}" method="POST" class="login-form">
                     @csrf
                     <div class="form-group">
-                        <label for="email" class="form-label"><i class="fas fa-envelope"></i></label>
-                        <input type="email" id="email" name="email" class="form-input" placeholder="Введите логин" required>
+                        <label for="login" class="form-label"><i class="fas fa-envelope"></i></label>
+                        <input type="text" id="login" name="login" class="form-input" placeholder="Введите логин" required>
                     </div>
 
                     <div class="form-group">
                         <label for="password" class="form-label"><i class="fas fa-lock"></i></label>
                         <input type="password" id="password" name="password" class="form-input" placeholder="Введите пароль" required>
                     </div>
-                    <span class="login-error">
-                    @if (isset($internal))
-                            <li>{{$internal}}</li>
-                    @endif
-
-                    @if ($errors?->has('login'))
-                            <li>{{$errors->first('login')}}</li>
-                    @endif
-
-                    </span>
-                    <span class="success-message">
-                    @if (session()->has('success'))
-                        <li>{{session('success')}}</li>
-                    @endif
-                    </span>
-
                     <div class="form-group remember-me">
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember" class="remember-label">Запомнить меня</label>
                     </div>
+
+                    <span class="login-error">
+                    @if (session()->has('internal'))
+                            <li>{{session()->get('internal')}}</li>
+                        @endif
+
+                        @if (session()->has('fail'))
+                            <li>{{session()->get('fail')}}</li>
+                        @endif
+
+                    </span>
+                    <span class="success-message">
+                    @if (session()->has('success'))
+                            <li>{{session('success')}}</li>
+                        @endif
+                    </span>
 
                     <button type="submit" class="btn btn-login">Войти</button>
 
@@ -44,6 +44,15 @@
                     </div>
                     <div class="form-group">
                         <a href="{{ route('register') }}">Не зарегистрированы?</a>
+                    </div>
+
+                    <div class="form-group social-login">
+                        <a href="{{ route('vk.auth') }}" class="btn btn-social vk-login">
+                            <i class="fab fa-vk"></i>
+                        </a>
+                        <a href="{{ route('google.auth') }}" class="btn btn-social google-login">
+                            <i class="fab fa-google"></i>
+                        </a>
                     </div>
                 </form>
             </header>
@@ -65,6 +74,14 @@
 @endsection
 
 <style>
+    .btn-social {
+        margin-right: 5px;
+    }
+
+    .social-login {
+        font-size: 2em;
+    }
+
     .login-error {
         color: red;
         font-size: 1.2em;

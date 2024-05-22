@@ -6,14 +6,13 @@ use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 
 class Identity extends Model implements MustVerifyEmail, Authenticatable
 {
-    use HasFactory, Notifiable, ModelTrait;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'email',
@@ -43,7 +42,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
 
     public function getAuthIdentifierName(): string
     {
-        return 'email';
+        return 'id';
     }
 
     public function getAuthIdentifier(): ?string
@@ -109,14 +108,15 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
 
     public function getRelatedProfile(): Profile
     {
-        return $this->profile()->get()->all()[0];
+        return $this->profile()->get()->first();
     }
 
-    public static function findByAnyCredential(string $credential): ?Profile
+    public static function findProfile(string $credential): ?Profile
     {
         return (fn($o): ?Identity => $o)(Identity::query()
             ->where('email', '=', $credential)
             ->orWhere('phone', '=', $credential)
+            ->orWhere('id', '=', $credential)
             ->first()
         )?->getRelatedProfile();
     }

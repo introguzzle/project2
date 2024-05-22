@@ -3,12 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PasswordResetToken extends Model
 {
-    use HasFactory, ModelTrait;
+    use HasFactory;
 
     protected $table = 'password_reset_tokens';
 
@@ -37,5 +36,13 @@ class PasswordResetToken extends Model
     {
         $this->forceFill(['active' => false]);
         $this->save();
+    }
+
+    public static function isValid(string $token): bool
+    {
+        return static::query()
+            ->where('token', '=', $token)
+            ->where('active', '=', true)
+            ->exists();
     }
 }

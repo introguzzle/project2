@@ -12,7 +12,7 @@ class Controller extends BaseController
     use AuthorizesRequests, ValidatesRequests;
 
     public const string INTERNAL_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
-    protected array $internal = ['error' => self::INTERNAL_ERROR_MESSAGE];
+    protected array $internal = ['internal' => self::INTERNAL_ERROR_MESSAGE];
 
     /**
      * @param string $message
@@ -28,9 +28,9 @@ class Controller extends BaseController
      * @return string[]
      */
 
-    public function error(string $message = 'Unknown error'): array
+    public function fail(string $message): array
     {
-        return ['error' => $message, 'fail' => $message];
+        return ['fail' => $message];
     }
 
     public function internalServerErrorResponse(): JsonResponse

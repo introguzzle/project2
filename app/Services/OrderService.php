@@ -167,7 +167,7 @@ class OrderService
         $order->profile()->associate($profile);
         $order->status()->associate($status instanceof Status
             ? $status
-            : Status::acquireByName($status)
+            : Status::getByName($status)
         );
 
         return $order;
@@ -175,12 +175,12 @@ class OrderService
 
     private function computeTotalQuantity(Profile $profile): int
     {
-        return $this->cartService->computeTotalQuantityByProfile($profile);
+        return $this->cartService->getTotalQuantityByProfile($profile);
     }
 
     private function computeTotalAmount(Profile $profile): float
     {
-        return $this->cartService->computePriceByProfile($profile);
+        return $this->cartService->getTotalAmount($profile);
     }
 
     private function createNotification(Order $order): TelegramOrderNotification
