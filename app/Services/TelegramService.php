@@ -2,12 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\TelegramNotification;
 use App\Models\Identity;
 use App\Models\Profile;
 use App\Models\TelegramAccessToken;
 use App\Models\TelegramClient;
-use App\Utils\BotCommand;
 
+use App\Utils\BotCommand;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Log;
 
@@ -42,20 +43,41 @@ class TelegramService
         string            $chatId,
         string|Stringable $text,
         string            $parseMode = 'html',
+        array             $replyMarkup = [],
         bool              $disableWebpagePreview = true
     ): Message
     {
         $params = [
             'chat_id'                 => $chatId,
-            'text'                    => $text instanceof Stringable
-                ? $text->__toString()
-                : $text,
-
+            'text'                    => toString($text),
             'parse_mode'              => $parseMode,
-            'disable_webpage_preview' => $disableWebpagePreview
+            'disable_webpage_preview' => $disableWebpagePreview,
         ];
 
+        if (!empty($replyMarkup)) {
+            $params['reply_markup'] = json_encode($replyMarkup);
+        }
+
         return $this->telegram->sendMessage($params);
+    }
+
+    /**
+     * @throws TelegramSDKException
+     */
+    public function sendNotification(
+        TelegramNotification $notification,
+        string               $chatId,
+        string               $parseMode = 'html',
+        bool                 $disableWebpagePreview = true
+    ): Message
+    {
+        return $this->sendMessage(
+            $chatId,
+            $notification->getContent(),
+            $parseMode,
+            $notification->getButtons(),
+            $disableWebpagePreview
+        );
     }
 
     /**
@@ -77,24 +99,36 @@ class TelegramService
     }
 
     /**
-     * @param string|Stringable $message
+     * @param string|Stringable|TelegramNotification $message
      * @param string $parseMode
      * @param bool $disableWebpagePreview
      * @return bool
      */
     public function sendToAll(
-        string|Stringable $message,
-        string            $parseMode = 'html',
-        bool              $disableWebpagePreview = true
+        string|Stringable|TelegramNotification $message,
+        string                                 $parseMode = 'html',
+        bool                                   $disableWebpagePreview = true
     ): bool
     {
         foreach (TelegramClient::allWithAccess() as $telegramClient) {
             $chatId = $telegramClient->getAttribute('chat_id');
             try {
+                if ($message instanceof TelegramNotification) {
+                    $this->sendNotification(
+                        $message,
+                        $chatId,
+                        $parseMode,
+                        $disableWebpagePreview
+                    );
+
+                    return true;
+                }
+
                 $this->sendMessage(
                     $chatId,
                     $message,
                     $parseMode,
+                    [],
                     $disableWebpagePreview
                 );
             } catch (TelegramSDKException $telegramSDKException) {
@@ -136,12 +170,13 @@ class TelegramService
     ): TelegramAccessToken
     {
         $telegramAccessToken = TelegramAccessToken::findByProfile($profile);
+        $exists = $telegramAccessToken !== null;
 
-        if (!$new && $telegramAccessToken) {
+        if (!$new && $exists) {
             return $telegramAccessToken;
         }
 
-        if ($new && $telegramAccessToken) {
+        if ($new && $exists) {
             $telegramClient = TelegramClient::findByProfile(
                 $telegramAccessToken->getRelatedProfile()
             );
@@ -250,14 +285,14 @@ class TelegramService
         $profile = Identity::findProfile($login);
         $telegramAccessToken = TelegramAccessToken::findToken($token);
 
-        if (!$profile || !$telegramAccessToken) {
+        if ($profile && $telegramAccessToken) {
             return null;
         }
 
         $relatedProfile = $telegramAccessToken->getRelatedProfile();
 
-        $id    = (int) $profile->getId();
-        $other = (int) $relatedProfile->getId();
+        $id    = $profile->getId();
+        $other = $relatedProfile->getId();
 
         if ($id === $other) {
             $telegramClient = TelegramClient::findByChatId($chatId);

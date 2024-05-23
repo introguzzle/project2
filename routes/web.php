@@ -26,10 +26,6 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->middleware('not.expired')
     ->name('verification.verify');
 
-Route::get('/email/need-verify', function() {
-    return '123';
-})->name('verification.notice');
-
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])->name('forgot-password');
 Route::post('/forgot-password', [AuthController::class, 'requestPasswordReset'])->name('forgot-password.post');
 Route::get('/forgot-password/success', [AuthController::class, 'showForgotPasswordSuccess'])->name('forgot-password.success');
@@ -49,7 +45,7 @@ Route::get('/home#menu', [HomeController::class, 'index'])->name('menu');
 
 Route::get('/product/{id}', [ProductController::class, 'index'])->name('product');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'email.verified'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/identity/update', [AuthController::class, 'update'])->name('identity.update');
 

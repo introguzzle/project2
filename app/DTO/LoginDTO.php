@@ -5,6 +5,9 @@ namespace App\DTO;
 use App\Utils\Requests;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin FromRequest
+ */
 class LoginDTO
 {
     use FromRequest;

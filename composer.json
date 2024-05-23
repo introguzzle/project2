@@ -8,8 +8,10 @@
         "php": "^8.3",
         "ext-http": "*",
         "ext-pdo": "*",
+        "defstudio/telegraph": "^1.44",
         "guzzlehttp/guzzle": "^7.2",
         "irazasyed/telegram-bot-sdk": "^3.14",
+        "laravel-lang/lang": "^12.17",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.14",
@@ -35,7 +37,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Utils/utils.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

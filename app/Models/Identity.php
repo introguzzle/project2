@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -9,6 +10,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+
+/**
+ * @property ?string $email
+ * @property ?string $phone
+ * @property int $id
+ * @property ?CarbonInterface $emailVerifiedAt;
+ */
 
 class Identity extends Model implements MustVerifyEmail, Authenticatable
 {
@@ -111,13 +119,17 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
         return $this->profile()->get()->first();
     }
 
-    public static function findProfile(string $credential): ?Profile
+    public static function findProfile(string|int $credential): ?Profile
     {
-        return (fn($o): ?Identity => $o)(Identity::query()
+        $builder = Identity::query()
             ->where('email', '=', $credential)
-            ->orWhere('phone', '=', $credential)
-            ->orWhere('id', '=', $credential)
-            ->first()
-        )?->getRelatedProfile();
+            ->orWhere('phone', '=', $credential);
+
+        if (is_numeric($credential)) {
+            $builder->orWhere('id', '=', $credential);
+        }
+
+        return (fn($o): ?Identity => $o)($builder->first())
+            ?->getRelatedProfile();
     }
 }

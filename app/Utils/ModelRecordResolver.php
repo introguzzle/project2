@@ -39,6 +39,8 @@ class ModelRecordResolver
             }
         }
 
-        return $includeConstantNames ? $dbRecords : array_values($dbRecords);
+        return $includeConstantNames
+            ? $dbRecords
+            : array_values($dbRecords);
     }
 }

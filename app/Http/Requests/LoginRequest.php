@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\IdentityExistsRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -23,8 +24,20 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login'    => ['required'],
-            'password' => ['required']
+            'login'    => [
+                'required',
+                new IdentityExistsRule()
+            ],
+            'password' => [
+                'required'
+            ]
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'login.required' => 'Поле логина обязательно для заполнения'
         ];
     }
 

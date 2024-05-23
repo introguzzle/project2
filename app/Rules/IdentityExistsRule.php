@@ -10,11 +10,16 @@ use Illuminate\Translation\PotentiallyTranslatedString;
 class IdentityExistsRule implements ValidationRule
 {
     /**
-     * Run the validation rule.
-     *
-     * @param Closure(string): PotentiallyTranslatedString $fail
+     * @param string $attribute
+     * @param mixed $value
+     * @param Closure $fail
+     * @return void
      */
-    public function validate(string $attribute, mixed $value, Closure $fail): void
+    public function validate(
+        string  $attribute,
+        mixed   $value,
+        Closure $fail
+    ): void
     {
         $exists = Identity::query()
             ->where('email', '=', $value)

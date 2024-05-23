@@ -18,13 +18,17 @@ class PasswordMatchRule implements ValidationRule
     /**
      * Run the validation rule.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  Closure(string): PotentiallyTranslatedString  $fail
+     * @param string $attribute
+     * @param mixed $value
+     * @param Closure(string): PotentiallyTranslatedString $fail
      * @return void
      */
 
-    public function validate(string $attribute, mixed $value, Closure $fail): void
+    public function validate(
+        string  $attribute,
+        mixed   $value,
+        Closure $fail
+    ): void
     {
         if ((string)request()->input($this->other) !== (string)$value) {
             $fail('Пароли должны совпадать');

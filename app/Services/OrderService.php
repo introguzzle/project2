@@ -4,8 +4,6 @@ namespace App\Services;
 
 use App\DTO\PostOrderDTO;
 use App\Exceptions\ServiceException;
-use App\Mail\TelegramOrderNotification;
-use App\Models\CartProduct;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
@@ -15,25 +13,20 @@ use App\Models\Status;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class OrderService
 {
     private CartService $cartService;
-    private TelegramService $telegramService;
 
     /**
      * @param CartService $cartService
-     * @param TelegramService $telegramService
      */
     public function __construct(
-        CartService $cartService,
-        TelegramService $telegramService
+        CartService $cartService
     )
     {
         $this->cartService = $cartService;
-        $this->telegramService = $telegramService;
     }
 
     public function setOrderStatus(
@@ -97,8 +90,6 @@ class OrderService
         }
 
         DB::commit();
-
-        $this->telegramService->sendToAll($this->createNotification($order));
     }
 
     /**
@@ -181,10 +172,5 @@ class OrderService
     private function computeTotalAmount(Profile $profile): float
     {
         return $this->cartService->getTotalAmount($profile);
-    }
-
-    private function createNotification(Order $order): TelegramOrderNotification
-    {
-        return new TelegramOrderNotification($order);
     }
 }

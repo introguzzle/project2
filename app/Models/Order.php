@@ -2,10 +2,15 @@
 
 namespace App\Models;
 
+use App\Events\OrderCreatedEvent;
 use DateTimeInterface as DateTime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+/**
+ * @property Product[] $products
+ */
 
 class Order extends Model
 {
@@ -21,6 +26,15 @@ class Order extends Model
         'profile_id',
         'status_id'
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::created(function (self $order) {
+            event(new OrderCreatedEvent($order));
+        });
+    }
 
     public function profile(): BelongsTo
     {

@@ -7,10 +7,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property float $price
+ * @property string $shortDescription
+ * @property string $fullDescription
+ * @property float $weight
+ * @property bool $availability
+ * @property Category $category
+ */
+
 class Product extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'name',
         'price',

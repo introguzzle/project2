@@ -26,6 +26,8 @@ return new class extends Migration
                 ->constrained('products')
                 ->cascadeOnDelete();
 
+            $blueprint->unique(['cart_id', 'product_id']);
+
             $blueprint->integer('quantity');
             $blueprint->timestamps();
         });

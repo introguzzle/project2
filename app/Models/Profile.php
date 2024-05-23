@@ -2,11 +2,26 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property ?string $name
+ * @property ?string $address
+ * @property ?CarbonInterface $birthday
+ * @property int $roleId
+ * @property ?string $avatar
+ * @property ?string $vkontakteId
+ * @property ?string $googleId
+ * @property ?CarbonInterface $createdAt
+ * @property ?CarbonInterface $updatedAt
+ * @property ?Cart $cart
+ * @property ?Identity $identity
+ */
 class Profile extends Model
 {
     use HasFactory;

@@ -4,20 +4,36 @@
     <section id="home">
         <div class="overlay">
             <header id="main-header" class="register-header">
-                <h2 class="register-title">Создать аккаунт</h2>
+                <h2 class="register-title">Регистрация</h2>
                 <form action="" method="POST" class="register-form">
                     @csrf
                     <div class="form-group form-group-2">
                         <label for="name" class="form-label"><i class="fas fa-user"></i></label>
-                        <input type="text" id="name" name="name" class="form-input" placeholder="Введите имя" required>
+                        <input type="text"
+                               id="name"
+                               name="name"
+                               class="form-input"
+                               value="{{old('name')}}"
+                               placeholder="Введите имя"
+                               required>
                     </div>
                     <div class="form-group form-group-1 form-group-email">
                         <label for="email" class="form-label"><i class="fas fa-envelope"></i></label>
-                        <input type="email" id="email" name="email" class="form-input" placeholder="Введите почту">
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               class="form-input"
+                               value="{{old('email')}}"
+                               placeholder="Введите почту">
                     </div>
                     <div class="form-group form-group-1 form-group-phone" style="display: none">
                         <label for="phone" class="form-label"><i class="fas fa-phone"></i></label>
-                        <input type="text" id="phone" name="phone" class="form-input" placeholder="Введите телефон">
+                        <input type="text"
+                               id="phone"
+                               name="phone"
+                               class="form-input"
+                               value="{{old('phone')}}"
+                               placeholder="Введите телефон">
                     </div>
                     <div class="form-group checkbox-group">
                         <input type="checkbox" id="choose-input" onclick="toggleInput()">
@@ -35,11 +51,23 @@
 
                     <div class="form-group form-group-2">
                         <label for="password" class="form-label"><i class="fas fa-lock"></i></label>
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Введите пароль" required autocomplete="new-password">
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               class="form-input"
+                               placeholder="Введите пароль"
+                               value="{{old('password')}}"
+                               required>
                     </div>
                     <div class="form-group form-group-2">
                         <label for="password_confirmation" class="form-label"><i class="fas fa-lock"></i></label>
-                        <input type="password" id="password_confirmation" name="password_confirmation" class="form-input" placeholder="Повторите пароль" required autocomplete="new-password">
+                        <input type="password"
+                               id="password_confirmation"
+                               name="password_confirmation"
+                               class="form-input"
+                               placeholder="Повторите пароль"
+                               value="{{old('password_confirmation')}}"
+                               required>
                     </div>
                     <button type="button" onclick="checkIfLoginExists()" class="btn btn-register">Далее</button>
                     <div class="form-group">
@@ -52,13 +80,11 @@
 
     <style>
         #home {
-            background:
-                linear-gradient(
-                    rgba(0, 0, 0, 0.7),
-                    rgba(0, 0, 0, 0.9)
-                ),
-
-                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.9)
+            ),
+            url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
             background-size: cover;
         }
     </style>
@@ -186,13 +212,23 @@
 </script>
 
 <style>
+    .register-error {
+        display: block;
+        color: red;
+        font-size: 1.2em;
+    }
+
     .fade-in {
         animation: fadeIn ease 0.5s;
     }
 
     @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
     }
 
     .fade-out {
@@ -200,8 +236,12 @@
     }
 
     @keyframes fadeOut {
-        0% { opacity: 1; }
-        100% { opacity: 0; }
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
     }
 
     .form-group-1 {

@@ -6,6 +6,7 @@ use App\DTO\LoginDTO;
 use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
 use App\DTO\UpdateIdentityDTO;
+use App\Events\RegisteredEvent;
 use App\Jobs\SendPasswordResetMailJob;
 use App\Jobs\SendVerificationMailJob;
 use App\Mail\PasswordResetMail;
@@ -14,6 +15,7 @@ use App\Models\Identity;
 use App\Models\PasswordResetToken;
 use App\Models\Profile;
 use App\Models\Role;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +31,7 @@ class IdentityService
 {
     public function authenticate(LoginDTO $dto): bool
     {
-        $login    = $dto->getLogin();
+        $login = $dto->getLogin();
         $password = $dto->getPassword();
         $remember = $dto->isRemember() ?? false;
 
@@ -51,8 +53,8 @@ class IdentityService
     public function register(
         RegistrationDTO $dto,
         Role|string|int $role,
-        bool $sendMail,
-        ?string $service = null,
+        bool            $sendMail,
+        ?string         $service = null,
         int|string|null $serviceValue = null
     ): Identity|false
     {
@@ -81,16 +83,16 @@ class IdentityService
 
         DB::commit();
 
-        if ($identity->getEmail() && $sendMail) {
-            $this->sendEmailVerification($identity);
-        } else {
-            $identity->markEmailAsVerified();
+        if ($identity->getEmail()) {
+            event(new RegisteredEvent($identity));
         }
 
         return $identity;
     }
 
-    public function registerGuest(string $name): Identity|false
+    public function registerGuest(
+        string $name
+    ): Identity|false
     {
         $name = 'guest_' . $name;
 
@@ -116,8 +118,8 @@ class IdentityService
 
     private function createProfile(
         RegistrationDTO $dto,
-        Role $role,
-        ?string $service,
+        Role            $role,
+        ?string         $service,
         int|string|null $serviceValue
     ): Profile
     {
@@ -136,8 +138,8 @@ class IdentityService
 
     public function registerViaService(
         RegistrationDTO $dto,
-        string $service,
-        int|string $serviceValue
+        string          $service,
+        int|string      $serviceValue
     ): Identity|false
     {
         return $this->register(
@@ -182,7 +184,7 @@ class IdentityService
      * @return void
      */
 
-    private function sendEmailVerification(Identity $identity): void
+    public function sendEmailVerification(Identity $identity): void
     {
         $verificationMail = new VerificationMail($identity);
         Queue::push(new SendVerificationMailJob($verificationMail));
@@ -225,7 +227,7 @@ class IdentityService
      */
 
     public function updateIdentity(
-        Identity $identity,
+        Identity          $identity,
         UpdateIdentityDTO $dto
     ): bool
     {
@@ -253,7 +255,7 @@ class IdentityService
             return false;
         }
 
-        $token    = Str::random(100);
+        $token = Str::random(100);
         $identity = $query->first();
 
         PasswordResetToken::query()->create([
@@ -325,9 +327,9 @@ class IdentityService
     public function resolveRole(int|string|Role $role): ?Role
     {
         return match (true) {
-            is_int($role)    => Role::find($role),
+            is_int($role) => Role::find($role),
             is_string($role) => Role::findByName($role),
-            $role instanceof Role  => $role,
+            $role instanceof Role => $role,
 
             default => throw new InvalidArgumentException('Invalid role type provided.')
         };

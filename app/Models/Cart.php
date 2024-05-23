@@ -2,9 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+/**
+ * @property int $id
+ * @property int $profileId
+ * @property Profile $profile
+ * @property Collection<Product> $products
+ */
 
 class Cart extends Model
 {
@@ -27,11 +35,42 @@ class Cart extends Model
             ->using(CartProduct::class);
     }
 
+    /**
+     * @return Product[]
+     */
+
+    public function getRelatedProducts(): array
+    {
+        return $this->products()
+            ?->get()
+            ?->all() ?? [];
+    }
+
     public function getTotalAmount(): float
     {
         return (float)$this->products()->get()->sum(function(Product $product) {
             $quantity = $product->getCartQuantity($this);
             return $quantity * $product->getPrice();
         });
+    }
+
+    /**
+     * @return Collection<CartProduct>
+     */
+
+    public function getRelatedCartProductCollection(): Collection
+    {
+        return CartProduct::query()
+            ->where('cart_id', '=', $this->id)
+            ->get();
+    }
+
+    /**
+     * @return CartProduct[]
+     */
+
+    public function getRelatedCartProducts(): array
+    {
+        return $this->getRelatedCartProductCollection()->all();
     }
 }

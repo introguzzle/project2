@@ -2,7 +2,18 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
+
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -13,9 +24,22 @@ class Handler extends ExceptionHandler
      * @var array<int, string>
      */
     protected $dontFlash = [
-        'current_password',
-        'password',
-        'password_confirmation',
+
+    ];
+
+    /**
+     * @var string[]
+     */
+
+    protected $dontReport = [
+        ValidationException::class,
+        HttpException::class,
+        AuthenticationException::class,
+        AuthorizationException::class,
+        ModelNotFoundException::class,
+        TokenMismatchException::class,
+        NotFoundHttpException::class,
+        MethodNotAllowedHttpException::class,
     ];
 
     /**
@@ -26,5 +50,11 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function report(Throwable $e): void
+    {
+        Log::error($e);
+        parent::report($e);
     }
 }

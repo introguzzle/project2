@@ -14,3 +14,4 @@ class BotCommand extends \Telegram\Bot\Objects\BotCommand
         return (int)$this->offset;
     }
 }
+

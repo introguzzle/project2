@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Events\OrderCallbackReceivedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\TelegramClient;
 use App\Services\TelegramService;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 use Telegram\Bot\Exceptions\TelegramSDKException;
+use Telegram\Bot\Objects\CallbackQuery;
 use Telegram\Bot\Objects\Chat;
 use Telegram\Bot\Objects\Message;
 use Telegram\Bot\Objects\Update;
@@ -36,8 +38,14 @@ class TelegramController extends Controller
         try {
             $update = new Update($request->toArray());
 
-            $this->save($update->message->chat);
-            $this->handleWebhook($update);
+            if ($update->message) {
+                $this->save($update->message->chat);
+                $this->handleMessage($update->message);
+            }
+
+            if ($update->callbackQuery) {
+                $this->handleCallbackQuery($update->callbackQuery);
+            }
 
         } catch (Throwable $throwable) {
             Log::error($throwable);
@@ -49,13 +57,8 @@ class TelegramController extends Controller
     /**
      * @throws TelegramSDKException
      */
-    public function handleWebhook(Update $update): void
+    public function handleMessage(Message $message): void
     {
-        /**
-         * @var Message $message
-         */
-        $message = $update->message;
-
         if ($message->from->isBot && $this->restrictOtherBots) {
             return;
         }
@@ -75,5 +78,19 @@ class TelegramController extends Controller
     public function save(Chat $chat): ?TelegramClient
     {
         return $this->telegramService->save($chat);
+    }
+
+    public function handleCallbackQuery(
+        ?CallbackQuery $callbackQuery
+    ): void
+    {
+        list($orderId, $statusId) = explode('split', $callbackQuery->data);
+        $chatId = $callbackQuery->message->chat->id;
+
+        event(new OrderCallbackReceivedEvent(
+            $chatId,
+            $orderId,
+            $statusId
+        ));
     }
 }

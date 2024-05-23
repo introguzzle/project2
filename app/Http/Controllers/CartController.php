@@ -47,18 +47,10 @@ class CartController extends Controller
         $profile = Auth::getProfile();
 
         if ($profile === null) {
-            return redirect('login');
+            return redirect()->route('login');
         }
 
-        /**
-         * @var Product[] $products
-         */
-
-        $products = $profile->getRelatedCart()
-            ?->products()
-            ?->get()
-            ->all() ?? [];
-
+        $products = $profile->cart->products;
         $price = $this->cartService->getTotalAmount($profile);
 
         return view('cart', compact('products', 'price'));

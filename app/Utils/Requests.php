@@ -18,8 +18,8 @@ class Requests
      */
     public static function compact(
         Request $request,
-        string $class
-    ): object
+        string  $class
+    )
     {
         $requestBody = $request->all();
 
@@ -32,13 +32,16 @@ class Requests
             return $reflection->newInstanceArgs();
         }
 
-        foreach ($constructor->getParameters() as $parameter) {
-            $name = $parameter->getName();
-            $propertyName = str_contains($name, '-')
-                ? Str::snake($name, '-')
-                : Str::snake($name);
+        $delimiter = str_contains((string)(array_values($requestBody)[0]), '-')
+            ? '-'
+            : '_';
 
-            $args[] = $requestBody[$propertyName] ??
+        foreach ($constructor->getParameters() as $parameter) {
+            $parameterName = $parameter->getName();
+
+            $input = Str::snake($parameterName, $delimiter);
+
+            $args[] = $requestBody[$input] ??
                 ($parameter->getType()->getName() === 'bool'
                     ? false
                     : null

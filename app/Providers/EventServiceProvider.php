@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use App\Events\OrderCallbackReceivedEvent;
+use App\Events\OrderCreatedEvent;
+use App\Events\RegisteredEvent;
+use App\Listeners\OrderCallbackReceivedListener;
+use App\Listeners\OrderCreatedListener;
+use App\Listeners\RegisteredListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\VKontakte\VKontakteExtendSocialite;
 
@@ -17,14 +20,21 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
+        OrderCallbackReceivedEvent::class => [
+            OrderCallbackReceivedListener::class
         ],
 
         SocialiteWasCalled::class => [
-            // ... Другие провайдеры
-            VKontakteExtendSocialite::class.'@handle',
+            VKontakteExtendSocialite::class,
         ],
+
+        RegisteredEvent::class => [
+            RegisteredListener::class
+        ],
+
+        OrderCreatedEvent::class => [
+            OrderCreatedListener::class
+        ]
     ];
 
     /**
@@ -32,7 +42,7 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        parent::boot();
     }
 
     /**

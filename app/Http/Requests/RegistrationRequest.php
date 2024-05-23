@@ -26,43 +26,63 @@ class RegistrationRequest extends FormRequest
         return [
             'name' => [
                 'required',
-                'string'
+                'max:255',
             ],
-
             'password' => [
                 'required',
-                'string',
-                'min:4'
+                'min:4',
             ],
-
             'password_confirmation' => [
                 'required',
-                'min:4',
-                'string',
-                new PasswordMatchRule('password')
+                'same:password'
             ]
         ];
     }
 
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
     public function messages(): array
     {
         return [
-            'name.required'                  => 'Это поле обязательно для заполнения',
-            'password.required'              => 'Это поле обязательно для заполнения',
-            'password_confirmation.required' => 'Это поле обязательно для заполнения',
+            'name.required'                  => 'Имя обязательно для заполнения',
+            'name.max'                       => 'Имя не должно превышать 255 символов',
+
+            'password.required'              => 'Пароль обязателен для заполнения',
+            'password.min'                   => 'Пароль должен быть не менее 4 символов',
+
+            'password_confirmation.required' => 'Подтверждение пароля обязательно для заполнения',
+            'password_confirmation.same'     => 'Пароли не совпадают'
         ];
     }
 
+    /**
+     * Get the sanitized name input.
+     *
+     * @return string
+     */
     public function getNameInput(): string
     {
         return $this->string('name')->toString();
     }
 
+    /**
+     * Get the sanitized password input.
+     *
+     * @return string
+     */
     public function getPasswordInput(): string
     {
         return $this->string('password')->toString();
     }
 
+    /**
+     * Get the sanitized password confirmation input.
+     *
+     * @return string
+     */
     public function getPasswordConfirmationInput(): string
     {
         return $this->string('password_confirmation')->toString();

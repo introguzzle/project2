@@ -1,20 +1,30 @@
+@php use Illuminate\Support\ViewErrorBag; @endphp
+@php
+    /**
+     * @var ViewErrorBag $errors
+     */
+@endphp
 @extends('nav.nav')
 
 @section('content')
     <section id="home">
         <div class="overlay">
             <header id="main-header" class="login-header">
-                <h2 class="login-title">Вход</h2>
+                <h2 class="login-title">
+                    Войти
+                </h2>
                 <form action="{{ route('login') }}" method="POST" class="login-form">
                     @csrf
                     <div class="form-group">
                         <label for="login" class="form-label"><i class="fas fa-envelope"></i></label>
-                        <input type="text" id="login" name="login" class="form-input" placeholder="Введите логин" required>
+                        <input type="text" id="login" name="login" class="form-input" placeholder="Введите логин"
+                               required>
                     </div>
 
                     <div class="form-group">
                         <label for="password" class="form-label"><i class="fas fa-lock"></i></label>
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Введите пароль" required>
+                        <input type="password" id="password" name="password" class="form-input"
+                               placeholder="Введите пароль" required>
                     </div>
                     <div class="form-group remember-me">
                         <input type="checkbox" id="remember" name="remember">
@@ -22,6 +32,10 @@
                     </div>
 
                     <span class="login-error">
+                        @foreach ($errors->all() as $error)
+                            <li>{{$error}}</li>
+                        @endforeach
+
                     @if (session()->has('internal'))
                             <li>{{session()->get('internal')}}</li>
                         @endif
@@ -61,13 +75,11 @@
 
     <style>
         #home {
-            background:
-                linear-gradient(
-                    rgba(0, 0, 0, 0.7),
-                    rgba(0, 0, 0, 0.9)
-                ),
-
-                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.9)
+            ),
+            url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
             background-size: cover;
         }
     </style>

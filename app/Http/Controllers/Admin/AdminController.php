@@ -4,46 +4,34 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\Profile;
-use App\Models\Role;
-use App\Models\Status;
 use App\Services\OrderService;
-use App\Services\ProfileService;
 use App\Services\TelegramService;
 use App\Utils\Auth;
-use App\Utils\ModelRecordResolver;
 use Exception;
 use Illuminate\Contracts\Foundation\Application as App;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
-use phpseclib3\System\SSH\Agent\Identity;
-use ReflectionClass;
 use Yajra\DataTables\Facades\DataTables;
 use function request;
 
 class AdminController extends Controller
 {
     private OrderService $orderService;
-    private ProfileService $profileService;
     private TelegramService $telegramService;
 
     /**
      * @param OrderService $orderService
-     * @param ProfileService $profileService
      * @param TelegramService $telegramService
      */
     public function __construct(
         OrderService $orderService,
-        ProfileService $profileService,
         TelegramService $telegramService
     )
     {
         $this->orderService = $orderService;
-        $this->profileService = $profileService;
         $this->telegramService = $telegramService;
     }
 
