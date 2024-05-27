@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Image extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'path',
         'main'

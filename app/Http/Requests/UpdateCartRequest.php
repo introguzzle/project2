@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCartRequest extends FormRequest
 {
+    use CastInputs;
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,13 +29,21 @@ class UpdateCartRequest extends FormRequest
         ];
     }
 
-    public function getProductId(): mixed
+    public function getProductId(): int
     {
         return $this->input('product_id');
     }
 
-    public function getQuantityChange(): mixed
+    public function getQuantityChange(): int
     {
         return $this->input('quantity_change');
+    }
+
+    public function getCasts(): array
+    {
+        return [
+            'product_id'      => 'int',
+            'quantity_change' => 'int',
+        ];
     }
 }

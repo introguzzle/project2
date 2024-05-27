@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_image', function(Blueprint $blueprint) {
+        Schema::create('product_image', static function(Blueprint $blueprint) {
             $blueprint->id();
 
             $blueprint

@@ -22,7 +22,7 @@ class OrderResource extends JsonResource
     public function toArray(Request $request): array|JsonSerializable|Arrayable
     {
         return $this->resource->toArray()
-            + ['status_name' => $this->resource->getRelatedStatus()->getName()]
-            + ['profile_name' => $this->resource->getRelatedProfile()->getName()];
+            + ['status_name' => $this->resource->status->name]
+            + ['profile_name' => $this->resource->profile->name];
     }
 }

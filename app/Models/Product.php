@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
-    use HasFactory;
     protected $fillable = [
         'name',
         'price',

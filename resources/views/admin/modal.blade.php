@@ -1,4 +1,11 @@
+@php use App\Models\Status; @endphp
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+@php
+    /**
+* @var Status[] $statuses
+ */
+@endphp
 
 <div class="modal-content">
     <div class="modal-header">
@@ -8,10 +15,9 @@
         <div class="form-group">
             <label for="status">Статус:</label>
             <select class="form-control" id="status">
-                <option value="pending">В ожидании</option>
-                <option value="processing">Обрабатывается</option>
-                <option value="completed">Завершен</option>
-                <option value="cancelled">Отменен</option>
+                @foreach($statuses as $status)
+                <option value="{{$status->id}}">{{$status->name}}</option>
+                @endforeach
             </select>
         </div>
         <div class="form-group">
@@ -31,7 +37,30 @@
     }
 
     function save() {
+        const url = '{{route('admin.orders.update')}}';
+        const data = {
+            status: document.getElementById('status').value,
+            order: '{{$id}}',
+            description: document.getElementById('note').value
+        };
 
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application-json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{csrf_token()}}',
+                'Access-Control-Allow-Credentials': true,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(data)
+        };
+
+        fetch(url, options)
+            .then(response => {
+                window.parent.reloadTable();
+                closeDialog();
+            });
     }
 </script>
 

@@ -2,20 +2,28 @@
 
 namespace App\Listeners;
 
+use App\Events\Event;
 use App\Events\RegisteredEvent;
-use App\Services\IdentityService;
+use App\Mail\VerificationMail;
+use Illuminate\Contracts\Mail\Mailer;
 
-class RegisteredListener
+class RegisteredListener extends QueueableListener
 {
-    private IdentityService $identityService;
+    private Mailer $mailer;
 
-    public function __construct(IdentityService $identityService)
+    /**
+     * @param Mailer $mailer
+     */
+    public function __construct(
+        Mailer $mailer
+    )
     {
-        $this->identityService = $identityService;
+        $this->mailer = $mailer;
     }
 
-    public function handle(RegisteredEvent $event): void
+
+    public function handle(RegisteredEvent|Event $event): void
     {
-        $this->identityService->sendEmailVerification($event->identity);
+        $this->mailer->send(new VerificationMail($event->identity));
     }
 }

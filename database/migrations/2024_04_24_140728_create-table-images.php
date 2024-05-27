@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('images', function(Blueprint $blueprint) {
+        Schema::create('images', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->string('path');
             $blueprint->timestamps();

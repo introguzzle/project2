@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telegram_clients', function(Blueprint $blueprint) {
+        Schema::create('telegram_clients', static function(Blueprint $blueprint) {
             $blueprint->id();
 
-            $blueprint->bigInteger('chat_id');
+            $blueprint->text('chat_id');
             $blueprint->string('first_name')->nullable();
             $blueprint->string('username')->nullable();
             $blueprint->string('type')->nullable();
+
             $blueprint->boolean('has_access');
+            $blueprint->boolean('banned')
+                ->default(false);
 
             $blueprint
                 ->foreignId('profile_id')

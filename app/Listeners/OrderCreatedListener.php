@@ -2,16 +2,14 @@
 
 namespace App\Listeners;
 
+use App\Events\Event;
 use App\Events\OrderCreatedEvent;
-use App\Mail\TelegramOrderNotification;
-use App\Services\TelegramService;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Mail\Telegram\OrderNotification;
+use App\Services\Telegram\TelegramService;
+use JsonException;
 
-class OrderCreatedListener implements ShouldQueue
+class OrderCreatedListener extends QueueableListener
 {
-    use InteractsWithQueue;
-
     private TelegramService $telegramService;
 
     /**
@@ -24,10 +22,11 @@ class OrderCreatedListener implements ShouldQueue
 
     /**
      * Handle the event.
+     * @throws JsonException
      */
-    public function handle(OrderCreatedEvent $event): void
+    public function handle(OrderCreatedEvent|Event $event): void
     {
-        $this->telegramService->sendToAll(new TelegramOrderNotification(
+        $this->telegramService->sendToAll(new OrderNotification(
             $event->order
         ));
     }

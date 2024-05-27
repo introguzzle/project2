@@ -8,6 +8,7 @@
 
 @section('content')
     <section id="home">
+        <span id="token">  </span>
         <div class="overlay">
             <header id="main-header" class="login-header">
                 <h2 class="login-title">
@@ -33,17 +34,20 @@
 
                     <span class="login-error">
                         @foreach ($errors->all() as $error)
-                            <li>{{$error}}</li>
+                        <li>{{$error}}</li>
                         @endforeach
 
-                    @if (session()->has('internal'))
-                            <li>{{session()->get('internal')}}</li>
+                        @if (session()->has('notVerified'))
+                        <li>{{session()->get('notVerified')}}</li>
+                        @endif
+
+                        @if (session()->has('internal'))
+                        <li>{{session()->get('internal')}}</li>
                         @endif
 
                         @if (session()->has('fail'))
-                            <li>{{session()->get('fail')}}</li>
+                        <li>{{session()->get('fail')}}</li>
                         @endif
-
                     </span>
                     <span class="success-message">
                     @if (session()->has('success'))

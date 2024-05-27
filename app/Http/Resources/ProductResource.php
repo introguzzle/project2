@@ -26,7 +26,7 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         $path = ['path' => $this->resource->getMainImage()->getAttribute('path')];
-        $quantity = ['quantity' => $this->resource->getCartQuantity(Auth::getProfile()?->getRelatedCart())];
+        $quantity = ['quantity' => $this->resource->getCartQuantity(Auth::getProfile()?->cart)];
 
         return $this->resource->toArray() + $path + $quantity;
     }

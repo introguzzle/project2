@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('password_reset_tokens', function(Blueprint $blueprint) {
+        Schema::create('password_reset_tokens', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint
                 ->foreignId('identity_id')

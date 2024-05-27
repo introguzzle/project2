@@ -4,17 +4,14 @@ namespace App\Http\Controllers;
 
 use App\DTO\PostOrderDTO;
 use App\Http\Requests\OrderRequest;
-use App\Http\Resources\OrderResource;
 use App\Services\CartService;
 use App\Services\OrderService;
-use App\Services\ProfileService;
 use App\Utils\Auth;
-use Illuminate\Contracts\View\Factory;
+
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Contracts\Foundation\Application as App;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class OrderController extends Controller
@@ -36,7 +33,7 @@ class OrderController extends Controller
     }
 
 
-    public function index(): View|Application|Factory|App
+    public function index(): View
     {
         $profile = Auth::getProfile();
         $price = $this->cartService->getTotalAmount(Auth::getProfile());
@@ -46,7 +43,7 @@ class OrderController extends Controller
 
     public function order(
         OrderRequest $request
-    ): View|Application|Factory|Redirector|App|RedirectResponse
+    ): View|Redirector|RedirectResponse
     {
         try {
             $this->orderService->order(
@@ -55,9 +52,9 @@ class OrderController extends Controller
             );
 
         } catch (Throwable $t) {
-            return redirect('checkout')->with(
-                'internal', $t->getMessage()
-            );
+            Log::error($t);
+            return redirect('checkout')
+                ->with($this->internal());
         }
 
         return redirect('home');

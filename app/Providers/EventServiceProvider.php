@@ -2,13 +2,16 @@
 
 namespace App\Providers;
 
-use App\Events\OrderCallbackReceivedEvent;
 use App\Events\OrderCreatedEvent;
+use App\Events\PasswordResetTokenCreatedEvent;
 use App\Events\RegisteredEvent;
-use App\Listeners\OrderCallbackReceivedListener;
+
 use App\Listeners\OrderCreatedListener;
+use App\Listeners\PasswordResetTokenCreatedListener;
 use App\Listeners\RegisteredListener;
+
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use SocialiteProviders\Google\GoogleExtendSocialite;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\VKontakte\VKontakteExtendSocialite;
 
@@ -20,12 +23,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        OrderCallbackReceivedEvent::class => [
-            OrderCallbackReceivedListener::class
-        ],
-
         SocialiteWasCalled::class => [
             VKontakteExtendSocialite::class,
+            GoogleExtendSocialite::class
         ],
 
         RegisteredEvent::class => [
@@ -34,7 +34,11 @@ class EventServiceProvider extends ServiceProvider
 
         OrderCreatedEvent::class => [
             OrderCreatedListener::class
-        ]
+        ],
+
+        PasswordResetTokenCreatedEvent::class => [
+            PasswordResetTokenCreatedListener::class
+        ],
     ];
 
     /**

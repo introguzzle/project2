@@ -4,9 +4,9 @@ namespace App\Utils;
 
 use App\Models\Model;
 use Exception;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
 use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 
 class ModelRecordResolver
 {
@@ -24,8 +24,8 @@ class ModelRecordResolver
     {
         $reflection = new ReflectionClass($class);
 
-        if (!is_subclass_of($class, EloquentModel::class)) {
-            throw new Exception("$class is not an " . EloquentModel::class);
+        if (!is_subclass_of($class, Model::class)) {
+            throw new RuntimeException("$class is not an " . Model::class);
         }
 
         $constants = $reflection->getReflectionConstants();

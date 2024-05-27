@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\DTO\UpdateProfileDTO;
 use App\Exceptions\ServiceException;
-use App\Models\Identity;
-use App\Models\Profile;
+use App\Models\User\Identity;
+use App\Models\User\Profile;
 
 class ProfileService
 {

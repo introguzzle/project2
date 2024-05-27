@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 
-use App\Models\Identity;
+use App\Models\User\Identity;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Support\Facades\Hash;

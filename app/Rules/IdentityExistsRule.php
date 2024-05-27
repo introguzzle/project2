@@ -2,10 +2,9 @@
 
 namespace App\Rules;
 
-use App\Models\Identity;
+use App\Models\User\Identity;
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Translation\PotentiallyTranslatedString;
 
 class IdentityExistsRule implements ValidationRule
 {

@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Role extends Model
 {
-    use HasFactory;
-
     /**
      * @DBRecord
      */
@@ -29,6 +27,6 @@ class Role extends Model
 
     public static function findByName(string $name): ?static
     {
-        return (fn($o): ?static => $o)(static::query()->where('name', '=', $name)->first());
+        return (static fn($o): ?static => $o)(static::query()->where('name', '=', $name)->first());
     }
 }

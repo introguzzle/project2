@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('identities', function(Blueprint $blueprint) {
+        Schema::create('identities', static function(Blueprint $blueprint) {
             $blueprint->id();
 
             $blueprint

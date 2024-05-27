@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('telegram_access_tokens', function(Blueprint $blueprint) {
+        Schema::create('telegram_access_tokens', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->unsignedInteger('token');
 

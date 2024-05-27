@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('profiles', function(Blueprint $blueprint) {
+        Schema::create('profiles', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->string('name')->nullable();
             $blueprint->date('birthday')->nullable();
@@ -25,7 +25,6 @@ return new class extends Migration
             $blueprint
                 ->foreignId('role_id')
                 ->index()
-                ->default(1)
                 ->constrained('roles')
                 ->cascadeOnDelete();
 

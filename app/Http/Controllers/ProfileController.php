@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Utils\Auth;
 use App\DTO\UpdateProfileDTO;
 use App\Http\Requests\UpdateProfileRequest;
-use App\ModelView\ProfileView;
 use App\Services\ProfileService;
-use Illuminate\Contracts\View\Factory;
+
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use App\Utils\Auth;
-use Illuminate\Contracts\Foundation\Application as App;
-use Illuminate\Support\Facades\Log;
+
 use Throwable;
 
 
@@ -32,7 +29,7 @@ class ProfileController extends Controller
     }
 
 
-    public function index(): View|Application|Factory|App|RedirectResponse
+    public function index(): View|RedirectResponse
     {
         $profile = Auth::getProfile();
 
@@ -46,8 +43,7 @@ class ProfileController extends Controller
                 Auth::getProfile(),
                 UpdateProfileDTO::fromRequest($request)
             );
-        } catch (Throwable $throwable) {
-            Log::error($throwable);
+        } catch (Throwable) {
             return response()
                 ->json()
                 ->setStatusCode(500)

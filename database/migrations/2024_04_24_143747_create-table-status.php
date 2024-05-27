@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('statuses', function(Blueprint $blueprint) {
+        Schema::create('statuses', static function(Blueprint $blueprint) {
             $blueprint->id();
-            $blueprint->string('name');
+            $blueprint->string('name')->unique();
             $blueprint->timestamps();
         });
     }

@@ -7,12 +7,9 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
 
-class Controller extends BaseController
+abstract class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
-
-    public const string INTERNAL_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
-    protected array $internal = ['internal' => self::INTERNAL_ERROR_MESSAGE];
 
     /**
      * @param string $message
@@ -21,6 +18,11 @@ class Controller extends BaseController
     public function success(string $message = 'Success'): array
     {
         return ['success' => $message];
+    }
+
+    public function internal(string $message = 'Внутренняя ошибка сервера'): array
+    {
+        return ['internal' => $message];
     }
 
     /**
@@ -33,7 +35,15 @@ class Controller extends BaseController
         return ['fail' => $message];
     }
 
-    public function internalServerErrorResponse(): JsonResponse
+    public function ok(): JsonResponse
+    {
+        return response()
+            ->json()
+            ->setData(['success' => true])
+            ->setStatusCode(200);
+    }
+
+    public function internalServerError(): JsonResponse
     {
         return response()
             ->json()
@@ -41,7 +51,7 @@ class Controller extends BaseController
             ->setStatusCode(500);
     }
 
-    public function forbiddenResponse(): JsonResponse
+    public function forbidden(): JsonResponse
     {
         return response()
             ->json()

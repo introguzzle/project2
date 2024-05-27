@@ -3,9 +3,8 @@
 use App\Models\Role;
 use App\Models\Status;
 use App\Utils\ModelRecordResolver;
-use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -36,7 +35,7 @@ return new class extends Migration
     {
         $profileId = DB::table('profiles')->insertGetId([
             'name' => 'admin',
-            'role_id' => 2,
+            'role_id' => Role::findByName(Role::USER)->getId(),
             'created_at' => now(),
             'updated_at' => now()
         ]);

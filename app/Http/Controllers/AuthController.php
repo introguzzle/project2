@@ -12,9 +12,11 @@ use App\Http\Requests\PasswordResetRequest;
 use App\Http\Requests\RegistrationRequest;
 use App\Http\Requests\TemporaryResourceRequest;
 use App\Http\Requests\UpdateIdentityRequest;
-use App\Models\PasswordResetToken;
 use App\Models\Role;
-use App\Services\IdentityService;
+use App\Models\User\PasswordResetToken;
+use App\Services\Auth\EmailNotVerifiedException;
+use App\Services\Auth\IdentityService;
+use App\Services\Auth\InvalidCredentialsException;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -22,10 +24,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
-
-use Illuminate\Support\Facades\Validator;
 use Throwable;
 
 class AuthController extends Controller
@@ -148,20 +147,23 @@ class AuthController extends Controller
         LoginRequest $request
     ): Redirector|RedirectResponse
     {
-        return $this->try(
-            '/home',
-            'Вы успешно зашли в систему',
-            'Не удалось проверить данные',
+        try {
+            $this->identityService->authenticate(LoginDTO::fromRequest($request));
+        } catch (EmailNotVerifiedException) {
+            return Redirect::back()->with([
+                'notVerified' => 'Ваш адрес электронной почты не подтверждён. Если вы не получили письмо, нажмите здесь, чтобы отправить его снова.'
+            ]);
+        } catch (InvalidCredentialsException) {
+            return Redirect::back()->with($this->fail('Не удалось проверить данные'));
+        }
 
-            fn() => $this->identityService->authenticate(LoginDTO::fromRequest($request))
-        );
+        return redirect()->route('home');
     }
 
     public function register(
         RegistrationRequest $request
     ): Redirector|RedirectResponse
     {
-        dd($this);
         return $this->try(
             '/login',
             'Письмо для подтверждения было отправлено на вашу почту',
@@ -169,8 +171,7 @@ class AuthController extends Controller
 
             fn() => $this->identityService->register(
                 RegistrationDTO::fromRequest($request),
-                Role::USER,
-                true
+                Role::USER
             )
         );
     }
@@ -228,55 +229,14 @@ class AuthController extends Controller
                     ->with($this->fail($failMessage))
                     ->withInput();
             }
-        } catch (Throwable $throwable) {
-            Log::error($throwable);
+        } catch (Throwable) {
             return Redirect::back()
-                ->with($this->internal)
+                ->with($this->internal())
                 ->withInput();
         }
 
         return Redirect::to($successRedirect)
             ->with($this->success($successMessage))
             ->withInput();
-    }
-
-    /**
-     * @param RegistrationRequest $request
-     * @return \Illuminate\Validation\Validator
-     */
-    public function getValidator(RegistrationRequest $request): \Illuminate\Validation\Validator
-    {
-        $messages = [
-            'name.required' => 'Имя обязательно для заполнения',
-            'name.max' => 'Имя не должно превышать 255 символов',
-
-            'password.required' => 'Пароль обязателен для заполнения',
-            'password.min' => 'Пароль должен быть не менее 4 символов',
-
-            'password_confirmation.required' => 'Подтверждение пароля обязательно для заполнения',
-            'password_confirmation.same' => 'Пароли не совпадают'
-        ];
-
-        $rules = [
-            'name' => [
-                'required',
-                'max:255',
-            ],
-            'password' => [
-                'required',
-                'min:4',
-            ],
-            'password_confirmation' => [
-                'required',
-                'same:password'
-            ]
-        ];
-
-        $validator = Validator::make(
-            $request->all(),
-            $rules,
-            $messages
-        );
-        return $validator;
     }
 }

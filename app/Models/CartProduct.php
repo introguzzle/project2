@@ -13,8 +13,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class CartProduct extends Pivot
 {
-    use HasFactory;
-
     protected $table = 'cart_product';
     protected $fillable = [
         'cart_id',
@@ -30,5 +28,19 @@ class CartProduct extends Pivot
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public static function unique(
+        int $cartId,
+        int $productId
+    ): ?static
+    {
+        $t = static fn($static): ?static => $static;
+
+        return $t(static::query()
+            ->where('cart_id', '=', $cartId)
+            ->where('product_id', '=', $productId)
+            ->first()
+        );
     }
 }

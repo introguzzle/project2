@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function(Blueprint $blueprint) {
+        Schema::create('categories', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint->string('name');
             $blueprint

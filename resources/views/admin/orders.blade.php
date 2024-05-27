@@ -95,74 +95,75 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript">
-    $(function () {
-        const table = $('#this-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: "{{ route('admin.orders') }}",
-            scrollX: true,
-            columns: [
-                {data: 'order.id'},
-                {data: 'status.name'},
-                {data: 'order.total_amount'},
-                {data: 'order.total_quantity'},
-
-                {data: 'order.phone'},
-                {data: 'order.address'},
-
-                {
-                    data: 'profile-link',
-                    render: function(data, type, full, meta){
-                        return `<a href=${data}> Перейти </a>`;
-                    }
-                },
-                {
-                    data: 'details-link',
-                    render: function(data, type, full, meta){
-                        return `<a href=${data}> Перейти </a>`;
-                    }
-                },
-                {data: 'order.created_at'},
-                {data: 'order.updated_at'},
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                },
-            ],
-            columnDefs: [
-                { width: '80px',  targets: 3},
-                { width: '200px', targets: [5, 8, 9]},
-                { width: '250px', targets: 10}
-            ],
-        });
-    });
-
-    $(function () {
-        const csrfToken = $('meta[name="csrf-token"]').attr('content');
-
-        const sendPostRequest = function(url, data, onSuccess) {
-            $.ajax({
-                url: url,
-                type: 'POST',
-                data: data,
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                success: onSuccess,
-                error: function(response) {
-                    console.error('Error:', response);
+    const table = $('#this-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('admin.orders') }}",
+        scrollX: true,
+        columns: [
+            {data: 'order.id'},
+            {data: 'status.name'},
+            {data: 'order.total_amount'},
+            {data: 'order.total_quantity'},
+            {data: 'order.phone'},
+            {data: 'order.address'},
+            {
+                data: 'profile-link',
+                render: function(data, type, full, meta){
+                    return `<a href=${data}>Перейти</a>`;
                 }
-            });
-        };
+            },
+            {
+                data: 'details-link',
+                render: function(data, type, full, meta){
+                    return `<a href=${data}>Перейти</a>`;
+                }
+            },
+            {data: 'order.created_at'},
+            {data: 'order.updated_at'},
+            {
+                data: 'action',
+                name: 'action',
+                orderable: false,
+                searchable: false
+            },
+        ],
+        columnDefs: [
+            { width: '80px',  targets: 3},
+            { width: '200px', targets: [5, 8, 9]},
+            { width: '250px', targets: 10}
+        ],
+    });
 
-        $('#this-table').on('click', '.complete', function() {
-            let id = $(this).data('id');
-            sendPostRequest("{{ route('admin.orders.complete') }}", {id: id}, function(response) {
-                console.log(response);
-            });
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+    const sendPostRequest = function(url, data, onSuccess) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+            },
+            success: function(response) {
+                onSuccess(response);
+                reloadTable(); // Обновляем таблицу после успешного запроса
+            },
+            error: function(response) {
+                console.error('Error:', response);
+            }
+        });
+    };
+
+    $('#this-table').on('click', '.complete', function() {
+        let id = $(this).data('id');
+        sendPostRequest("{{ route('admin.orders.complete') }}", {id: id}, function(response) {
+            console.log(response);
         });
     });
+
+    function reloadTable() {
+        table.ajax.reload();
+    }
 </script>
 </html>

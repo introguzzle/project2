@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\User\Profile;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -16,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Cart extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'profile_id'
     ];
@@ -41,9 +39,7 @@ class Cart extends Model
 
     public function getRelatedProducts(): array
     {
-        return $this->products()
-            ?->get()
-            ?->all() ?? [];
+        return $this->products->all();
     }
 
     public function getTotalAmount(): float
@@ -54,23 +50,14 @@ class Cart extends Model
         });
     }
 
-    /**
-     * @return Collection<CartProduct>
-     */
-
-    public function getRelatedCartProductCollection(): Collection
+    public static function firstOrCreate(
+        array $attributes = [],
+        array $values = []
+    ): static
     {
-        return CartProduct::query()
-            ->where('cart_id', '=', $this->id)
-            ->get();
-    }
-
-    /**
-     * @return CartProduct[]
-     */
-
-    public function getRelatedCartProducts(): array
-    {
-        return $this->getRelatedCartProductCollection()->all();
+        $t = static fn($o): static => $o;
+        return $t(static::query()
+            ->firstOrCreate($attributes, $values)
+        );
     }
 }

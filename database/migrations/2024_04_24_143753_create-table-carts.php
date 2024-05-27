@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('carts', function(Blueprint $blueprint) {
+        Schema::create('carts', static function(Blueprint $blueprint) {
             $blueprint->id();
             $blueprint
                 ->foreignId('profile_id')

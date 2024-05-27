@@ -3,19 +3,33 @@
 namespace App\Models;
 
 use App\Events\OrderCreatedEvent;
+use App\Models\User\Profile;
+use Carbon\CarbonInterface;
 use DateTimeInterface as DateTime;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * @property Product[] $products
+ * @property int $id
+ * @property string $phone
+ * @property string $address
+ * @property string $description
+ * @property int $totalQuantity
+ * @property float $totalAmount
+ * @property PaymentMethod $paymentMethod
+ * @property DeliveryMethod $deliveryMethod
+ *
+ * @property Status $status
+ * @property Profile $profile
+ * @property Collection<Product> $products
+ *
+ * @property ?CarbonInterface $createdAt
+ * @property ?CarbonInterface $updatedAt
  */
 
 class Order extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'phone',
         'name',
@@ -24,14 +38,16 @@ class Order extends Model
         'total_quantity',
         'total_amount',
         'profile_id',
-        'status_id'
+        'status_id',
+        'payment_method_id',
+        'delivery_method_id',
     ];
 
-    protected static function boot(): void
+    public static function boot(): void
     {
         parent::boot();
 
-        static::created(function (self $order) {
+        static::created(static function (self $order): void {
             event(new OrderCreatedEvent($order));
         });
     }
@@ -44,16 +60,6 @@ class Order extends Model
     public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class, 'status_id');
-    }
-
-    public function getRelatedProfile(): Profile
-    {
-        return $this->profile()->get()->all()[0];
-    }
-
-    public function getRelatedStatus(): Status
-    {
-        return $this->status()->get()->all()[0];
     }
 
     public function products(): BelongsToMany
@@ -102,5 +108,23 @@ class Order extends Model
     protected function serializeDate(DateTime $date): string
     {
         return $date->format('Y-m-d H:i');
+    }
+
+    public function updateStatus(
+        Status|int|string $status,
+    ): bool
+    {
+        $id = match(true) {
+            $status instanceof Status => $status->getId(),
+            is_numeric($status) => (int) $status,
+            is_string($status)  => Status::findByName($status)->getId()
+        };
+
+        return $this->update(['status_id' => $id]);
+    }
+
+    public function updateDescription(string $description): bool
+    {
+        return $this->update(['description' => $description]);
     }
 }

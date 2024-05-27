@@ -11,10 +11,9 @@
 |
 */
 
-use App\Http\Controllers\API\TelegramController;
-use App\Http\Controllers\API\VKController;
+use App\Http\Controllers\API\Telegram\Controller;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/telegram-webhook', [TelegramController::class, 'webhook'])
+Route::post('/telegram-webhook', [Controller::class, 'webhook'])
     ->name('telegram.webhook')
     ->withoutMiddleware(['web', 'csrf']);

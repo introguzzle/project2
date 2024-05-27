@@ -9,34 +9,17 @@ class CategoryService
     /**
      * @return Category[]
      */
-
-    public function acquireAllCategories(): array
+    public function getAllChildren(int|string $id): array
     {
-        return Category::all()->all();
-    }
-
-    public function acquireCategoryName(
-        int|string $categoryId
-    ): string
-    {
-        return Category::query()
-            ->where('id', '=', $categoryId)
-            ->first()
-            ->getAttribute('name');
-    }
-
-    /**
-     * @return Category[]
-     */
-    public function acquireAllChildren(int|string $id): array
-    {
+        /**
+         * @var Category[] $categories
+         */
         $categories = Category::all()->all();
         $result = [];
 
-        $findChildren = function (int|string $id)
-        use ($categories, &$findChildren, &$result) {
+        $findChildren = static function (int|string $id) use ($categories, &$findChildren, &$result) {
             foreach ($categories as $category) {
-                if ($category->parent_id == $id) {
+                if ($category->parentId === $id) {
                     $result[] = $category;
                     $findChildren($category->id);
                 }

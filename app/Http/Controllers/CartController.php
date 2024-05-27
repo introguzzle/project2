@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\DTO\RegistrationDTO;
 use App\Http\Requests\UpdateCartRequest;
-use App\Models\Cart;
-use App\Models\Identity;
 use App\Models\Product;
-use App\Models\Profile;
-use App\Models\Role;
+use App\Models\User\Profile;
+use App\Services\Auth\IdentityService;
 use App\Services\CartService;
-use App\Services\IdentityService;
 use App\Utils\Auth;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -50,8 +46,18 @@ class CartController extends Controller
             return redirect()->route('login');
         }
 
-        $products = $profile->cart->products;
-        $price = $this->cartService->getTotalAmount($profile);
+        if ($profile->cart === null) {
+            $this->cartService->createCart($profile);
+            $products = [];
+            $price = 0;
+
+        } else {
+            /**
+             * @var Product[] $products
+             */
+            $products = $profile->cart->products->all();
+            $price = $profile->cart->getTotalAmount();
+        }
 
         return view('cart', compact('products', 'price'));
     }
@@ -63,6 +69,7 @@ class CartController extends Controller
 
     public function updateQuantity(UpdateCartRequest $request): JsonResponse
     {
+        Log::info(gettype($request->input('product_id')));
         $profile = Auth::getProfile() ?? $this->createGuestProfile();
 
         $productId = $request->getProductId();
@@ -81,7 +88,7 @@ class CartController extends Controller
             );
         } catch (Throwable $t) {
             Log::error($t);
-            return $this->internalServerErrorResponse();
+            return $this->internalServerError();
         }
 
         return response()->json()->setData(['message' => 'Success']);
@@ -91,7 +98,7 @@ class CartController extends Controller
      * @return JsonResponse
      */
 
-    public function acquireTotalQuantity(): JsonResponse
+    public function getTotalQuantity(): JsonResponse
     {
         try {
             $totalQuantity = $this->cartService->getTotalQuantityByProfile(Auth::getProfile());
@@ -102,7 +109,7 @@ class CartController extends Controller
         return response()->json()->setData($totalQuantity);
     }
 
-    public function acquireTotalPrice(): JsonResponse
+    public function getTotalPrice(): JsonResponse
     {
         try {
             $priceByProfile = $this->cartService->getTotalAmount(Auth::getProfile());
@@ -122,7 +129,7 @@ class CartController extends Controller
 
         Auth::login($identity, true);
 
-        $this->cartService->createCart($identity->getRelatedProfile());
-        return $identity->getRelatedProfile();
+        $this->cartService->createCart($identity->profile);
+        return $identity->profile;
     }
 }

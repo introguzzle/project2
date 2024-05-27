@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Models\Profile;
+use App\Models\User\Profile;
 use PHPUnit\Framework\TestCase;
 
 class ProfileTest extends TestCase

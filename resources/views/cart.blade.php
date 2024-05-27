@@ -54,13 +54,16 @@
         });
 
         async function changeQuantity(button, productId, quantityChange) {
+            const totalQuantity = document.getElementById('cart-count-1').textContent;
+            setTotalQuantity(parseInt(totalQuantity) + parseInt(quantityChange));
+
             const url = '{{route('cart.update-quantity')}}';
             const formData = new FormData();
             formData.append('product_id', productId);
             formData.append('quantity_change', quantityChange);
 
             try {
-                const response = await fetch(url, {
+                await fetch(url, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -68,15 +71,11 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
                 const productData = await fetch(`/api/product/${productId}`);
                 const data = await productData.json();
 
                 updateQuantityAndTotalPrice(button, data['quantity']);
-                updateNav();
+
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -112,14 +111,6 @@
             setTimeout(() => {
                 quantityNode.classList.remove('animated-button');
             }, 500);
-        }
-
-        function updateNav() {
-            fetch('{{route('api.cart.total-quantity')}}')
-                .then(response => response.json())
-                .then(data => {
-                    setTotalQuantity(data);
-                });
         }
 
         function setTotalQuantity(totalQuantity) {

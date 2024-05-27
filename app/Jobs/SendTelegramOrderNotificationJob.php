@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Mail\TelegramOrderNotification;
+use App\Mail\Telegram\OrderNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,8 +13,8 @@ class SendTelegramOrderNotificationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private TelegramOrderNotification $notification;
-    public function __construct(TelegramOrderNotification $notification)
+    private OrderNotification $notification;
+    public function __construct(OrderNotification $notification)
     {
         $this->notification = $notification;
     }

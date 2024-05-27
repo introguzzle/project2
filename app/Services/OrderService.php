@@ -7,12 +7,10 @@ use App\Exceptions\ServiceException;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\Profile;
 use App\Models\Status;
-
+use App\Models\User\Profile;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-
 use Throwable;
 
 class OrderService
@@ -27,14 +25,6 @@ class OrderService
     )
     {
         $this->cartService = $cartService;
-    }
-
-    public function setOrderStatus(
-        Order $order,
-        Status $status
-    ): bool
-    {
-        return $order->update(['status_id' => $status->getAttribute('id')]);
     }
 
     /**
@@ -53,8 +43,8 @@ class OrderService
         return collect($orders)->map(function(Order $order) {
             return [
                 'order' => $order,
-                'status' => $order->getRelatedStatus(),
-                'profile' => $order->getRelatedProfile()
+                'status' => $order->status,
+                'profile' => $order->profile
             ];
         });
     }
@@ -118,6 +108,13 @@ class OrderService
          * @var Collection<Product> $productCollection
          */
         $cart = $profile->getRelatedCart();
+
+        if ($cart === null) {
+            throw new ServiceException(
+                'Не получилось заполнить заказ из корзины, потому что корзина null'
+            );
+        }
+
         $productCollection = $cart->products()->get();
 
         if ($productCollection->isEmpty()) {
@@ -147,18 +144,18 @@ class OrderService
     ): Order
     {
         $order = new Order([
-            'name' => $orderDTO->getName(),
-            'phone' => $orderDTO->getPhone(),
-            'address' => $orderDTO->getAddress(),
-            'total_amount' => $this->computeTotalAmount($profile),
+            'name'           => $orderDTO->getName(),
+            'phone'          => $orderDTO->getPhone(),
+            'address'        => $orderDTO->getAddress(),
+            'total_amount'   => $this->computeTotalAmount($profile),
             'total_quantity' => $this->computeTotalQuantity($profile),
-            'description' => ''
+            'description'    => ''
         ]);
 
         $order->profile()->associate($profile);
         $order->status()->associate($status instanceof Status
             ? $status
-            : Status::getByName($status)
+            : Status::findByName($status)
         );
 
         return $order;

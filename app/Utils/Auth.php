@@ -2,8 +2,8 @@
 
 namespace App\Utils;
 
-use App\Models\Identity;
-use App\Models\Profile;
+use App\Models\User\Identity;
+use App\Models\User\Profile;
 
 class Auth extends \Illuminate\Support\Facades\Auth
 {
@@ -13,7 +13,7 @@ class Auth extends \Illuminate\Support\Facades\Auth
             return null;
         }
 
-        return self::getIdentity()->getRelatedProfile();
+        return self::getIdentity()?->profile;
     }
 
     public static function isAuthenticated(): bool

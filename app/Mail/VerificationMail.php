@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Identity;
+use App\Models\User\Identity;
 use App\Services\Verification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -27,7 +27,7 @@ class VerificationMail extends Mailable
         $this->identity = $identity;
 
         $this->to($identity->getEmailForVerification());
-        $this->replyTo(Config::get('mail.mailers.smtp.username'));
+        $this->replyTo(config('mail.mailers.smtp.username'));
     }
 
     public function envelope(): Envelope

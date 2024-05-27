@@ -3,26 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Support\Str;
 
 
 abstract class Model extends EloquentModel
 {
+    use HasFactory;
     public const string DB_RECORD = '@DBRecord';
     public function getId(): int
     {
-        return (int)$this->getKey();
+        return (int) $this->getKey();
     }
 
     /**
-     * @param $key
+     * @param string $key
      * @return mixed
      */
     public function __get($key): mixed
     {
         return parent::__get(Str::snake($key));
     }
+
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
 
     public function __set($key, mixed $value): void
     {
@@ -31,9 +39,8 @@ abstract class Model extends EloquentModel
 
     public static function find(int $id): ?static
     {
-        return (fn($o): ?static => $o)(
-            static::query()->find($id)
-        );
+        $t = static fn($static): ?static => $static;
+        return $t(static::query()->find($id));
     }
 
     public static function findUnique(
@@ -41,9 +48,8 @@ abstract class Model extends EloquentModel
         mixed $value
     ): ?static
     {
-        return (fn($o): ?static => $o)(
-            static::whereEquals($column, $value)->first()
-        );
+        $t = static fn($static): ?static => $static;
+        return $t(static::whereEquals($column, $value)->first());
     }
 
     public static function whereEquals(
@@ -52,5 +58,11 @@ abstract class Model extends EloquentModel
     ): Builder
     {
         return static::query()->where($column, '=', $value);
+    }
+
+    public static function create(array $attributes): static
+    {
+        $t = static fn($static): ?static => $static;
+        return $t(static::query()->create($attributes));
     }
 }

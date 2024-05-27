@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use JetBrains\PhpStorm\ExpectedValues;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property CarbonInterface $createdAt
+ * @property CarbonInterface $updatedAt
+ */
 class Status extends Model
 {
-    use HasFactory;
-
-    /**
-     * @DBRecord
-     */
-    public const string NEW = 'Новый';
-
     /**
      * @DBRecord
      */
@@ -26,7 +27,7 @@ class Status extends Model
     /**
      * @DBRecord
      */
-    public const string PROCESSING = 'В обработке';
+    public const string GETTING_READY = 'Готовится';
 
     /**
      * @DBRecord
@@ -63,16 +64,17 @@ class Status extends Model
      */
     public const string FAILED_DELIVERY = 'Доставка отменена';
 
+    /**
+     * @var string[]
+     */
     protected $fillable = [
         'name'
     ];
 
-    public static function getByName(string $name): static
+    #[ExpectedValues(valuesFromClass: Status::class)]
+    public static function findByName(string $name): static
     {
-        return static::query()
-            ->where('name', '=', $name)
-            ->get()
-            ->first();
+        return static::findUnique('name', $name);
     }
 
     public function getName(): mixed
@@ -80,8 +82,8 @@ class Status extends Model
         return $this->getAttribute('name');
     }
 
-    public static function getNewStatus(): static
+    public static function pending(): static
     {
-        return static::getByName(self::NEW);
+        return static::findByName(self::PENDING);
     }
 }

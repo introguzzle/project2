@@ -8,11 +8,12 @@ use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
 use Closure;
+
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Log;
+
 use Throwable;
 
 class ProductController extends Controller
@@ -70,8 +71,7 @@ class ProductController extends Controller
     {
         try {
             return response()->json()->setData($setData());
-        } catch (Throwable $throwable) {
-            Log::error($throwable);
+        } catch (Throwable) {
             return response()->json()->setStatusCode(500);
         }
     }

@@ -1,6 +1,9 @@
 <?php
 
 if (!function_exists('toString')) {
+    /**
+     * @throws JsonException
+     */
     function toString(mixed $value): string
     {
         try {
@@ -9,7 +12,7 @@ if (!function_exists('toString')) {
                 ? $value->__toString()
                 : (string)$value;
         } catch (Throwable) {
-            return json_encode($value, JSON_UNESCAPED_UNICODE);
+            return json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         }
     }
 }
