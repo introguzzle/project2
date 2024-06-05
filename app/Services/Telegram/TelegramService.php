@@ -76,7 +76,7 @@ class TelegramService
             }
         }
 
-        $hasAccess = $telegramClient && $telegramClient->hasAccess();
+        $hasAccess = $telegramClient && $telegramClient->hasAccess;
 
         if ($hasAccess && ($profile = $telegramClient->profile)) {
             return "Привет, {$profile->getName()}. Нажмите на меню, чтобы увидеть доступные команды";

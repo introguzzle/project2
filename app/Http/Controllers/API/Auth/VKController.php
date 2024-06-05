@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-class VKController extends SocialAuthController
+class VKController extends Controller
 {
     public function getDriverName(): string
     {

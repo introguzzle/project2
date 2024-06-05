@@ -5,9 +5,9 @@ namespace App\DTO;
 class UpdateIdentityDTO
 {
     use FromRequest;
-    private ?string $currentPassword;
-    private ?string $newPassword;
-    private ?string $newPasswordConfirmation;
+    public readonly ?string $currentPassword;
+    public readonly ?string $newPassword;
+    public readonly ?string $newPasswordConfirmation;
 
     /**
      * @param string|null $currentPassword
@@ -24,21 +24,4 @@ class UpdateIdentityDTO
         $this->newPassword = $newPassword;
         $this->newPasswordConfirmation = $newPasswordConfirmation;
     }
-
-    public function getCurrentPassword(): ?string
-    {
-        return $this->currentPassword;
-    }
-
-    public function getNewPassword(): ?string
-    {
-        return $this->newPassword;
-    }
-
-    public function getNewPasswordConfirmation(): ?string
-    {
-        return $this->newPasswordConfirmation;
-    }
-
-
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Product;
-use App\Utils\Auth;
+use App\Other\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,7 +25,7 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $path = ['path' => $this->resource->getMainImage()->getAttribute('path')];
+        $path     = ['path' => $this->resource->getPath()];
         $quantity = ['quantity' => $this->resource->getCartQuantity(Auth::getProfile()?->cart)];
 
         return $this->resource->toArray() + $path + $quantity;

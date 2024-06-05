@@ -1,15 +1,14 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\API\Auth\GoogleController;
 use App\Http\Controllers\API\Auth\VKController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Client\AuthController;
+use App\Http\Controllers\Client\CartController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\ImageController;
+use App\Http\Controllers\Client\OrderController;
+use App\Http\Controllers\Client\ProductController;
+use App\Http\Controllers\Client\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +22,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/test', static function() {
+    return view('test');
+});
+
+Route::get('/images/{name}', [ImageController::class, 'show'])
+    ->name('images.show');
+
 //
 //
 // AUTH
@@ -35,8 +41,10 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])
     ->name('forgot-password');
+
 Route::post('/forgot-password', [AuthController::class, 'requestPasswordReset'])
     ->name('forgot-password.post');
+
 Route::get('/forgot-password/success', [AuthController::class, 'showForgotPasswordSuccess'])
     ->name('forgot-password.success');
 
@@ -67,6 +75,12 @@ Route::get('/', [HomeController::class, 'index']);
 Route::get('/home#menu', [HomeController::class, 'index'])
     ->name('menu');
 
+//
+//
+// PRODUCT
+//
+//
+
 Route::get('/product/{id}', [ProductController::class, 'index'])
     ->name('product');
 
@@ -96,39 +110,7 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
         ->name('checkout.order');
 });
 
-//
-//
-// ADMIN
-//
-//
 
-Route::middleware(['admin'])->prefix('/admin')->group(static function() {
-    Route::get('/', [AdminController::class, 'showAdmin'])
-        ->name('admin.admin');
-
-    Route::get('/get-token', [AdminController::class, 'getToken'])
-        ->name('admin.token');
-
-
-
-    Route::get('/orders', [AdminOrderController::class, 'showOrders'])
-        ->name('admin.orders');
-
-    Route::get('/orders/modal/{id}', [AdminOrderController::class, 'showModal'])
-        ->name('admin.orders.modal');
-
-    Route::get('/profile/{id}', [AdminOrderController::class, 'showProfile'])
-        ->name('admin.associated.profile');
-
-    Route::get('/order/{id}', [AdminOrderController::class, 'showOrder'])
-        ->name('admin.associated.order');
-
-    Route::post('/orders/complete', [AdminOrderController::class, 'complete'])
-        ->name('admin.orders.complete');
-
-    Route::post('/orders/update', [AdminOrderController::class, 'update'])
-        ->name('admin.orders.update');
-});
 
 //
 //
@@ -136,19 +118,20 @@ Route::middleware(['admin'])->prefix('/admin')->group(static function() {
 //
 //
 
+
 Route::get('/api/cart-quantity', [CartController::class, 'getTotalQuantity'])
     ->name('api.cart.total-quantity');
 
 Route::get('/api/cart-total-price', [CartController::class, 'getTotalPrice'])
     ->name('api.cart.total-price');
 
-Route::get('/api/products/{category_id}', [ProductController::class, 'acquireProductCollection'])
+Route::get('/api/products/{category_id}', [ProductController::class, 'getProductResourceCollection'])
     ->name('api.products');
 
-Route::get('/api/category/{category_id}', [ProductController::class, 'acquireCategoryResource'])
+Route::get('/api/category/{category_id}', [ProductController::class, 'getCategoryResource'])
     ->name('api.category');
 
-Route::get('/api/product/{product_id}', [ProductController::class, 'acquireProductResource'])
+Route::get('/api/product/{product_id}', [ProductController::class, 'getProductResource'])
     ->name('api.product');
 
 Route::post('/cart-products-update-quantity', [CartController::class, 'updateQuantity'])

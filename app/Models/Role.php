@@ -2,8 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Core\Model;
+use Carbon\CarbonInterface;
+use JetBrains\PhpStorm\ExpectedValues;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property CarbonInterface $createdAt
+ * @property CarbonInterface $updatedAt
+ */
 class Role extends Model
 {
     /**
@@ -25,6 +33,7 @@ class Role extends Model
         'name'
     ];
 
+    #[ExpectedValues(values: [Role::ADMIN, Role::USER, Role::GUEST])]
     public static function findByName(string $name): ?static
     {
         return (static fn($o): ?static => $o)(static::query()->where('name', '=', $name)->first());

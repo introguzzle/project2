@@ -1,28 +1,32 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+use App\Other\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function table(): string
     {
-        Schema::create('images', static function(Blueprint $blueprint) {
-            $blueprint->id();
-            $blueprint->string('path');
-            $blueprint->timestamps();
-        });
+        return 'images';
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function definition(Blueprint $blueprint): void
     {
-        Schema::dropIfExists('images');
+        $blueprint->id();
+        $blueprint->string('path');
+
+        $blueprint
+            ->string('name')
+            ->nullable();
+        $blueprint
+            ->text('description')
+            ->nullable();
+
+        $blueprint->string('type');
+        $blueprint->string('file_size');
+        $blueprint->float('bytes');
+        $blueprint->string('image_size');
+
+        $blueprint->timestamps();
     }
 };

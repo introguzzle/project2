@@ -27,15 +27,15 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $blueprint
-                ->foreignId('payment_method_id')
+                ->foreignId('receipt_method_id')
                 ->index()
-                ->constrained('payment_methods')
+                ->constrained('receipt_methods')
                 ->cascadeOnDelete();
 
             $blueprint
-                ->foreignId('delivery_method_id')
+                ->foreignId('payment_method_id')
                 ->index()
-                ->constrained('delivery_methods')
+                ->constrained('payment_methods')
                 ->cascadeOnDelete();
 
             $blueprint->string('name');

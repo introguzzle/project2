@@ -29,7 +29,7 @@ trait GeneratesToken
             $telegramAccessToken->forceDelete();
         }
 
-        $random = $this->random(4);
+        $random = $this->random(5);
 
         $telegramAccessToken = new TelegramAccessToken(['token' => $random]);
         $telegramAccessToken->profile()->associate($profile);
@@ -38,7 +38,16 @@ trait GeneratesToken
         return $telegramAccessToken;
     }
 
-    protected function random(int $digits): int
+    public function resetAll(): void
+    {
+        TelegramClient::all()->each(function (TelegramClient $telegramClient) {
+            $telegramClient->setAccess(false);
+        });
+
+        TelegramAccessToken::query()->delete();
+    }
+
+    private function random(int $digits): int
     {
         $min = 10 ** ($digits - 1);
         $max = (10 ** $digits) - 1;

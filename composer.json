@@ -8,6 +8,7 @@
         "php": "^8.3",
         "ext-http": "*",
         "ext-pdo": "*",
+        "ext-zip": "*",
         "defstudio/telegraph": "^1.44",
         "guzzlehttp/guzzle": "^7.2",
         "irazasyed/telegram-bot-sdk": "^3.14",
@@ -18,12 +19,16 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.5",
         "php-amqplib/php-amqplib": "^3.6",
+        "pusher/pusher-php-server": "^7.2",
         "socialiteproviders/google": "^4.1",
         "socialiteproviders/vkontakte": "^5.0",
+        "spatie/laravel-backup": "^8.8",
         "vladimir-yuldashev/laravel-queue-rabbitmq": "^13.3",
         "yajra/laravel-datatables-oracle": "^10.0"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest"
+        ,
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
@@ -39,7 +44,7 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Utils/utils.php"
+          "app/Other/utils.php"
         ]
     },
     "autoload-dev": {

@@ -2,54 +2,46 @@
 
 namespace App\DTO;
 
-use App\Utils\Requests;
+use App\Other\Requests;
 use Illuminate\Http\Request;
 
 class PostOrderDTO
 {
     use FromRequest;
-    private ?string $name;
-    private ?string $phone;
-    private ?string $address;
 
-    private mixed $price;
+    public readonly ?string $name;
+    public readonly ?string $phone;
+    public readonly ?string $address;
+
+    public readonly int $price;
+
+    public readonly int $receiptMethodId;
+    public readonly int $paymentMethodId;
 
     /**
      * @param string|null $name
      * @param string|null $phone
      * @param string|null $address
-     * @param mixed $price
+     * @param int $price
+     * @param int $receiptMethodId
+     * @param int $paymentMethodId
      */
     public function __construct(
         ?string $name,
         ?string $phone,
         ?string $address,
-        mixed $price
+        int $price,
+        int $receiptMethodId,
+        int $paymentMethodId
     )
     {
         $this->name = $name;
         $this->phone = $phone;
         $this->address = $address;
         $this->price = $price;
+        $this->receiptMethodId = $receiptMethodId;
+        $this->paymentMethodId = $paymentMethodId;
     }
 
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
 
-    public function getPhone(): ?string
-    {
-        return $this->phone;
-    }
-
-    public function getAddress(): ?string
-    {
-        return $this->address;
-    }
-
-    public function getPrice(): mixed
-    {
-        return $this->price;
-    }
 }

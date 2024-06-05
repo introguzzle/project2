@@ -18,7 +18,7 @@ class AuthCommandStrategy extends AbstractCommandStrategy
         string          $text
     ): string
     {
-        if ($telegramClient && $telegramClient->hasAccess()) {
+        if ($telegramClient && $telegramClient->hasAccess) {
             return "Вы уже прошли аутентификацию";
         }
 
@@ -31,7 +31,7 @@ class AuthCommandStrategy extends AbstractCommandStrategy
             [$login, $token] = explode(' ', $credentials);
 
             if ($profile = $this->bindClient($chatId, $login, $token)) {
-                return "Привет, {$profile->getName()}";
+                return "Привет, {$profile->name}";
             }
         } catch (Throwable $t) {
             if (!isset($login, $token)) {

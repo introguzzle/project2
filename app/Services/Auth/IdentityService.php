@@ -27,9 +27,9 @@ class IdentityService
      */
     public function authenticate(LoginDTO $dto): void
     {
-        $login = $dto->getLogin();
-        $password = $dto->getPassword();
-        $remember = $dto->isRemember() ?? false;
+        $login = $dto->login;
+        $password = $dto->password;
+        $remember = $dto->remember ?? false;
 
         $identity = Identity::findByCredential($login);
 
@@ -38,13 +38,13 @@ class IdentityService
         }
 
         $attemptByEmail = Auth::attempt([
-            'email' => $login,
-                'password' => $password],
-                $remember
+            'email'    => $login,
+            'password' => $password],
+            $remember
         );
 
         $attemptByPhone = Auth::attempt([
-            'phone' => $login,
+            'phone'    => $login,
             'password' => $password],
             $remember
         );
@@ -134,7 +134,7 @@ class IdentityService
         int|string|null $serviceValue
     ): Profile
     {
-        $attributes = ['name' => $dto->getName()];
+        $attributes = ['name' => $dto->name];
 
         if ($service && $serviceValue) {
             $serviceAttribute = $service . '_id';
@@ -168,25 +168,13 @@ class IdentityService
 
     private function createIdentity(RegistrationDTO $dto): Identity
     {
-        $password = Hash::make($dto->getPassword());
+        $password = Hash::make($dto->password);
 
-        if (($email = $dto->getEmail()) !== null) {
+        if (($email = $dto->email) !== null) {
             return new Identity(['email' => $email, 'password' => $password]);
         }
 
-        return new Identity(['phone' => $dto->getPhone(), 'password' => $password]);
-    }
-
-    /**
-     * @param string $login
-     * @return bool
-     */
-
-    public function checkLoginPresence(
-        string $login
-    ): bool
-    {
-        return Identity::findProfile($login) !== null;
+        return new Identity(['phone' => $dto->phone, 'password' => $password]);
     }
 
     /**
@@ -220,25 +208,6 @@ class IdentityService
     }
 
     /**
-     * @param Identity $identity
-     * @param UpdateIdentityDTO $dto
-     * @return bool
-     */
-
-    public function updateIdentity(
-        Identity          $identity,
-        UpdateIdentityDTO $dto
-    ): bool
-    {
-        if (!Hash::check($dto->getCurrentPassword(), $identity->getAuthPassword())) {
-            return false;
-        }
-
-        $identity->updatePassword($dto->getNewPassword());
-        return true;
-    }
-
-    /**
      * @param string $email
      * @return bool
      */
@@ -265,13 +234,16 @@ class IdentityService
      * @return bool
      */
 
-    public function updatePassword(
+    public function updatePasswordWithToken(
         PasswordResetDTO $dto
     ): bool
     {
-        $passwordResetToken = PasswordResetToken::findUnique('token', $dto->getToken());
+        $passwordResetToken = PasswordResetToken::findUnique(
+            'token',
+            $dto->token
+        );
 
-        if ($passwordResetToken === null) {
+        if ($passwordResetToken === null || !$passwordResetToken->active) {
             return false;
         }
 
@@ -280,7 +252,7 @@ class IdentityService
         DB::beginTransaction();
 
         try {
-            $identity->updatePassword($dto->getPassword());
+            $identity->updatePassword($dto->password);
             $passwordResetToken->setExpired();
         } catch (Throwable $t) {
             Log::error($t);

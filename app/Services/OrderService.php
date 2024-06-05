@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\DTO\PostOrderDTO;
 use App\Exceptions\ServiceException;
+use App\Models\ReceiptMethod;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Status;
 use App\Models\User\Profile;
@@ -28,28 +30,6 @@ class OrderService
     }
 
     /**
-     * @return Collection
-     */
-
-    public function acquireLatest(): Collection
-    {
-        return Order::query()->latest()->get();
-    }
-
-    public function acquireLatestAndSerialize(): \Illuminate\Support\Collection
-    {
-        $orders = $this->acquireLatest()->all();
-
-        return collect($orders)->map(function(Order $order) {
-            return [
-                'order' => $order,
-                'status' => $order->status,
-                'profile' => $order->profile
-            ];
-        });
-    }
-
-    /**
      * @param Profile|null $profile
      * @param PostOrderDTO $orderDTO
      * @return void
@@ -57,7 +37,7 @@ class OrderService
      * @throws ServiceException
      */
     public function order(
-        ?Profile $profile,
+        ?Profile     $profile,
         PostOrderDTO $orderDTO
     ): void
     {
@@ -101,13 +81,13 @@ class OrderService
 
     public function fillOrderFromCart(
         Profile $profile,
-        Order $order
+        Order   $order
     ): void
     {
         /**
          * @var Collection<Product> $productCollection
          */
-        $cart = $profile->getRelatedCart();
+        $cart = $profile->cart;
 
         if ($cart === null) {
             throw new ServiceException(
@@ -122,12 +102,14 @@ class OrderService
         }
 
         $productCollection->each(function(Product $product) use ($order, $cart) {
-            $orderProduct = new OrderProduct([
-                'product_id' => $product->getId(),
-                'quantity' => $product->getCartQuantity($cart)
-            ]);
+            $orderProduct = new OrderProduct();
 
-            $orderProduct->order()->associate($order)->save();
+            $orderProduct->quantity = $product->getCartQuantity($cart);
+
+            $orderProduct->product()->associate($product);
+            $orderProduct->order()->associate($order);
+
+            $orderProduct->save();
         });
     }
 
@@ -138,24 +120,32 @@ class OrderService
      * @return Order
      */
     public function createOrder(
-        PostOrderDTO $orderDTO,
-        Profile $profile,
+        PostOrderDTO  $orderDTO,
+        Profile       $profile,
         string|Status $status,
     ): Order
     {
-        $order = new Order([
-            'name'           => $orderDTO->getName(),
-            'phone'          => $orderDTO->getPhone(),
-            'address'        => $orderDTO->getAddress(),
-            'total_amount'   => $this->computeTotalAmount($profile),
-            'total_quantity' => $this->computeTotalQuantity($profile),
-            'description'    => ''
-        ]);
+        $order = new Order();
+
+        $order->name = $orderDTO->name;
+        $order->phone = $orderDTO->phone;
+        $order->address = $orderDTO->address;
+        $order->totalAmount = $this->computeTotalAmount($profile);
+        $order->totalQuantity = $this->computeTotalQuantity($profile);
+        $order->description = '';
 
         $order->profile()->associate($profile);
         $order->status()->associate($status instanceof Status
             ? $status
             : Status::findByName($status)
+        );
+
+        $order->paymentMethod()->associate(
+            PaymentMethod::find($orderDTO->paymentMethodId)
+        );
+
+        $order->receiptMethod()->associate(
+            ReceiptMethod::find($orderDTO->receiptMethodId)
         );
 
         return $order;
@@ -168,6 +158,6 @@ class OrderService
 
     private function computeTotalAmount(Profile $profile): float
     {
-        return $this->cartService->getTotalAmount($profile);
+        return $this->cartService->getTotalAmountByProfile($profile);
     }
 }

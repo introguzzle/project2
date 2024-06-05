@@ -2,7 +2,7 @@
 
 namespace App\Models\Telegram;
 
-use App\Models\Model;
+use App\Models\Core\Model;
 use App\Models\User\Profile;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -53,11 +53,6 @@ class TelegramClient extends Model
     public function profile(): BelongsTo
     {
         return $this->belongsTo(Profile::class, 'profile_id');
-    }
-
-    public function hasAccess(): bool
-    {
-        return (bool) $this->getAttribute('has_access');
     }
 
     public static function findByChatId(string $chatId): ?static

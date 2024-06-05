@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cart_product', static function(Blueprint $blueprint) {
-            $blueprint->id();
+            $blueprint->primary(['cart_id', 'product_id']);
 
             $blueprint
                 ->foreignId('cart_id')
@@ -25,8 +25,6 @@ return new class extends Migration
                 ->index()
                 ->constrained('products')
                 ->cascadeOnDelete();
-
-            $blueprint->unique(['cart_id', 'product_id']);
 
             $blueprint->integer('quantity');
             $blueprint->timestamps();

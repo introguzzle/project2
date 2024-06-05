@@ -3,7 +3,7 @@
 namespace App\Models\User;
 
 use App\Events\RegisteredEvent;
-use App\Models\Model;
+use App\Models\Core\Model;
 use Carbon\CarbonInterface;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -22,6 +22,8 @@ use RuntimeException;
  * @property ?CarbonInterface $emailVerifiedAt;
  * @property Profile $profile
  * @property ?string $rememberToken
+ * @property ?CarbonInterface $createdAt;
+ * @property ?CarbonInterface $updatedAt
  */
 
 class Identity extends Model implements MustVerifyEmail, Authenticatable
@@ -39,7 +41,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
         'password'
     ];
 
-    protected static function boot(): void
+    public static function boot(): void
     {
         parent::boot();
 

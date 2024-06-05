@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-use App\Utils\Requests;
+use App\Other\Requests;
 use Illuminate\Http\Request;
 
 trait FromRequest

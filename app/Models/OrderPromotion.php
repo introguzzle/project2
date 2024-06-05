@@ -2,25 +2,35 @@
 
 namespace App\Models;
 
+use App\Models\Core\Pivot;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use DateTimeInterface as DateTime;
 
 /**
  * @property int $id
+ * @property int $quantity
  *
  * @property Order $order
- * @property Product $product
+ * @property Promotion $promotion
  *
- * @property ?CarbonInterface $createdAt
+ * @property int $orderId
+ * @property int $promotionId
+ *
+ * @property ?CarbonInterface $createdAt;
  * @property ?CarbonInterface $updatedAt
  */
 class OrderPromotion extends Pivot
 {
     protected $table = 'order_promotion';
+    protected $primaryKey = [
+        'order_id',
+        'promotion_id'
+    ];
+
     protected $fillable = [
         'order_id',
-        'product_id',
+        'promotion_id',
     ];
 
     public function order(): BelongsTo

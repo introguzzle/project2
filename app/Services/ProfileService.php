@@ -4,30 +4,12 @@ namespace App\Services;
 
 use App\DTO\UpdateProfileDTO;
 use App\Exceptions\ServiceException;
-use App\Models\User\Identity;
 use App\Models\User\Profile;
 
 class ProfileService
 {
-    /**
-     * @param string $login
-     * @return Profile|null
-     */
-
-    public function acquireByLogin(string $login): ?Profile
-    {
-        return (fn($object): ?Profile => $object)(Profile::query()->find(
-            Identity::query()
-                ->where('phone', '=', $login)
-                ->orWhere('email', '=', $login)
-                ->first()
-                ->getAttribute('profile_id')
-        ));
-    }
-
-
     public function update(
-        ?Profile $profile,
+        ?Profile         $profile,
         UpdateProfileDTO $updateProfileDTO
     ): void
     {
@@ -36,9 +18,9 @@ class ProfileService
         }
 
         $profile->update([
-            'address' => $updateProfileDTO->getAddress(),
-            'birthday' => $updateProfileDTO->getBirthday(),
-            'name' => $updateProfileDTO->getName()
+            'address'  => $updateProfileDTO->address,
+            'birthday' => $updateProfileDTO->birthday,
+            'name'     => $updateProfileDTO->name
         ]);
 
         $profile->save();

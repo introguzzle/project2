@@ -17,10 +17,20 @@ abstract class Event
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, Channel>
+     * @return Channel[]|Channel
      */
-    public function broadcastOn(): array
+    public function broadcastOn(): Channel|array
     {
         return [];
+    }
+
+    public function __serialize(): array
+    {
+        return $this->serialize();
+    }
+
+    public function __unserialize(array $values): void
+    {
+        $this->unserialize($values);
     }
 }

@@ -1,35 +1,29 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+use App\Other\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function table(): string
     {
-        Schema::create('cafes', static function (Blueprint $blueprint) {
-            $blueprint->id();
-
-            $blueprint->string('name');
-            $blueprint->text('address');
-            $blueprint->text('description');
-            $blueprint->unsignedDecimal('required_order_sum');
-            $blueprint->string('image');
-            $blueprint->jsonb('settings');
-
-            $blueprint->timestamps();
-        });
+        return 'cafes';
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function definition(Blueprint $blueprint): void
     {
-        Schema::dropIfExists('cafes');
+        $blueprint->id();
+        $blueprint->string('name');
+        $blueprint->unsignedDecimal('required_order_sum');
+
+        $blueprint->string('address');
+        $blueprint->string('phone');
+        $blueprint->string('email');
+        $blueprint->jsonb('settings')->nullable();
+
+        $blueprint->text('description')->nullable();
+        $blueprint->string('image')->nullable();
+
+        $blueprint->timestamps();
     }
 };

@@ -29,7 +29,7 @@ class CartService
         );
 
         $cartId = $cart->id;
-        $cartProduct = CartProduct::unique($cartId, $productId);
+        $cartProduct = CartProduct::find(['cart_id' => $cartId, 'product_id' => $productId]);
 
         if ($cartProduct !== null) {
             $newQuantity = $cartProduct->quantity + $quantityChange;
@@ -86,7 +86,7 @@ class CartService
             ->sum('quantity');
     }
 
-    public function getTotalAmount(Profile $profile): float
+    public function getTotalAmountByProfile(Profile $profile): float
     {
         $cart = $profile->cart;
 

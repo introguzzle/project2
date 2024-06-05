@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Core\Model;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use JetBrains\PhpStorm\ExpectedValues;
 
 /**

@@ -2,18 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Core\Pivot;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
- * @property Cart $cart;
- * @property Product $product
  * @property int $quantity
+ *
+ * @property Cart $cart
+ * @property Product $product
+ *
+ * @property int $cartId
+ * @property int $productId
+ *
+ * @property ?CarbonInterface $createdAt
+ * @property ?CarbonInterface $updatedAt
  */
 class CartProduct extends Pivot
 {
     protected $table = 'cart_product';
+    protected $primaryKey = [
+        'cart_id',
+        'product_id'
+    ];
+
     protected $fillable = [
         'cart_id',
         'product_id',
@@ -28,19 +40,5 @@ class CartProduct extends Pivot
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public static function unique(
-        int $cartId,
-        int $productId
-    ): ?static
-    {
-        $t = static fn($static): ?static => $static;
-
-        return $t(static::query()
-            ->where('cart_id', '=', $cartId)
-            ->where('product_id', '=', $productId)
-            ->first()
-        );
     }
 }

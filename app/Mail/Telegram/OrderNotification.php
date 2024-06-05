@@ -8,12 +8,10 @@ use App\Models\Status;
 class OrderNotification extends Notification
 {
     protected Order $order;
-    protected int $id;
 
     public function __construct(Order $order)
     {
         $this->order   = $order;
-        $this->id      = $order->getId();
 
         $this->content = $this->buildContent();
         $this->buttons = $this->buildButtons();
@@ -21,16 +19,16 @@ class OrderNotification extends Notification
 
     public function buildButtons(): array
     {
-        $accept = Status::findByName(Status::CONFIRMED)->getId();
-        $reject = Status::findByName(Status::CANCELLED)->getId();
+        $accept = Status::findByName(Status::CONFIRMED)->id;
+        $reject = Status::findByName(Status::CANCELLED)->id;
 
         return [
             'inline_keyboard' => [
                 [
-                    ['text' => 'Принять', 'callback_data' => $this->id . 'split' . $accept]
+                    ['text' => 'Принять', 'callback_data' => $this->order->id . 'split' . $accept]
                 ],
                 [
-                    ['text' => 'Отклонить', 'callback_data' => $this->id . 'split' . $reject]
+                    ['text' => 'Отклонить', 'callback_data' => $this->order->id . 'split' . $reject]
                 ]
             ]
         ];
@@ -42,20 +40,20 @@ class OrderNotification extends Notification
         $status = $this->order->status;
 
         $eol = PHP_EOL;
-        $orderDetails = route('admin.associated.order', ['id' => $this->order->getId()]);
+        $orderDetails = route('admin.orders.order.index', ['id' => $this->order->id]);
 
         $productDetails = '';
         foreach ($this->order->products as $product) {
-            $productDetails .= "<b>{$product->getName()}</b>";
+            $productDetails .= "<b>{$product->name}</b>";
             $productDetails .= "<b> - {$product->getOrderQuantity($this->order)} шт. {$eol}</b>";
         }
 
-        return "<b>Заказ {$this->order->getId()}</b>{$eol}
-<b>Имя:</b> {$profile->getName()}
+        return "<b>Заказ {$this->order->id}</b>{$eol}
+<b>Имя:</b> {$profile->name}
 <b>Телефон:</b> {$this->order->phone}
-<b>Адрес:</b> {$this->order->getAddress()}
-<b>Общая сумма:</b> {$this->order->getTotalAmount()} ₽
-<b>Количество товаров:</b> {$this->order->getTotalQuantity()}
+<b>Адрес:</b> {$this->order->address}
+<b>Общая сумма:</b> {$this->order->totalAmount} ₽
+<b>Количество товаров:</b> {$this->order->totalQuantity}
 <b>Статус:</b> {$status->getName()}{$eol}
 <b>Продукты:</b>{$eol}{$productDetails}
 <b><a href=\"$orderDetails\">Перейти к заказу</a></b>";

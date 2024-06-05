@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-class GoogleController extends SocialAuthController
+class GoogleController extends Controller
 {
     public function getDriverName(): string
     {

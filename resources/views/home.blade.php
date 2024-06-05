@@ -1,4 +1,13 @@
+@php use App\Models\Category;use App\Models\Product;use App\Other\Auth; @endphp
 @extends('nav.nav')
+
+@php
+    /**
+     * @var Category[] $categories
+     * @var Product $product
+     * @var Product[] $products
+     */
+@endphp
 
 @section('content')
     <section id="home">
@@ -87,29 +96,31 @@
                         $id = $product->id;
                     @endphp
 
-                    @if ($product->category_id === 1)
-                    <div class="grid-item">
-                        <div class="item-header">
-                            <a href="{{route("product", ['id' => $id])}}">
-                                <img
-                                     src="{{$product->getMainImage()->path}}"
-                                     alt="{{ $name }}"
-                                >
-                            </a>
-                            <h3>{{ $name }}</h3>
-                            <p>{{ $product->short_description }}</p>
-                        </div>
-                        <div class="item-info">
-                            <p class="item-price">{{ $product->price }}</p>
-                            <div class="btn-container">
-                                <button onclick="updateProductCount(this, {{$id}} , '-1')" class="btn-count">-</button>
-                                <span id="item-count-{{ $id }}" class="item-count">
-                                    {{$product->getCartQuantity(\App\Utils\Auth::getProfile()?->getRelatedCart())}}
+                    @if ($product->category->id === 1)
+                        <div class="grid-item">
+                            <div class="item-header">
+                                <a href="{{route("product", ['id' => $id])}}">
+                                    <img
+                                        src="{{$product->getPath()}}"
+                                        alt="{{ $name }}"
+                                    >
+                                </a>
+                                <h3>{{ $name }}</h3>
+                                <p>{{ $product->shortDescription }}</p>
+                            </div>
+                            <div class="item-info">
+                                <p class="item-price">{{ $product->price }}</p>
+                                <div class="btn-container">
+                                    <button onclick="updateProductCount(this, {{$id}} , '-1')" class="btn-count">-
+                                    </button>
+                                    <span id="item-count-{{ $id }}" class="item-count">
+                                    {{$product->getCartQuantity(Auth::getProfile()?->cart)}}
                                 </span>
-                                <button onclick="updateProductCount(this, {{$id}} ,'1')" class="btn-count">+</button>
+                                    <button onclick="updateProductCount(this, {{$id}} ,'1')" class="btn-count">+
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
                     @endif
                 @endforeach
             </div>
@@ -122,17 +133,21 @@
                 <h4 class="subtitle-script">Authentic</h4>
                 <h1 class="subtitle-primary--alt">Tasteful</h1>
                 <h3 class="subtitle-secondary--alt">Cafe & Restaraunt</h3>
-                <p class="text-primary">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim in
+                <p class="text-primary">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse varius enim
+                    in
                     eros
                     elementum tristique. Duis cursus, mi quis viverra ornare, eros dolor.</p>
             </header>
             <div class="photo-gallery">
-                <img src="https://gas-kvas.com/grafic/uploads/posts/2023-09/1695925240_gas-kvas-com-p-kartinki-burger-11.jpg" alt=""
-                     class="gallery-photo">
+                <img
+                    src="https://gas-kvas.com/grafic/uploads/posts/2023-09/1695925240_gas-kvas-com-p-kartinki-burger-11.jpg"
+                    alt=""
+                    class="gallery-photo">
                 <img src="https://foxboar.ru/wp-content/uploads/2021/09/headerImage.jpg"
                      alt="" class="gallery-photo">
-                <img src="https://intermountainhealthcare.org/-/media/images/modules/blog/posts/2015/health-benefits-drinking-coffee.jpg?la=en&h=461&w=700&mw=896&hash=24FC7736F38D6ADAC480DCB45239DD5F92CE6679"
-                     alt="" class="gallery-photo">
+                <img
+                    src="https://intermountainhealthcare.org/-/media/images/modules/blog/posts/2015/health-benefits-drinking-coffee.jpg?la=en&h=461&w=700&mw=896&hash=24FC7736F38D6ADAC480DCB45239DD5F92CE6679"
+                    alt="" class="gallery-photo">
                 <img src="https://s3.amazonaws.com/grazecart/naturesrootsfarm/images/1486599107_589bb3c32b4ed.jpg"
                      alt="" class="gallery-photo">
             </div>
@@ -231,7 +246,7 @@
                     return response.json();
                 })
                 .then(() => {
-                    return fetch(`/api/product/${productId}`, { credentials: 'include' })
+                    return fetch(`/api/product/${productId}`, {credentials: 'include'})
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -240,7 +255,7 @@
                     return response.json();
                 })
                 .then(() => {
-                    return fetch(`{{ route('api.cart.total-quantity') }}`, { credentials: 'include' })
+                    return fetch(`{{ route('api.cart.total-quantity') }}`, {credentials: 'include'})
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -252,7 +267,7 @@
 
             countSpan.addEventListener('animationend', () => {
                 countSpan.classList.remove('item-count-animation', 'item-count-color');
-            }, { once: true });
+            }, {once: true});
         }
 
         function changeCount(spanItemCount, count) {

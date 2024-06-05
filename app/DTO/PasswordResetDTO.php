@@ -5,9 +5,10 @@ namespace App\DTO;
 class PasswordResetDTO
 {
     use FromRequest;
-    private ?string $token;
-    private ?string $password;
-    private ?string $passwordConfirmation;
+
+    public readonly ?string $token;
+    public readonly ?string $password;
+    public readonly ?string $passwordConfirmation;
 
     /**
      * @param string|null $token
@@ -23,21 +24,6 @@ class PasswordResetDTO
         $this->token = $token;
         $this->password = $password;
         $this->passwordConfirmation = $passwordConfirmation;
-    }
-
-    public function getToken(): ?string
-    {
-        return $this->token;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function getPasswordConfirmation(): ?string
-    {
-        return $this->passwordConfirmation;
     }
 
 

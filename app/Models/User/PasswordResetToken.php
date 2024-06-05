@@ -3,16 +3,21 @@
 namespace App\Models\User;
 
 use App\Events\PasswordResetTokenCreatedEvent;
-use App\Models\Model;
+use App\Models\Core\Model;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Event;
 
 /**
  * @property int $id
  * @property string $token
- * @property int $identityId
  * @property boolean $active
+ *
+ * @property int $identityId
  * @property Identity $identity
+ *
+ * @property ?CarbonInterface $createdAt;
+ * @property ?CarbonInterface $updatedAt
  */
 class PasswordResetToken extends Model
 {
@@ -32,6 +37,12 @@ class PasswordResetToken extends Model
                 $passwordResetToken
             ));
         });
+    }
+
+    public static function findByToken(string $token): ?static
+    {
+        $t = fn($static): ?static => $static;
+        return $t(static::query()->where('token', '=', $token)->first());
     }
 
     public function identity(): BelongsTo

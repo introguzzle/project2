@@ -3,25 +3,38 @@
 namespace App\Models;
 
 use App\Events\OrderCreatedEvent;
+use App\Models\Core\Model;
 use App\Models\User\Profile;
+
 use Carbon\CarbonInterface;
-use DateTimeInterface as DateTime;
+
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use JetBrains\PhpStorm\ExpectedValues;
+
 /**
  * @property int $id
+ *
+ * @property string $name
  * @property string $phone
  * @property string $address
  * @property string $description
+ *
  * @property int $totalQuantity
  * @property float $totalAmount
- * @property PaymentMethod $paymentMethod
- * @property DeliveryMethod $deliveryMethod
  *
+ * @property ReceiptMethod $receiptMethod
+ * @property PaymentMethod $paymentMethod
  * @property Status $status
  * @property Profile $profile
+ *
+ * @property int $receiptMethodId
+ * @property int $paymentMethodId
+ * @property int $statusId
+ * @property int $profileId
+ *
  * @property Collection<Product> $products
  *
  * @property ?CarbonInterface $createdAt
@@ -39,8 +52,9 @@ class Order extends Model
         'total_amount',
         'profile_id',
         'status_id',
+
+        'receipt_method_id',
         'payment_method_id',
-        'delivery_method_id',
     ];
 
     public static function boot(): void
@@ -62,6 +76,16 @@ class Order extends Model
         return $this->belongsTo(Status::class, 'status_id');
     }
 
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+    }
+
+    public function receiptMethod(): BelongsTo
+    {
+        return $this->belongsTo(ReceiptMethod::class, 'receipt_method_id');
+    }
+
     public function products(): BelongsToMany
     {
         return $this
@@ -70,54 +94,15 @@ class Order extends Model
             ->using(OrderProduct::class);
     }
 
-    public function getPhone(): string
-    {
-        return $this->getAttribute('phone');
-    }
-
-    public function getName(): string
-    {
-        return $this->getAttribute('name');
-    }
-
-    public function getAddress(): string
-    {
-        return $this->getAttribute('address');
-    }
-
-    public function getTotalAmount(): float
-    {
-        return $this->getAttribute('total_amount');
-    }
-
-    public function getTotalQuantity(): int
-    {
-        return $this->getAttribute('total_quantity');
-    }
-
-    public function getStatusId(): int
-    {
-        return $this->getAttribute('status_id');
-    }
-
-    public function getProfileId(): int
-    {
-        return $this->getAttribute('profile_id');
-    }
-
-    protected function serializeDate(DateTime $date): string
-    {
-        return $date->format('Y-m-d H:i');
-    }
-
+    #[ExpectedValues(values: [], valuesFromClass: Order::class)]
     public function updateStatus(
         Status|int|string $status,
     ): bool
     {
         $id = match(true) {
-            $status instanceof Status => $status->getId(),
-            is_numeric($status) => (int) $status,
-            is_string($status)  => Status::findByName($status)->getId()
+            $status instanceof Status => $status->id,
+            is_numeric($status)       => (int) $status,
+            is_string($status)        => Status::findByName($status)->id
         };
 
         return $this->update(['status_id' => $id]);

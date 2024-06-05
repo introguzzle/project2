@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="{{ asset("styles.css", true) }}">
-<script src="{{asset('script.js', true)}}"></script>
+<link rel="stylesheet" href="{{ asset('storage/styles.css', true) }}">
+<script src="{{ asset('storage/script.js', true) }}"></script>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <link rel="stylesheet" href="{{ asset('styles.css', true) }}">
+    <link rel="stylesheet" href="{{ asset('storage/styles.css', true) }}">
+    <link rel="icon" href="{{ asset('storage/favicon.ico') }}" type="image/x-icon"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Merriweather|Oswald|Satisfy&display=swap" rel="stylesheet">
 
@@ -23,7 +24,7 @@
     <div class="logo">
         <a href="#">
             <div class="logo-name">
-                <a href="{{route('home')}}">
+                <a href="{{ route('home') }}">
                     <img src="https://i.postimg.cc/mrk7PKtQ/crop-image-online-com-1713747213-64714b6318d9e66dd501-Y1vm-I11-J.png" alt="logo" >
                 </a>
                 <div class="delivery-text-desktop">

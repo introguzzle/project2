@@ -1,3 +1,12 @@
+@php use App\Models\PaymentMethod;use App\Models\ReceiptMethod;use App\Models\User\Profile; @endphp
+@php
+    /**
+     * @var Profile $profile
+     * @var ReceiptMethod[] $receiptMethods
+     * @var PaymentMethod[] $paymentMethods
+     */
+@endphp
+
 @extends('nav.nav')
 
 @section('content')
@@ -11,22 +20,41 @@
                         <label for="name" class="form-label"><i class="fas fa-user"></i></label>
                         <input type="text" id="name" name="name" class="form-input"
                                placeholder="Введите имя" required
-                               value="{{ $profile->name  }}">
+                               value="{{ $profile->name }}">
                     </div>
 
                     <div class="form-group">
                         <label for="phone" class="form-label"><i class="fas fa-phone"></i></label>
                         <input type="text" id="phone" name="phone" class="form-input"
                                placeholder="Ваш номер телефона" required
-                               value="{{ $profile->phone }}">
+                               value="{{ $profile->identity->phone }}">
                     </div>
 
                     <div class="form-group">
                         <label for="address" class="form-label"><i class="fas fa-map-marker-alt"></i></label>
                         <input type="text" id="address" name="address" class="form-input"
                                placeholder="Ваш адрес" required
-                               value="{{ $profile->address  }}">
+                               value="{{ $profile->address }}">
                     </div>
+
+                    <div class="form-group">
+                        <label for="receipt_method" class="form-label"><i class="fas fa-truck"></i></label>
+                        <select id="receipt_method" name="receipt_method_id" class="form-input" required>
+                            @foreach($receiptMethods as $method)
+                                <option value="{{ $method->id }}">{{ $method->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="payment_method" class="form-label"><i class="fas fa-credit-card"></i></label>
+                        <select id="payment_method" name="payment_method_id" class="form-input" required>
+                            @foreach($paymentMethods as $method)
+                                <option value="{{ $method->id }}">{{ $method->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <input type="hidden" name="price" value="{{$price}}">
                     <div class="form-group">
                         @if (session('internal'))
@@ -46,13 +74,11 @@
 
     <style>
         #home {
-            background:
-                linear-gradient(
-                    rgba(0, 0, 0, 0.7),
-                    rgba(0, 0, 0, 0.9)
-                ),
-
-                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.9)
+            ),
+            url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
             background-size: cover;
         }
     </style>

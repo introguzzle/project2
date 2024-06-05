@@ -2,13 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Core\Pivot;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Pivot;
 
+/**
+ * @property int $id
+ * @property int $quantity
+ *
+ * @property Order $order
+ * @property Product $product
+ *
+ * @property int $orderId
+ * @property int $productId
+ *
+ * @property ?CarbonInterface $createdAt
+ * @property ?CarbonInterface $updatedAt
+ */
 class OrderProduct extends Pivot
 {
     protected $table = 'order_product';
+    protected $primaryKey = [
+        'order_id',
+        'product_id'
+    ];
+
     protected $fillable = [
         'quantity',
         'order_id',

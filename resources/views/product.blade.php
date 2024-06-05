@@ -1,13 +1,15 @@
+@php use App\Models\Product; @endphp
 @extends('nav.nav')
 
 @section('content')
+    @php /** @var Product $product */ @endphp
     <section id="home" class="product">
         <div class="overlay">
             <header id="main-header">
                 <div class="product-container">
                     <div class="product-details">
                         <div class="product-image">
-                            <img src="{{$product->getMainImage()->path}}" alt="{{$product->name}}">
+                            <img src="{{$product->getPath()}}" alt="{{$product->name}}">
                         </div>
                         <h3 class="product-title">{{$product->name}}</h3>
                         <div class="item-info">
@@ -19,7 +21,7 @@
                     </div>
                     <div class="product-description">
                         <div class="product-description-text">
-                            {{$product->full_description}}
+                            {{$product->fullDescription}}
                         </div>
                     </div>
                 </div>

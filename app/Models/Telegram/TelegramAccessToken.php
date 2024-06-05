@@ -2,7 +2,7 @@
 
 namespace App\Models\Telegram;
 
-use App\Models\Model;
+use App\Models\Core\Model;
 use App\Models\User\Profile;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -35,7 +35,7 @@ class TelegramAccessToken extends Model
     public static function findByProfile(Profile $profile): ?static
     {
         return (static fn($o): ?static => $o)(static::query()
-            ->where('profile_id', '=', $profile->getId())
+            ->where('profile_id', '=', $profile->id)
             ->first());
     }
 

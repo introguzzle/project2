@@ -2,18 +2,18 @@
 
 namespace App\DTO;
 
-use App\Utils\Requests;
+use App\Other\Requests;
 use Illuminate\Http\Request;
 
 class RegistrationDTO
 {
     use FromRequest;
-    private ?string $name;
-    private ?string $email;
+    public readonly ?string $name;
+    public readonly ?string $email;
 
-    private ?string $phone;
-    private ?string $password;
-    private ?string $passwordConfirmation;
+    public readonly ?string $phone;
+    public readonly ?string $password;
+    public readonly ?string $passwordConfirmation;
 
     public function __construct(
         ?string $name,
@@ -28,30 +28,5 @@ class RegistrationDTO
         $this->phone = $phone;
         $this->password = $password;
         $this->passwordConfirmation = $passwordConfirmation;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function getPhone(): ?string
-    {
-        return $this->phone;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function getPasswordConfirmation(): ?string
-    {
-        return $this->passwordConfirmation;
     }
 }

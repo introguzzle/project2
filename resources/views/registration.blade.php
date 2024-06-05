@@ -100,8 +100,7 @@
         fetch(`/api/check-login-credential?login=${login}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
-                const exists = !!data; // Приведение data к boolean
+                const exists = !!data;
                 if (exists) {
                     showError('Этот логин уже занят');
                 } else {

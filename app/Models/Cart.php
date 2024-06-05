@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Core\Model;
 use App\Models\User\Profile;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $profileId
  * @property Profile $profile
  * @property Collection<Product> $products
+ *
+ * @property ?CarbonInterface $createdAt;
+ * @property ?CarbonInterface $updatedAt
  */
 
 class Cart extends Model
@@ -33,20 +38,11 @@ class Cart extends Model
             ->using(CartProduct::class);
     }
 
-    /**
-     * @return Product[]
-     */
-
-    public function getRelatedProducts(): array
-    {
-        return $this->products->all();
-    }
-
     public function getTotalAmount(): float
     {
-        return (float)$this->products()->get()->sum(function(Product $product) {
+        return (float) $this->products->sum(function (Product $product) {
             $quantity = $product->getCartQuantity($this);
-            return $quantity * $product->getPrice();
+            return $quantity * $product->price;
         });
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Utils\Migration;
+use App\Other\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
 return new class extends Migration
@@ -12,7 +12,7 @@ return new class extends Migration
 
     public function definition(Blueprint $blueprint): void
     {
-        $blueprint->id();
+        $blueprint->primary(['order_id', 'promotion_id']);
         $blueprint
             ->foreignId('order_id')
             ->index()

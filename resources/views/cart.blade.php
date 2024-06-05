@@ -1,3 +1,4 @@
+@php use App\Other\Auth; @endphp
 @extends('nav.nav')
 
 @section('content')
@@ -15,9 +16,14 @@
                                         <h3 class="item-name">{{ $product->name }}</h3>
                                         <p class="cart-item-price">Цена: {{ $product->price }}</p>
                                         <div class="item-quantity item-quantity-{{$id}}">
-                                            <button class="quantity-btn decrease" onclick="changeQuantity(this, {{$id}}, '-1')">-</button>
-                                            <span class="quantity quantity-{{$id}}">{{$product->getCartQuantity(\App\Utils\Auth::getProfile()->getRelatedCart())}}</span>
-                                            <button class="quantity-btn increase" onclick="changeQuantity(this, {{$id}}, '1')">+</button>
+                                            <button class="quantity-btn decrease"
+                                                    onclick="changeQuantity(this, {{$id}}, '-1')">-
+                                            </button>
+                                            <span
+                                                class="quantity quantity-{{$id}}">{{$product->getCartQuantity(Auth::getProfile()->cart)}}</span>
+                                            <button class="quantity-btn increase"
+                                                    onclick="changeQuantity(this, {{$id}}, '1')">+
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -28,7 +34,7 @@
                         <div class="cart-total">
                             <p id="total-price">Итого: {{$price}}</p>
                             <form action="{{route('checkout')}}">
-                                <input type="submit" class="btn btn-checkout" value="Перейти к оформлению" />
+                                <input type="submit" class="btn btn-checkout" value="Перейти к оформлению"/>
                             </form>
                         </div>
                     @else
@@ -136,20 +142,18 @@
             font-size: 1.3em;
         }
 
-        @media(max-width: 768px) {
+        @media (max-width: 768px) {
             .cart-total {
                 display: block !important;
             }
         }
 
         #home {
-            background:
-                linear-gradient(
-                    rgba(0, 0, 0, 0.7),
-                    rgba(0, 0, 0, 0.9)
-                ),
-
-                url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.7),
+                rgba(0, 0, 0, 0.9)
+            ),
+            url("https://mebel-blog.ru/wp-content/uploads/2022/08/dizayn-restorana-13-1536x1024.jpg");
             background-size: cover;
         }
 

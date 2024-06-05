@@ -3,10 +3,11 @@
 namespace App\Models\User;
 
 use App\Models\Cart;
-use App\Models\Model;
+use App\Models\Core\Model;
 use App\Models\Order;
 use App\Models\Role;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -20,11 +21,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property ?string $avatar
  * @property ?string $vkontakteId
  * @property ?string $googleId
+ *
  * @property ?CarbonInterface $createdAt
  * @property ?CarbonInterface $updatedAt
+ *
  * @property ?Cart $cart
  * @property ?Identity $identity
  * @property Role $role
+ * @property Collection<Order> $orders
  */
 class Profile extends Model
 {
@@ -80,11 +84,6 @@ class Profile extends Model
         return $this->hasOne(Cart::class, 'profile_id');
     }
 
-    public function getRelatedCart(): ?Cart
-    {
-        return $this->cart()->get()->all()[0] ?? null;
-    }
-
     public function getSerializedBirthday(): mixed
     {
         return $this->jsonSerialize()['birthday'];
@@ -92,6 +91,6 @@ class Profile extends Model
 
     public function isAdmin(): bool
     {
-        return $this->role()->first()?->getAttribute('name') === Role::ADMIN ?? false;
+        return $this->role->name === Role::ADMIN ?? false;
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Core\Model;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,7 +17,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $fullDescription
  * @property float $weight
  * @property bool $availability
+ *
  * @property Category $category
+ * @property Collection<Cart> $carts
+ *
+ * @property ?CarbonInterface $createdAt;
+ * @property ?CarbonInterface $updatedAt
+ *
  */
 
 class Product extends Model
@@ -27,11 +35,7 @@ class Product extends Model
         'full_description',
         'weight',
         'availability',
-    ];
-
-    protected $hidden = [
-        'created_at',
-        'updated_at'
+        'category_id'
     ];
 
     public function category(): BelongsTo
@@ -58,6 +62,11 @@ class Product extends Model
         )->where('main', '=', true)->first();
     }
 
+    public function getPath(): ?string
+    {
+        return $this->getMainImage()?->url();
+    }
+
     public function carts(): BelongsToMany
     {
         return $this
@@ -70,29 +79,14 @@ class Product extends Model
     {
         return $this
             ->hasOne(CartProduct::class)
-            ->where('cart_id', '=', $cart->getAttribute('id'));
+            ->where('cart_id', '=', $cart->id);
     }
 
     public function orderProduct(Order $order): HasOne
     {
         return $this
             ->hasOne(OrderProduct::class)
-            ->where('order_id', '=', $order->getAttribute('id'));
-    }
-
-    public function getName(): string
-    {
-        return $this->getAttribute('name');
-    }
-
-    public function getPrice(): float
-    {
-        return $this->getAttribute('price');
-    }
-
-    public function getCategoryId(): int
-    {
-        return $this->getAttribute('category_id');
+            ->where('order_id', '=', $order->id);
     }
 
     public function getCartQuantity(?Cart $cart): int
@@ -103,7 +97,7 @@ class Product extends Model
 
         return $this->cartProduct($cart)->get()
             ?->first()
-            ?->getAttribute('quantity')
+            ?->quantity
             ?? 0;
     }
 
@@ -115,7 +109,7 @@ class Product extends Model
 
         return $this->orderProduct($order)->get()
             ?->first()
-            ?->getAttribute('quantity')
+            ?->quantity
             ?? 0;
     }
 
@@ -128,8 +122,8 @@ class Product extends Model
     {
         return static::query()
                 ->where('category_id', '=', $category instanceof Category
-                    ? $category->getId()
-                    : $category
+                    ? $category->id
+                    : (int) $category
                 )
                 ->get()
                 ->all();

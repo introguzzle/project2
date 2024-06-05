@@ -5,6 +5,7 @@ services:
             context: docker/php
         volumes:
             - '.:/var/www/html'
+            - './docker/php/custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini'
         restart: always
         depends_on:
             - db

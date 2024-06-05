@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers\API\Telegram;
 
-use App\Http\Controllers\Controller as BaseController;
+use App\Http\Controllers\Core\Controller as BaseController;
 use App\Http\Requests\API\TelegramWebhookRequest;
-
 use App\Services\Telegram\TelegramService;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\JsonResponse;
-
 use Illuminate\Support\Facades\Log;
 use JsonException;
 use Telegram\Bot\Exceptions\TelegramSDKException;
@@ -50,8 +48,7 @@ class Controller extends BaseController
         if ($update->message !== null) {
             $this->handlerContext->setHandler(
                 new MessageHandler(
-                    $this->dispatcher,
-                    $this->telegramService,
+                    $this->telegramService
                 )
             );
         }
@@ -59,15 +56,15 @@ class Controller extends BaseController
         if ($update->callbackQuery !== null) {
             $this->handlerContext->setHandler(
                 new CallbackQueryHandler(
-                    $this->dispatcher,
-                    $this->telegramService,
+                    $this->telegramService
                 )
             );
         }
 
         try {
             $this->handlerContext->execute($update);
-        } catch (Throwable) {
+        } catch (Throwable $t) {
+            Log::error($t);
             $this->fallback($update);
         }
 
