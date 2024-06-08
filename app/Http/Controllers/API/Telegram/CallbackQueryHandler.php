@@ -24,7 +24,7 @@ class CallbackQueryHandler extends Handler
         Order::find((int) $orderId)?->updateStatus((int) $statusId);
 
         $status = Status::find((int) $statusId)?->getName();
-        $text = "Заказу {$orderId} был установлен статус $status";
+        $text = "Заказу $orderId был установлен статус $status";
 
         $this->telegramService->sendMessage(
             $chatId,

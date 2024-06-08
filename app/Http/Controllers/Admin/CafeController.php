@@ -15,8 +15,9 @@ class CafeController extends Controller
     use InteractsWithImages;
     public function showCafe(): View
     {
-        $cafe = Cafe::all()->first();
+        $cafe = Cafe::get();
         $data = compact('cafe');
+
         return view('admin.main.cafe', $data);
     }
 
@@ -25,13 +26,14 @@ class CafeController extends Controller
         $attributes = $request->getModelAttributes();
 
         if ($request->image !== null) {
-            $pipeline = $this->createImagePipeline('logo');
-            $uploadedImage = $pipeline->createFile($request->image, true);
-            $attributes['image'] = $uploadedImage->name;
+            $attributes['image'] = $this
+                ->createImagePipeline('logo')
+                ->createFile($request->image, true)
+                ->name;
         }
 
-        Cafe::all()->first()->update($attributes);
+        Cafe::get()->update($attributes);
 
-        return back()->withInput()->with($this->success('Профиль кафе был успешно обновлен'));
+        return $this->back()->with($this->success('Профиль кафе был успешно обновлен'));
     }
 }

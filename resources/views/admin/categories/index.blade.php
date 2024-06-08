@@ -88,6 +88,9 @@
                     .on('scroll', function () {
                         $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
                     });
+
+                $('label[for="dt-length-0"]').text('записей на странице');
+                $('label[for="dt-search-0"]').text('Поиск');
             },
 
             processing: true,

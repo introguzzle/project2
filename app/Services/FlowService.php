@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\Flow;
-use App\Services\Core\ControlsTransaction;
+use App\Services\Core\UsesTransaction;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class FlowService
 {
-    use ControlsTransaction;
+    use UsesTransaction;
 
     public function applySettings(
         int   $receiptMethodId,

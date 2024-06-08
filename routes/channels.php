@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User\Identity;
-use App\Models\User\Profile;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -15,6 +14,6 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('orders', static function (Identity $identity, int $id) {
+Broadcast::channel('orders', static function (Identity $identity, int $id): bool {
     return $identity->profile?->isAdmin() ?? false;
 });

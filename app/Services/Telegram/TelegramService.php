@@ -79,7 +79,7 @@ class TelegramService
         $hasAccess = $telegramClient && $telegramClient->hasAccess;
 
         if ($hasAccess && ($profile = $telegramClient->profile)) {
-            return "Привет, {$profile->getName()}. Нажмите на меню, чтобы увидеть доступные команды";
+            return "Привет, $profile->name. Нажмите на меню, чтобы увидеть доступные команды";
         }
 
         return 'Используйте команду /auth, чтобы пройти аутентификацию';

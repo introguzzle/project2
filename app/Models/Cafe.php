@@ -9,15 +9,14 @@ use Carbon\CarbonInterface;
  * @property int $id
  * @property string $name
  *
- * @property array $addresses
- * @property array $phones
- * @property array $emails
+ * @property string $address
+ * @property string $phone
+ * @property string $email
  * @property array $settings
  *
  * @property string $description
  * @property float $requiredOrderSum
  * @property string $image
- *
  *
  * @property ?CarbonInterface $createdAt
  * @property ?CarbonInterface $updatedAt
@@ -32,9 +31,9 @@ class Cafe extends Model
     protected $fillable = [
         'name',
 
-        'addresses',
-        'phones',
-        'emails',
+        'address',
+        'phone',
+        'email',
         'settings',
 
         'description',
@@ -43,9 +42,16 @@ class Cafe extends Model
     ];
 
     protected $casts = [
-        'addresses' => 'json',
-        'phones'    => 'json',
-        'emails'    => 'json',
         'settings'  => 'json'
     ];
+
+    public function getImage(): string
+    {
+        return '/images/' . $this->image;
+    }
+
+    public static function get(): static
+    {
+        return static::all()->first();
+    }
 }

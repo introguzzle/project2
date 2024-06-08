@@ -1,8 +1,4 @@
 @extends('admin.layouts.layout')
-@section('title', 'Создать')
-@section('back')
-    {{route('admin.flows.index')}}
-@endsection
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Создать способ получения</h2>

@@ -16,7 +16,8 @@
         <button type="submit" form="productForm" class="btn btn-primary w-25">Создать</button>
     </div>
 
-    <form class="mb-5" id="productForm" action="{{ route('admin.products.create') }}" method="POST"
+    <form class="mb-5" id="productForm" action="{{ route('admin.products.create') }}"
+          method="POST"
           enctype="multipart/form-data">
         @csrf
         <div class="form-group">
@@ -64,7 +65,7 @@
                 <input type="file" class="custom-file-input" id="image" name="image">
                 <label class="custom-file-label form-control" for="image">Выберите файл</label>
             </div>
-            <div id="new-image-container" style="margin-top: 10px;">
+            <div id="new-image-container" class="mt-3">
             </div>
         </div>
     </form>
@@ -92,16 +93,6 @@
 
             reader.readAsDataURL(file);
 
-            const mainField = document.createElement('div');
-            mainField.className = 'form-group';
-            mainField.innerHTML = `
-                <label for="main" class="form-label">Основное изображение?</label>
-                <select class="form-control" id="main" name="main">
-                    <option value="1"> Да </option>
-                    <option value="0"> Нет </option>
-                </select>
-            `;
-
             const imageNameField = document.createElement('div');
             imageNameField.className = 'form-group';
             imageNameField.innerHTML = `
@@ -117,7 +108,6 @@
             `;
 
             const form = document.getElementById('productForm');
-            form.appendChild(mainField);
             form.appendChild(imageNameField);
             form.appendChild(imageDescriptionField);
         });

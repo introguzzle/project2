@@ -21,7 +21,7 @@
         <iframe id="dialogFrame" src="" style="width: 100%; height: 100%; border: none;"></iframe>
     </dialog>
 
-    <h2 class="my-3">Активные заказы</h2>
+    <h2>Активные заказы</h2>
 
     <div class="form-group mb-3 w-25">
         <label for="auto-refresh-interval">Интервал автообновления (в секундах):</label>
@@ -43,14 +43,16 @@
             <th>Статус</th>
 
             <th>Сумма</th>
+            <th>Сумма после скидок</th>
+            <th>Примененные скидки</th>
             <th>Кол-во</th>
 
             <th>Телефон</th>
             <th>Адрес</th>
             <th>Описание</th>
 
-            <th>Способ оплаты</th>
-            <th>Способ получения</th>
+            <th>Получение</th>
+            <th>Оплата</th>
 
             <th>Профиль</th>
             <th>Детали</th>
@@ -68,25 +70,34 @@
 @section('script')
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script type="text/javascript">
-        const map = {
-            'id': 0,
-            'name': 1,
-            'total_amount': 2,
-            'total_quantity': 3,
+        const keys = [
+            'id',
+            'status',
 
-            'phone': 4,
-            'address': 5,
-            'description': 6,
+            'total_amount',
+            'after_amount',
+            'applied_promotions',
+            'total_quantity',
 
-            'payment_method_id': 7,
-            'receipt_method_id': 8,
+            'phone',
+            'address',
+            'description',
 
-            'profile-link': 9,
-            'details-link': 10,
-            'created_at': 11,
-            'updated_at': 12,
-            'action': 13
-        };
+            'receipt_method',
+            'payment_method',
+
+            'profile-link',
+            'details-link',
+            'created_at',
+            'updated_at',
+            'action'
+        ];
+
+        const map = {};
+
+        for (let i = 0; i < keys.length; i++) {
+            map[keys[i]] = i;
+        }
 
         function getIndices(columns) {
             return columns.map(column => map[column]);
@@ -99,7 +110,11 @@
                     .on('scroll', function () {
                         $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
                     });
+
+                $('label[for="dt-length-0"]').text('записей на странице');
+                $('label[for="dt-search-0"]').text('Поиск');
             },
+
             processing: true,
             serverSide: true,
 
@@ -115,16 +130,20 @@
                         return `<a href=/admin/orders/${data}>${data}</a>`
                     }
                 },
-                {data: 'status_id'},
+                {data: 'status'},
+
                 {data: 'total_amount'},
+                {data: 'after_amount'},
+                {data: 'applied_promotions'},
                 {data: 'total_quantity'},
 
                 {data: 'phone'},
                 {data: 'address'},
                 {data: 'description'},
 
-                {data: 'payment_method_id'},
-                {data: 'receipt_method_id'},
+                {data: 'receipt_method'},
+                {data: 'payment_method'},
+
                 {
                     data: 'profile-link',
                     render: data => {

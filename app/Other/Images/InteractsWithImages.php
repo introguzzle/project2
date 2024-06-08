@@ -6,7 +6,9 @@ use App\Other\Contracts\ImagePipeline as ImagePipelineContract;
 
 trait InteractsWithImages
 {
-    protected function createImagePipeline(string $name): ImagePipelineContract
+    protected function createImagePipeline(
+        string $name
+    ): ImagePipelineContract
     {
         ImagePipeline::boot();
         return new ImagePipeline($name);

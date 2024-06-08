@@ -19,7 +19,6 @@ use Illuminate\Support\Arr;
  * @property int $productId
  *
  * @property ?UploadedFile $image
- * @property ?boolean $main
  * @property ?string $imageName,
  * @property ?string $imageDescription
  */

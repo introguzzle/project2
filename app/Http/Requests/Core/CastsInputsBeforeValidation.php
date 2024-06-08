@@ -13,20 +13,34 @@ trait CastsInputsBeforeValidation
      * @return array<string, string>
      */
     abstract public function getCasts(): array;
+
     public function cast(): void
     {
         $newInputs = [];
 
         foreach ($this->getCasts() as $input => $type) {
-            if ($type === 'date' && $input !== null) {
-                $newInputs[$input] = new Carbon($this->input($input));
+            $value = $this->input($input);
+
+            if ($type === 'date' && $value !== null) {
+                $newInputs[$input] = new Carbon($value);
                 continue;
             }
 
-            $value = $this->input($input);
-
             if ($value !== null) {
-                settype($value, $type);
+                if (str_contains($type, '[]')) {
+                    $baseType = str_replace('[]', '', $type);
+
+                    if (is_array($value)) {
+                        foreach ($value as &$item) {
+                            settype($item, $baseType);
+                        }
+
+                        unset($item);
+                    }
+
+                } else {
+                    settype($value, $type);
+                }
 
                 $newInputs[$input] = $value;
                 $this->request->remove($input);

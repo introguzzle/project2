@@ -9,9 +9,9 @@ return new class extends Populate
         $this->insert('cafes', [
             'name'               => 'С огоньком!',
 
-            'addresses'          => jsonEncode(['ул. Ленина, 74', 'ул. Ленина, 99']),
-            'phones'             => jsonEncode(['123', '134']),
-            'emails'             => jsonEncode(['test@mail.ru']),
+            'address'            => 'ул. Ленина',
+            'phone'              => '',
+            'email'              => '',
             'settings'           => null,
 
             'description'        => 'Кафе в посёлке Агинское',

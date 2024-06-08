@@ -11,13 +11,13 @@ use App\Models\ProductImage;
 use App\Other\Contracts\UploadedImage;
 
 use App\Other\Images\InteractsWithImages;
-use App\Services\Core\ControlsTransaction;
+use App\Services\Core\UsesTransaction;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class ProductService
 {
-    use ControlsTransaction, InteractsWithImages;
+    use UsesTransaction, InteractsWithImages;
 
     public function create(
         array $attributes,

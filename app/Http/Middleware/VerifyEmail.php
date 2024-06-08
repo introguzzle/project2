@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Other\Auth;
+use App\Other\Authentication;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +16,7 @@ class VerifyEmail
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $identity = Auth::getIdentity();
+        $identity = Authentication::identity();
 
         if (!$identity || (($identity->email !== null) !== $identity->hasVerifiedEmail()))  {
             return redirect()->route('login');

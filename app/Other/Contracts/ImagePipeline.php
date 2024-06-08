@@ -2,7 +2,6 @@
 
 namespace App\Other\Contracts;
 
-use App\Other\Contracts\UploadedImage;
 use App\Other\Images\ImageNotFoundException;
 use Illuminate\Http\UploadedFile;
 

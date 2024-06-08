@@ -1,28 +1,30 @@
-@php use App\Models\Status; @endphp
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+@php use App\Models\Order;use App\Models\Status; @endphp
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
 @php
     /**
+    * @var Order $order
     * @var Status[] $statuses
     */
 @endphp
 
 <div class="modal-content">
     <div class="modal-header">
-        <h5 class="modal-title">Действия с заказом {{$orderId}}<span id="order_id"></span></h5>
+        <h5 class="modal-title">Действия с заказом {{$order->id}}<span id="order_id"></span></h5>
     </div>
     <div class="modal-body">
         <div class="mb-3">
             <label for="status" class="form-label">Статус:</label>
             <select class="form-select" id="status">
                 @foreach($statuses as $status)
-                    <option value="{{$status->id}}">{{$status->name}}</option>
+                    <option value="{{$status->id}}" {{ $order->status->id === $status->id ? 'selected' : ''}}>{{$status->name}}</option>
                 @endforeach
             </select>
         </div>
         <div class="mb-3">
             <label for="note" class="form-label">Примечание:</label>
-            <textarea class="form-control" id="note" rows="3">{{$description}}</textarea>
+            <textarea class="form-control" id="note" rows="3">{{ $order->description }}</textarea>
         </div>
         <div class="modal-footer">
             <button onclick="closeDialog()" type="button" class="btn btn-secondary mx-1">Закрыть</button>
@@ -40,7 +42,7 @@
         const url = '{{route('admin.orders.update')}}';
         const data = {
             status: document.getElementById('status').value,
-            order: '{{$orderId}}',
+            order: '{{$order->id}}',
             description: document.getElementById('note').value
         };
 
@@ -58,7 +60,12 @@
 
         fetch(url, options)
             .then(response => {
-                window.parent.reloadTable();
+                try {
+                    window.parent.reloadTable();
+                } catch (e) {
+
+                }
+
                 closeDialog();
             });
     }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\FlowController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 
+use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\StatusController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,27 @@ Route::get('/update-password', [Controller::class, 'showUpdatePassword'])
 
 Route::match(['POST', 'PUT'], '/update-password', [Controller::class, 'updatePassword'])
     ->name('admin.dashboard.update-password');
+
+Route::post('/logout', [Controller::class, 'logout'])
+    ->name('admin.dashboard.logout');
+
+//
+//
+
+Route::get('/promotions', [PromotionController::class, 'showPromotions'])
+    ->name('admin.promotions.index');
+
+Route::get('/promotions/create', [PromotionController::class, 'showCreate'])
+    ->name('admin.promotions.create.index');
+
+Route::match(['POST', 'PUT'], '/promotions/create', [PromotionController::class, 'create'])
+    ->name('admin.promotions.create');
+
+Route::match(['POST', 'PUT'], '/promotions/delete', [PromotionController::class, 'delete'])
+    ->name('admin.promotions.delete');
+
+Route::match(['POST', 'PUT'], '/promotions/update', [PromotionController::class, 'update'])
+    ->name('admin.promotions.update');
 
 //
 //

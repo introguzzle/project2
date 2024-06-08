@@ -111,7 +111,7 @@ class ProductController extends Controller
     {
         $imageDTO = new ImageDTO(
             $request->image,
-            $request->main,
+            true,
             $request->imageName,
             $request->imageDescription
         );
@@ -129,7 +129,7 @@ class ProductController extends Controller
     {
         $imageDTO = new ImageDTO(
             $request->image,
-            $request->main,
+            true,
             $request->imageName,
             $request->imageDescription
         );

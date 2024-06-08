@@ -1,5 +1,5 @@
-@extends('admin.layouts.layout')
 @php use App\Models\User\Profile; @endphp
+@extends('admin.layouts.layout')
 @section('style')
     <style>
         .card {
@@ -23,7 +23,7 @@
         */
     @endphp
     @if($profile)
-        <div class="container-fluid m-3 p-3 card">
+        <div class="container-fluid m-3 p-4 card">
             <h3 id="h2">Информация</h3>
             <form id="profileForm" action="{{ route('admin.dashboard.update') }}" method="POST">
                 @csrf
@@ -58,7 +58,7 @@
                     <tr>
                         <th>День рождения</th>
                         <td><input type="date" class="form-control d-none" name="birthday"
-                                   value="{{ formatDate($profile->birthday) }}" readonly><span>{{ formatDate($profile->birthday) }}</span></td>
+                                   value="@if ($profile->birthday) {{ formatDate($profile->birthday) }} @endif" readonly><span>@if ($profile->birthday) {{ formatDate($profile->birthday) }} @endif</span></td>
                     </tr>
                     <tr>
                         <th>Дата создания</th>
@@ -69,11 +69,11 @@
                         <td>{{ formatDate($profile->updatedAt, true) }}</td>
                     </tr>
                 </table>
-                <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">Редактировать
-                </button>
-                <button type="submit" id="saveButton" class="btn btn-primary d-none">Сохранить изменения</button>
-                <a id="update-password" class="btn btn-primary"
-                   href="{{route('admin.dashboard.update-password.index')}}">Обновить пароль</a>
+                <div class="w-100 d-flex flex-column">
+                    <button type="button" id="editButton" class="btn btn-primary w-25 mt-2" onclick="toggleEdit()">Редактировать</button>
+                    <button type="submit" id="saveButton" class="btn btn-primary d-none w-25 mt-2">Сохранить изменения</button>
+                    <a id="update-password" class="btn btn-primary w-25 mt-2" href="{{route('admin.dashboard.update-password.index')}}">Обновить пароль</a>
+                </div>
             </form>
         </div>
     @endif

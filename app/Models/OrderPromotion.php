@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Core\Pivot;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use DateTimeInterface as DateTime;
 
 /**
  * @property int $id

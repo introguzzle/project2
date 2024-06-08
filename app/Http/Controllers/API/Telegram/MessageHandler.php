@@ -25,7 +25,7 @@ class MessageHandler extends Handler
 
     public function resolveHandler(Message $message): MessageTypeHandler
     {
-        return match(true) {
+        return match (true) {
             $message->text !== null => new MessageTextHandler($this->telegramService),
             default                 => new MessageDefaultHandler($this->telegramService),
         };

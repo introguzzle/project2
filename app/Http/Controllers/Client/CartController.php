@@ -6,15 +6,17 @@ use App\Http\Controllers\Core\Controller;
 use App\Http\Requests\Client\UpdateCartRequest;
 use App\Models\Product;
 use App\Models\User\Profile;
-use App\Other\Auth;
+use App\Other\Authentication;
 use App\Services\Auth\IdentityService;
 use App\Services\CartService;
+
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+
 use Throwable;
 
 class CartController extends Controller
@@ -41,7 +43,7 @@ class CartController extends Controller
 
     public function showCart(): View|Redirector|RedirectResponse
     {
-        $profile = Auth::getProfile();
+        $profile = Authentication::profile();
 
         if ($profile === null) {
             return redirect()->route('login');
@@ -97,7 +99,7 @@ class CartController extends Controller
     public function getTotalQuantity(): JsonResponse
     {
         try {
-            $totalQuantity = $this->cartService->getTotalQuantityByProfile(Auth::getProfile());
+            $totalQuantity = $this->cartService->getTotalQuantityByProfile(Authentication::profile());
         } catch (Throwable) {
             return response()->json()->setData(0);
         }
@@ -108,7 +110,7 @@ class CartController extends Controller
     public function getTotalPrice(): JsonResponse
     {
         try {
-            $priceByProfile = $this->cartService->getTotalAmountByProfile(Auth::getProfile());
+            $priceByProfile = $this->cartService->getTotalAmountByProfile(Authentication::profile());
             return response()->json()->setData($priceByProfile);
 
         } catch (Throwable) {
@@ -122,10 +124,11 @@ class CartController extends Controller
     public function createGuestProfile(): Profile
     {
         $identity = $this->identityService->registerGuest(Str::random());
+        $profile = $identity->profile;
 
-        Auth::login($identity, true);
+        Authentication::login($identity, true);
 
-        $this->cartService->createCart($identity->profile);
-        return $identity->profile;
+        $this->cartService->createCart($profile);
+        return $profile;
     }
 }

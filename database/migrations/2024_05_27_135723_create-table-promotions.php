@@ -1,36 +1,40 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+use App\Other\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * @return string
      */
-    public function up(): void
+    public function table(): string
     {
-        Schema::create('promotions', static function (Blueprint $blueprint) {
-            $blueprint->id();
-
-            $blueprint->string('name');
-            $blueprint->text('description');
-
-            $blueprint->float('min_sum');
-            $blueprint->float('max_sum');
-            $blueprint->string('type');
-            $blueprint->float('value');
-
-            $blueprint->timestamps();
-        });
+        return 'promotions';
     }
 
     /**
-     * Reverse the migrations.
+     * @param Blueprint $blueprint
+     * @return void
      */
-    public function down(): void
+    public function definition(Blueprint $blueprint): void
     {
-        Schema::dropIfExists('promotions');
+        $blueprint->id();
+
+        $blueprint->string('name');
+        $blueprint->text('description')->nullable();
+
+        $blueprint->unsignedFloat('min_sum');
+        $blueprint->unsignedFloat('max_sum')->nullable();
+
+        $blueprint
+            ->foreignId('promotion_type_id')
+            ->index()
+            ->constrained('promotion_types')
+            ->cascadeOnDelete();
+
+        $blueprint->unsignedFloat('value');
+
+        $blueprint->timestamps();
     }
 };

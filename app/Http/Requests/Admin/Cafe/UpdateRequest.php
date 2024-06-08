@@ -52,6 +52,9 @@ class UpdateRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array - Array of attributes that should be excluded from all inputs
+     */
     public function getExcept(): array
     {
         return [

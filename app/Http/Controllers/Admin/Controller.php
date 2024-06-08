@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Requests\Admin\Dashboard\FaviconUpdateRequest;
 use App\Http\Requests\Admin\Dashboard\UpdateIdentityRequest;
 use App\Http\Requests\Admin\Dashboard\UpdateProfileRequest;
+use App\Models\Promotion;
+use App\Models\PromotionFlow;
+use App\Models\PromotionType;
 use App\Models\User\Identity;
-use App\Other\Auth;
+use App\Other\Authentication;
 use App\Services\Telegram\TelegramService;
 
 use Illuminate\Contracts\View\View;
@@ -32,7 +35,7 @@ class Controller extends \App\Http\Controllers\Core\Controller
 
     public function showDashboard(): View
     {
-        $profile = Auth::getProfile();
+        $profile = Authentication::profile();
         return view('admin.dashboard', compact('profile'));
     }
 
@@ -61,9 +64,9 @@ class Controller extends \App\Http\Controllers\Core\Controller
 
     public function showToken(): View
     {
-        $token = $this->telegramService->generateToken(Auth::getProfile())->token;
+        $token = $this->telegramService->generateToken(Authentication::profile())->token;
 
-        $id = Auth::getProfile()?->identity->id;
+        $id = Authentication::profile()?->identity->id;
         $command = "/auth $id " . $token;
 
         return view('admin.main.token', compact('token', 'command'));
@@ -71,7 +74,7 @@ class Controller extends \App\Http\Controllers\Core\Controller
 
     public function resetToken(): RedirectResponse
     {
-        $this->telegramService->generateToken(Auth::getProfile(), true);
+        $this->telegramService->generateToken(Authentication::profile(), true);
 
         return redirect()->route('admin.dashboard.token');
     }
@@ -119,7 +122,7 @@ class Controller extends \App\Http\Controllers\Core\Controller
 
     public function logout(Request $request): View|Redirector|RedirectResponse
     {
-        Auth::logout();
+        Authentication::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

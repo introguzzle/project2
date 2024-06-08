@@ -9,6 +9,7 @@ use App\Http\Controllers\Client\ImageController;
 use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\ProductController;
 use App\Http\Controllers\Client\ProfileController;
+use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,8 +23,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/test', static function() {
+Route::get('/test', static function () {
     return view('test');
+});
+
+Route::get('/test2', static function () {
+    $categories = Category::ordered('id');
+
+    return viewClient('nav.nav')->with(compact('categories'));
 });
 
 Route::get('/images/{name}', [ImageController::class, 'show'])
@@ -40,26 +47,28 @@ Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
     ->name('verification.verify');
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPasswordForm'])
-    ->name('forgot-password');
+    ->name('forgot-password.index');
 
 Route::post('/forgot-password', [AuthController::class, 'requestPasswordReset'])
-    ->name('forgot-password.post');
+    ->name('forgot-password');
 
 Route::get('/forgot-password/success', [AuthController::class, 'showForgotPasswordSuccess'])
-    ->name('forgot-password.success');
+    ->name('forgot-password.success.index');
 
 Route::get('/reset-password/{token}', [AuthController::class, 'showPasswordResetForm'])
-    ->name('password.reset')
+    ->name('password.reset.index')
     ->middleware('not.expired');
 
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])
-    ->name('password.reset.post');
+    ->name('password.reset');
 
-Route::get('/login', [AuthController::class, 'showLoginForm']);
+Route::get('/login', [AuthController::class, 'showLoginForm'])
+    ->name('login.index');
 Route::post('/login', [AuthController::class, 'authenticate'])
     ->name('login');
 
-Route::get('/registration', [AuthController::class, 'showRegistrationForm']);
+Route::get('/registration', [AuthController::class, 'showRegistrationForm'])
+    ->name('register.index');
 Route::post('/registration', [AuthController::class, 'register'])
     ->name('register');
 
@@ -70,10 +79,10 @@ Route::post('/registration', [AuthController::class, 'register'])
 //
 
 Route::get('/home', [HomeController::class, 'index'])
-    ->name('home');
+    ->name('home.index');
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/home#menu', [HomeController::class, 'index'])
-    ->name('menu');
+    ->name('menu.index');
 
 //
 //
@@ -82,7 +91,7 @@ Route::get('/home#menu', [HomeController::class, 'index'])
 //
 
 Route::get('/product/{id}', [ProductController::class, 'index'])
-    ->name('product');
+    ->name('product.index');
 
 //
 //
@@ -97,17 +106,17 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
         ->name('identity.update');
 
     Route::get('/cart', [CartController::class, 'showCart'])
-        ->name('cart');
+        ->name('cart.index');
 
     Route::get('/profile', [ProfileController::class, 'index'])
-        ->name('profile');
+        ->name('profile.index');
     Route::post('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
 
     Route::get('/checkout', [OrderController::class, 'index'])
-        ->name('checkout');
+        ->name('order.index');
     Route::post('/checkout', [OrderController::class, 'order'])
-        ->name('checkout.order');
+        ->name('order');
 });
 
 
@@ -117,6 +126,10 @@ Route::middleware(['auth', 'email.verified'])->group(function () {
 // FRONTEND CALLS
 //
 //
+
+
+Route::get('/api/payment-methods', [OrderController::class, 'getPaymentMethods'])
+    ->name('api.payment-methods');
 
 
 Route::get('/api/cart-quantity', [CartController::class, 'getTotalQuantity'])

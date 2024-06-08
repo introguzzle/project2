@@ -18,7 +18,6 @@ use Illuminate\Support\Arr;
  * @property int $categoryId
  *
  * @property ?UploadedFile $image
- * @property ?boolean $main
  * @property ?string $imageName,
  * @property ?string $imageDescription
  */

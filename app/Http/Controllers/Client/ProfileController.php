@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\DTO\UpdateProfileDTO;
 use App\Http\Controllers\Core\Controller;
 use App\Http\Requests\Client\UpdateProfileRequest;
-use App\Other\Auth;
+use App\Other\Authentication;
 use App\Services\ProfileService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +30,7 @@ class ProfileController extends Controller
 
     public function index(): View|RedirectResponse
     {
-        $profile = Auth::getProfile();
+        $profile = Authentication::profile();
 
         return view('profile', compact('profile'));
     }

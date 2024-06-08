@@ -13,7 +13,7 @@ return new class extends Migration
 
     public function definition(Blueprint $blueprint): void
     {
-        $blueprint->primary(['receipt_method_id', 'payment_method_id']);
+        $blueprint->id();
 
         $blueprint
             ->foreignId('receipt_method_id')
@@ -26,6 +26,8 @@ return new class extends Migration
             ->index()
             ->constrained('payment_methods')
             ->cascadeOnDelete();
+
+        $blueprint->unique(['receipt_method_id', 'payment_method_id']);
 
         $blueprint->timestamps();
     }

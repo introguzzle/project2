@@ -6,15 +6,21 @@ use App\Http\Controllers\Core\Controller;
 use App\Http\Requests\Admin\Order\CompleteRequest;
 use App\Http\Requests\Admin\Order\UpdateRequest;
 use App\Models\Order;
+use App\Models\Promotion;
 use App\Models\Status;
 use App\Models\User\Profile;
+
 use Closure;
 use Exception;
+
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+
+use Yajra\DataTables\DataTableAbstract;
+use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
@@ -22,13 +28,12 @@ class OrderController extends Controller
     /**
      * @throws Exception
      */
-    public function showActiveOrders(Request $request): View|JsonResponse
+    public function showActiveOrders(
+        Request $request
+    ): View|JsonResponse
     {
-        $completed = Status::findByName(Status::COMPLETED);
-        $cancelled = Status::findByName(Status::CANCELLED);
-
         $query = Order::query()
-            ->whereNotIn('status_id', [$completed->id, $cancelled->id]);
+            ->whereIn('status_id', Status::activeStatuses()->pluck('id'));
 
         if (!$request->ajax()) {
             return view('admin.orders.active');
@@ -38,63 +43,22 @@ class OrderController extends Controller
             $query->latest();
         }
 
-        $dataTable = DataTables::eloquent($query);
-
-        $dataTable->editColumn('status_id', static function (Order $order) {
-            return $order->status->name;
-        });
-
-        $dataTable->editColumn('payment_method_id', static function (Order $order) {
-            return $order->paymentMethod->name;
-        });
-
-        $dataTable->editColumn('receipt_method_id', static function (Order $order) {
-            return $order->receiptMethod->name;
-        });
-
-        $dataTable->editColumn('created_at', static function (Order $order) {
-            return formatDate($order->createdAt, true);
-        });
-
-        $dataTable->editColumn('updated_at', static function (Order $order) {
-            return formatDate($order->updatedAt, true);
-        });
-
-        $dataTable->addColumn('profile-link', static function (Order $order) {
-            return route('admin.orders.profile.index', ['id' => $order->profile->id]);
-        });
-
-        $dataTable->addColumn('details-link', static function (Order $order) {
-            return route('admin.orders.order.index', ['id' => $order->id]);
-        });
-
-        $dataTable->addColumn('action', static function (Order $order) {
-            $route = route('admin.orders.update.index', ['id' => $order->id]);
-
-            return '<button type="button" data-id="' . $order->id . '" class="complete btn btn-success btn-sm" style="width: 120px">Завершить</button>
-                    <button type="button" onclick="openDialog(\'' . $route . '\')" data-id="' . $order->id . '" class="btn btn-outline-info btn-sm" style="width: 120px">Действия</button>';
-        });
-
-        $dataTable->rawColumns(['action', 'profile-link', 'details-link']);
-        return $dataTable->toJson();
+        return $this
+            ->getQueryTable($query, true)
+            ->toJson();
     }
 
     /**
      * @throws Exception
      */
-    public function showCompletedOrders(Request $request): View|JsonResponse
+    public function showCompletedOrders(
+        Request $request
+    ): View|JsonResponse
     {
-        $completed = Status::findByName(Status::COMPLETED);
-        $cancelled = Status::findByName(Status::CANCELLED);
-
         $query = Order::query()
-            ->where(static function (Builder $query) use ($completed, $cancelled) {
-                $query->where('status_id', '=', $completed->id)
-                    ->orWhere('status_id', '=', $cancelled->id);
-            });
+            ->whereIn('status_id', Status::completedStatuses()->pluck('id'));
 
         if (!$request->ajax()) {
-
             return view('admin.orders.completed');
         }
 
@@ -102,46 +66,19 @@ class OrderController extends Controller
             $query->latest();
         }
 
-        $dataTable = DataTables::eloquent($query);
-
-        $dataTable->editColumn('status_id', static function (Order $order) {
-            return $order->status->name;
-        });
-
-        $dataTable->editColumn('payment_method_id', static function (Order $order) {
-            return $order->paymentMethod->name;
-        });
-
-        $dataTable->editColumn('receipt_method_id', static function (Order $order) {
-            return $order->receiptMethod->name;
-        });
-
-        $dataTable->editColumn('created_at', static function (Order $order) {
-            return formatDate($order->createdAt, true);
-        });
-
-        $dataTable->editColumn('updated_at', static function (Order $order) {
-            return formatDate($order->updatedAt, true);
-        });
-
-        $dataTable->addColumn('profile-link', static function (Order $order) {
-            return route('admin.orders.profile.index', ['id' => $order->profile->id]);
-        });
-
-        $dataTable->addColumn('details-link', static function (Order $order) {
-            return route('admin.orders.order.index', ['id' => $order->id]);
-        });
-
-        $dataTable->rawColumns(['profile-link', 'details-link']);
-        return $dataTable->toJson();
+        return $this
+            ->getQueryTable($query, false)
+            ->toJson();
     }
 
-    public function showUpdate(int $orderId): View
+    public function showUpdate(
+        int $orderId
+    ): View
     {
         $statuses = Status::all()->all();
-        $description = Order::find($orderId)->description;
+        $order = Order::find($orderId);
 
-        $data = compact('orderId', 'statuses', 'description');
+        $data = compact('statuses', 'order');
 
         return view('admin.orders.update', $data);
     }
@@ -163,13 +100,15 @@ class OrderController extends Controller
         if ($request->ajax()) {
             $orders = $profile->orders->map($this->mapper());
 
-            return $this->getOrderDataTables($orders, true, true);
+            return $this->getCollectionTable($orders, true, true)->toJson();
         }
 
         return view('admin.orders.profile', compact('profile'));
     }
 
-    public function showOrder(int $orderId): View
+    public function showOrder(
+        int $orderId
+    ): View
     {
         $order = Order::find($orderId);
 
@@ -182,7 +121,9 @@ class OrderController extends Controller
         return view('admin.orders.order', compact('order', 'products'));
     }
 
-    public function complete(CompleteRequest $request): JsonResponse
+    public function complete(
+        CompleteRequest $request
+    ): JsonResponse
     {
         $order = Order::find($request->id);
 
@@ -197,13 +138,13 @@ class OrderController extends Controller
      * @param Collection $collection
      * @param bool $addButtons
      * @param bool $addLinks
-     * @return JsonResponse
+     * @return DataTableAbstract
      */
-    public function getOrderDataTables(
+    public function getCollectionTable(
         Collection $collection,
         bool       $addButtons = false,
         bool       $addLinks = false
-    ): JsonResponse
+    ): DataTableAbstract
     {
         $dataTable = DataTables::collection($collection);
         $dataTable->addIndexColumn();
@@ -239,10 +180,12 @@ class OrderController extends Controller
                 });
         }
 
-        return $dataTable->toJson();
+        return $dataTable;
     }
 
-    public function update(UpdateRequest $request): JsonResponse
+    public function update(
+        UpdateRequest $request
+    ): JsonResponse
     {
         $order = Order::find($request->getOrderIdInput());
         $status = Status::find($request->getStatusIdInput());
@@ -265,7 +208,7 @@ class OrderController extends Controller
      */
     public function mapper(): Closure
     {
-        return static function (Order $order) {
+        return static function (Order $order): array {
             return [
                 'order'           => $order,
                 'profile'         => $order->profile,
@@ -276,5 +219,59 @@ class OrderController extends Controller
                 'receipt_method'  => $order->receiptMethod,
             ];
         };
+    }
+
+    /**
+     * @param Builder $query
+     * @param bool $addButtons
+     * @return EloquentDataTable
+     */
+    public function getQueryTable(
+        Builder $query,
+        bool    $addButtons
+    ): EloquentDataTable
+    {
+        $dataTable = DataTables::eloquent($query);
+
+        $dataTable->addColumn('status', static fn (Order $order) => $order->status->name);
+        $dataTable->addColumn('payment_method', static fn (Order $order) => $order->paymentMethod->name);
+        $dataTable->addColumn('receipt_method', static fn (Order $order) => $order->receiptMethod->name);
+        $dataTable->editColumn('created_at', static fn (Order $order) => formatDate($order->createdAt, true));
+        $dataTable->editColumn('updated_at', static fn (Order $order) => formatDate($order->updatedAt, true));
+
+        $dataTable->addColumn('applied_promotions', static function (Order $order) {
+            $promotions = $order->promotions->map(function (Promotion $promotion) {
+                $url = route('admin.promotions.index');
+
+                return '<li><a href="' . htmlspecialchars($url) . '">' . htmlspecialchars($promotion->name) . '</a></li>';
+            });
+
+            return '<ul>' . implode('', $promotions->all()) . '</ul>';
+        });
+
+        $dataTable->addColumn('profile-link', static function (Order $order) {
+            return route('admin.orders.profile.index', ['id' => $order->profile->id]);
+        });
+
+        $dataTable->addColumn('details-link', static function (Order $order) {
+            return route('admin.orders.order.index', ['id' => $order->id]);
+        });
+
+        $rawColumns = ['profile-link', 'details-link', 'applied_promotions'];
+
+        if ($addButtons) {
+            $dataTable->addColumn('action', static function (Order $order) {
+                $route = route('admin.orders.update.index', ['id' => $order->id]);
+
+                return '<button type="button" data-id="' . $order->id . '" class="complete btn btn-success btn-sm" style="width: 120px">Завершить</button>
+                    <button type="button" onclick="openDialog(\'' . $route . '\')" data-id="' . $order->id . '" class="btn btn-outline-info btn-sm" style="width: 120px">Действия</button>';
+            });
+
+            $rawColumns[] = 'action';
+        }
+
+        $dataTable->rawColumns($rawColumns);
+
+        return $dataTable;
     }
 }

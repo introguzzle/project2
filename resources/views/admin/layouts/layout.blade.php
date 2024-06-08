@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css"/>
+    <link rel="icon" href="{{ asset('storage/favicon.ico') }}" type="image/x-icon"/>
     @yield('style')
     <style>
         body {
@@ -46,80 +47,92 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light border">
-        <div class="container-fluid">
-            <a href="{{route('admin.dashboard')}}" class="navbar-brand text-dark" style="font-size: 1.5rem; text-decoration: none">Администрирование</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.cafe.index') }}">
-                            <i class="fas fa-coffee"></i> Кафе
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.dashboard.token') }}">
-                            <i class="fas fa-key"></i> Токен
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.dashboard.update-favicon.index') }}">
-                            <i class="fas fa-image"></i> Иконка
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.orders.active.index') }}">
-                            <i class="fas fa-tasks"></i> Активные заказы
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.orders.completed.index') }}">
-                            <i class="fas fa-check"></i> Завершенные заказы
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.products.index') }}">
-                            <i class="fas fa-box"></i> Продукты
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.categories.index') }}">
-                            <i class="fas fa-list"></i> Категории
-                        </a>
-                    </li>
-                </ul>
-            </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light border">
+    <div class="container-fluid">
+        <a href="{{ route('admin.dashboard') }}" class="navbar-brand text-dark" style="font-size: 1.5rem; text-decoration: none">Администрирование</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle btn btn-outline-primary text-dark" href="#" id="cafeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="cafeDropdown">
+                        <li><a class="dropdown-item" href="{{ route('admin.cafe.index') }}">Профиль кафе</a></li>
+                        <li><a class="dropdown-item" href="{{ route('admin.flows.index') }}">Настройки</a></li>
+                        <li><a class="dropdown-item" href="{{ route('admin.promotions.index') }}">Акции</a></li>
+                        <li>
+                            <form method="POST" action="{{ route('admin.dashboard.logout') }}">
+                                @csrf
+                                <button type="submit" class="dropdown-item">Выйти</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.dashboard.token') }}">
+                        <i class="fas fa-key"></i> Токен
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.dashboard.update-favicon.index') }}">
+                        <i class="fas fa-image"></i> Иконка
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.orders.active.index') }}">
+                        <i class="fas fa-tasks"></i> Активные заказы
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.orders.completed.index') }}">
+                        <i class="fas fa-check"></i> Завершенные заказы
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.products.index') }}">
+                        <i class="fas fa-box"></i> Продукты
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-dark" href="{{ route('admin.categories.index') }}">
+                        <i class="fas fa-list"></i> Категории
+                    </a>
+                </li>
+            </ul>
         </div>
-    </nav>
-
-    <div class="container mt-5 mb-5">
-        @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('internal'))
-            <div class="alert alert-danger">
-                {{ session('internal') }}
-            </div>
-        @endif
-
-        @foreach($errors->all() as $error)
-            <div class="alert alert-danger">
-                {{ $error }}
-            </div>
-        @endforeach
-
-        @yield('content')
-
     </div>
+</nav>
+
+<div class="container mt-5 mb-5 py-2 px-4">
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('internal'))
+        <div class="alert alert-danger">
+            {{ session('internal') }}
+        </div>
+    @endif
+
+    @foreach($errors->all() as $error)
+        <div class="alert alert-danger">
+            {{ $error }}
+        </div>
+    @endforeach
+
+    @yield('content')
+
+</div>
 </body>
 <footer class="bg-light text-center text-lg-start mt-lg-5 py-3 border">
     <div class="container">
-        <span class="text-muted">&copy; {{ date('Y') }} <br><br></span>
+        <span class="text-muted">{{ date('Y') }} <br>С огоньком<br></span>
     </div>
 </footer>
 

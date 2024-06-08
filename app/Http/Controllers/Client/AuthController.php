@@ -12,6 +12,7 @@ use App\Http\Requests\Client\PasswordResetRequest;
 use App\Http\Requests\Client\RegistrationRequest;
 use App\Http\Requests\Client\TemporaryResourceRequest;
 use App\Http\Requests\Client\UpdateIdentityRequest;
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\User\Identity;
 use App\Models\User\PasswordResetToken;

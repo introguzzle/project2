@@ -4,56 +4,49 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class extends \App\Other\Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function table(): string
     {
-        Schema::create('orders', static function(Blueprint $blueprint) {
-            $blueprint->id();
-
-            $blueprint
-                ->foreignId('profile_id')
-                ->index()
-                ->constrained('profiles')
-                ->cascadeOnDelete();
-
-            $blueprint
-                ->foreignId('status_id')
-                ->index()
-                ->constrained('statuses')
-                ->cascadeOnDelete();
-
-            $blueprint
-                ->foreignId('receipt_method_id')
-                ->index()
-                ->constrained('receipt_methods')
-                ->cascadeOnDelete();
-
-            $blueprint
-                ->foreignId('payment_method_id')
-                ->index()
-                ->constrained('payment_methods')
-                ->cascadeOnDelete();
-
-            $blueprint->string('name');
-            $blueprint->string('phone');
-            $blueprint->string('address');
-            $blueprint->text('description')->nullable();
-
-            $blueprint->integer('total_quantity');
-            $blueprint->decimal('total_amount');
-            $blueprint->timestamps();
-        });
+        return 'orders';
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function definition(Blueprint $blueprint): void
     {
-        Schema::dropIfExists('orders');
+        $blueprint->id();
+
+        $blueprint
+            ->foreignId('profile_id')
+            ->index()
+            ->constrained('profiles')
+            ->cascadeOnDelete();
+
+        $blueprint
+            ->foreignId('status_id')
+            ->index()
+            ->constrained('statuses')
+            ->cascadeOnDelete();
+
+        $blueprint
+            ->foreignId('receipt_method_id')
+            ->index()
+            ->constrained('receipt_methods')
+            ->cascadeOnDelete();
+
+        $blueprint
+            ->foreignId('payment_method_id')
+            ->index()
+            ->constrained('payment_methods')
+            ->cascadeOnDelete();
+
+        $blueprint->string('name');
+        $blueprint->string('phone');
+        $blueprint->string('address');
+        $blueprint->text('description')->nullable();
+
+        $blueprint->unsignedInteger('total_quantity');
+        $blueprint->unsignedDecimal('total_amount');
+        $blueprint->unsignedDecimal('after_amount');
+        $blueprint->timestamps();
     }
 };

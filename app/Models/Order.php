@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use JetBrains\PhpStorm\ExpectedValues;
 
 /**
@@ -24,6 +25,7 @@ use JetBrains\PhpStorm\ExpectedValues;
  *
  * @property int $totalQuantity
  * @property float $totalAmount
+ * @property float $afterAmount
  *
  * @property ReceiptMethod $receiptMethod
  * @property PaymentMethod $paymentMethod
@@ -36,6 +38,7 @@ use JetBrains\PhpStorm\ExpectedValues;
  * @property int $profileId
  *
  * @property Collection<Product> $products
+ * @property Collection<Promotion> $promotions
  *
  * @property ?CarbonInterface $createdAt
  * @property ?CarbonInterface $updatedAt
@@ -50,6 +53,7 @@ class Order extends Model
         'description',
         'total_quantity',
         'total_amount',
+        'after_amount',
         'profile_id',
         'status_id',
 
@@ -62,7 +66,7 @@ class Order extends Model
         parent::boot();
 
         static::created(static function (self $order): void {
-            event(new OrderCreatedEvent($order));
+            static::$dispatcher->dispatch(new OrderCreatedEvent($order));
         });
     }
 
@@ -106,6 +110,18 @@ class Order extends Model
         };
 
         return $this->update(['status_id' => $id]);
+    }
+
+    public function promotions(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Promotion::class,
+            OrderPromotion::class,
+            'order_id',
+            'id',
+            'id',
+            'promotion_id'
+        );
     }
 
     public function updateDescription(string $description): bool

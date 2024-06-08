@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Flow;
 
+use App\Http\Requests\Core\CastsInputsBeforeValidation;
 use App\Http\Requests\Core\FormRequest;
 
 /**
@@ -10,7 +11,7 @@ use App\Http\Requests\Core\FormRequest;
  */
 class UpdateRequest extends FormRequest
 {
-
+    use CastsInputsBeforeValidation;
     public function authorize(): bool
     {
         return true;
@@ -37,12 +38,14 @@ class UpdateRequest extends FormRequest
         ];
     }
 
-    public function passedValidation(): void
+    /**
+     * @return array
+     */
+    public function getCasts(): array
     {
-        $key = 'payment_method_indices';
-
-        $indices = $this->input($key);
-        $indices = array_map(static fn (string $item): int => (int) $item, $indices);
-        $this->request->set($key, $indices);
+        return [
+            'receipt_method_id'      => 'int',
+            'payment_method_indices' => 'int[]'
+        ];
     }
 }

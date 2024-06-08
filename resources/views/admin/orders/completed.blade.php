@@ -1,7 +1,7 @@
 @extends('admin.layouts.layout')
 
 @section('content')
-    <h2 class="mb-4">Завершенные заказы</h2>
+    <h2>Завершенные заказы</h2>
     <table id="this-table" class="table table-bordered table-responsive rounded">
         <thead>
         <tr>
@@ -9,14 +9,16 @@
             <th>Статус</th>
 
             <th>Сумма</th>
+            <th>Сумма после скидок</th>
+            <th>Примененные скидки</th>
             <th>Кол-во</th>
 
             <th>Телефон</th>
             <th>Адрес</th>
             <th>Описание</th>
 
-            <th>Способ оплаты</th>
-            <th>Способ получения</th>
+            <th>Получение</th>
+            <th>Оплата</th>
 
             <th>Профиль</th>
             <th>Детали</th>
@@ -31,19 +33,34 @@
 @endsection
 @section('script')
     <script type="text/javascript">
-        const map = {
-            'id': 0,
-            'status_id': 1,
-            'total_amount': 2,
-            'total_quantity': 3,
-            'phone': 4,
-            'address': 5,
-            'description': 6,
-            'payment_method_id': 7,
-            'receipt_method_id': 8,
-            'created_at': 9,
-            'updated_at': 10
-        };
+        const keys = [
+            'id',
+            'status',
+
+            'total_amount',
+            'after_amount',
+            'applied_promotions',
+            'total_quantity',
+
+            'phone',
+            'address',
+            'description',
+
+            'receipt_method',
+            'payment_method',
+
+            'profile-link',
+            'details-link',
+            'created_at',
+            'updated_at',
+            'action'
+        ];
+
+        const map = {};
+
+        for (let i = 0; i < keys.length; i++) {
+            map[keys[i]] = i;
+        }
 
         function getIndices(columns) {
             return columns.map(column => map[column]);
@@ -56,6 +73,9 @@
                     .on('scroll', function () {
                         $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
                     });
+
+                $('label[for="dt-length-0"]').text('записей на странице');
+                $('label[for="dt-search-0"]').text('Поиск');
             },
 
             processing: true,
@@ -73,16 +93,20 @@
                         return `<a href=/admin/orders/${data}>${data}</a>`
                     }
                 },
-                {data: 'status_id'},
+                {data: 'status'},
+
                 {data: 'total_amount'},
+                {data: 'after_amount'},
+                {data: 'applied_promotions'},
                 {data: 'total_quantity'},
 
                 {data: 'phone'},
                 {data: 'address'},
                 {data: 'description'},
 
-                {data: 'payment_method_id'},
-                {data: 'receipt_method_id'},
+                {data: 'receipt_method'},
+                {data: 'payment_method'},
+
                 {
                     data: 'profile-link',
                     render: data => {

@@ -68,6 +68,13 @@
                     .on('scroll', function () {
                         $('.dt-scroll-body').scrollLeft($(this).scrollLeft());
                     });
+
+                $('label[for="dt-length-0"]').text('записей на странице');
+                $('label[for="dt-search-0"]').text('Поиск');
+
+                $('li.dt-paging-button.page-item.disabled')
+                    .find('a.page-link.ellipsis')
+                    .removeClass('ellipsis');
             },
 
             processing: true,

@@ -4,6 +4,9 @@ namespace App\Services;
 
 use App\DTO\PostOrderDTO;
 use App\Exceptions\ServiceException;
+use App\Models\OrderPromotion;
+use App\Models\Promotion;
+use App\Models\PromotionType;
 use App\Models\ReceiptMethod;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -11,12 +14,15 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Status;
 use App\Models\User\Profile;
+use App\Services\Core\UsesTransaction;
+
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
+
 use Throwable;
 
 class OrderService
 {
+    use UsesTransaction;
     private CartService $cartService;
 
     /**
@@ -45,21 +51,25 @@ class OrderService
             throw new ServiceException();
         }
 
-        DB::beginTransaction();
+        $this->beginTransaction();
 
         try {
-            $order = $this->createOrder($orderDTO, $profile, 'Ожидание');
+            $order = $this->createOrder($orderDTO, $profile, Status::pending());
+            $order->afterAmount = $order->totalAmount;
+            $order->save();
+
+            $order->afterAmount = $this->amountAfterPromotions($order);
             $order->save();
 
             $this->fillOrderFromCart($profile, $order);
             $this->clearCart($profile);
 
         } catch (Throwable $t) {
-            DB::rollBack();
+            $this->rollbackTransaction();
             throw $t;
         }
 
-        DB::commit();
+        $this->commitTransaction();
     }
 
     /**
@@ -85,23 +95,23 @@ class OrderService
     ): void
     {
         /**
-         * @var Collection<Product> $productCollection
+         * @var Collection<Product> $products
          */
         $cart = $profile->cart;
 
         if ($cart === null) {
             throw new ServiceException(
-                'Не получилось заполнить заказ из корзины, потому что корзина null'
+                'Не получилось заполнить заказ из корзины, потому что корзины не существует'
             );
         }
 
-        $productCollection = $cart->products()->get();
+        $products = $cart->products;
 
-        if ($productCollection->isEmpty()) {
-            throw new ServiceException('Cart is actually empty');
+        if ($products->isEmpty()) {
+            throw new ServiceException('Корзина пустая, заказ невозможен');
         }
 
-        $productCollection->each(function(Product $product) use ($order, $cart) {
+        $products->each(static function (Product $product) use ($order, $cart) {
             $orderProduct = new OrderProduct();
 
             $orderProduct->quantity = $product->getCartQuantity($cart);
@@ -156,8 +166,66 @@ class OrderService
         return $this->cartService->getTotalQuantityByProfile($profile);
     }
 
-    private function computeTotalAmount(Profile $profile): float
+    /**
+     * @param Profile $profile - Профиль
+     * @return float
+     */
+    private function computeTotalAmount(
+        Profile $profile
+    ): float
     {
         return $this->cartService->getTotalAmountByProfile($profile);
+    }
+
+    /**
+     * @param Order $order - НЕОБХОДИМО, ЧТОБЫ У НЕГО БЫЛ ID, ТО ЕСТЬ ЭТО ЗАКАЗ ИЗ БД
+     * @return float
+     */
+    private function amountAfterPromotions(Order $order): float
+    {
+        $totalAmount = $order->totalAmount;
+
+        $saveOrderPromotion = static function (Promotion $promotion) use ($order) {
+            $orderPromotion = new OrderPromotion();
+            $orderPromotion->promotion()->associate($promotion);
+            $orderPromotion->order()->associate($order);
+
+            $orderPromotion->save();
+        };
+
+        // TODO: Решить проблему стакающихся/нестакающихся процентов
+        //
+        //
+        //
+
+        foreach (Promotion::all() as $promotion) {
+            $flowMatch = false;
+
+            foreach ($promotion->flows as $flow) {
+                if ($flow->paymentMethod->id === $order->paymentMethod->id
+                    && $flow->receiptMethod->id === $order->receiptMethod->id) {
+
+                    $flowMatch = true;
+                    break;
+                }
+            }
+
+            if ($flowMatch === false) {
+                continue;
+            }
+
+            if ($totalAmount >= $promotion->minSum && $totalAmount <= $promotion->maxSum) {
+                if ($promotion->promotionType->equals(PromotionType::fixed())) {
+                    $totalAmount -= $promotion->value;
+                    $saveOrderPromotion($promotion);
+
+                } else if ($promotion->promotionType->equals(PromotionType::percentage())) {
+                    $totalAmount -= $totalAmount * ($promotion->value / 100);
+                    $saveOrderPromotion($promotion);
+                }
+            }
+        }
+
+        return $totalAmount;
     }
 }

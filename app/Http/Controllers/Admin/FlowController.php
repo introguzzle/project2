@@ -55,9 +55,8 @@ class FlowController extends Controller
             $paymentMethod->delete();
         });
 
-        return redirect()
+        return $this
             ->back()
-            ->withInput()
             ->with($this->success('Настройки были успешно сброшены'));
     }
 
@@ -78,9 +77,8 @@ class FlowController extends Controller
         $receiptMethod->name = $request->name;
         $receiptMethod->save();
 
-        return redirect()
+        return $this
             ->back()
-            ->withInput()
             ->with($this->success('Способ получения был успешно создан'));
     }
 

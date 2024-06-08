@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Client;
 
 use App\DTO\PostOrderDTO;
 use App\Http\Controllers\Core\Controller;
-use App\Http\Requests\Client\PostOrderRequest;
+use App\Http\Requests\Client\PaymentMethodsRequest;
+use App\Http\Requests\Client\CreateOrderRequest;
 use App\Models\PaymentMethod;
 use App\Models\ReceiptMethod;
-use App\Other\Auth;
+use App\Other\Authentication;
 use App\Services\CartService;
 use App\Services\OrderService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -36,26 +39,22 @@ class OrderController extends Controller
 
     public function index(): View
     {
-        $profile = Auth::getProfile();
-
-        $paymentMethods = PaymentMethod::all()->all();
+        $profile = Authentication::profile();
         $receiptMethods = ReceiptMethod::all()->all();
+        $price = $this->cartService->getTotalAmountByProfile(Authentication::profile());
 
-        $price = $this->cartService->getTotalAmountByProfile(Auth::getProfile());
+        $data = compact('profile', 'price', 'receiptMethods');
 
-        return view(
-            'checkout',
-            compact('profile', 'price', 'paymentMethods', 'receiptMethods')
-        );
+        return view('checkout', $data);
     }
 
     public function order(
-        PostOrderRequest $request
+        CreateOrderRequest $request
     ): View|Redirector|RedirectResponse
     {
         try {
             $this->orderService->order(
-                Auth::getProfile(),
+                Authentication::profile(),
                 PostOrderDTO::fromRequest($request)
             );
 
@@ -66,5 +65,20 @@ class OrderController extends Controller
         }
 
         return redirect('home');
+    }
+
+    public function getPaymentMethods(PaymentMethodsRequest $request): JsonResponse
+    {
+        $paymentMethods = ReceiptMethod::find($request->receiptMethodId)
+            ->paymentMethods
+            ->map(static function (PaymentMethod $paymentMethod) {
+                return [
+                    'id'   => $paymentMethod->id,
+                    'name' => $paymentMethod->name,
+                ];
+            });
+
+
+        return response()->json()->setData($paymentMethods);
     }
 }

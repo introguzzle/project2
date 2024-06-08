@@ -1,4 +1,9 @@
 @php use App\Models\Cafe @endphp
+@php
+    /**
+     * @var Cafe $cafe
+     */
+@endphp
 @extends('admin.layouts.layout')
 @section('style')
     <style>
@@ -13,14 +18,6 @@
 
         .list-item input, .list-item span {
             flex: 1;
-        }
-
-        .list-item button {
-            margin-left: 10px;
-        }
-
-        .custom-file-input {
-            display: none;
         }
 
         .custom-file-label {
@@ -47,7 +44,7 @@
         * @var Cafe $cafe
         */
     @endphp
-    <div class="container-fluid m-3 p-3 card">
+    <div class="container-fluid m-3 p-4 card">
         <h3 id="h2">Информация</h3>
         <form id="cafeProfileForm" action="{{ route('admin.cafe.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
@@ -81,48 +78,30 @@
                     </td>
                 </tr>
                 <tr>
-                    <th>Адреса</th>
+                    <th>Адрес</th>
                     <td>
-                        <ul id="addresses">
-                            @foreach($cafe->addresses as $address)
-                                <li class="list-item">
-                                    <input type="text" class="form-control d-none mb-2" name="addresses[]" value="{{ $address }}" readonly>
-                                    <span>{{ $address }}</span>
-                                    <button type="button" class="btn btn-danger btn-sm d-none" onclick="removeListItem(this)">Удалить</button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="btn btn-secondary btn-sm d-none" id="addAddress">Добавить адрес</button>
+                        <div class="list-item">
+                            <input type="text" class="form-control d-none" name="address" value="{{ $cafe->address }}" readonly>
+                            <span>{{ $cafe->address }}</span>
+                        </div>
                     </td>
                 </tr>
                 <tr>
-                    <th>Контактные телефоны</th>
+                    <th>Контактный телефон</th>
                     <td>
-                        <ul id="phones">
-                            @foreach($cafe->phones as $phone)
-                                <li class="list-item">
-                                    <input type="text" class="form-control d-none mb-2" name="phones[]" value="{{ $phone }}" readonly>
-                                    <span>{{ $phone }}</span>
-                                    <button type="button" class="btn btn-danger btn-sm d-none" onclick="removeListItem(this)">Удалить</button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="btn btn-secondary btn-sm d-none" id="addPhone">Добавить телефон</button>
+                        <div class="list-item">
+                            <input type="text" class="form-control d-none" name="phone" value="{{ $cafe->phone }}" readonly>
+                            <span>{{ $cafe->phone }}</span>
+                        </div>
                     </td>
                 </tr>
                 <tr>
-                    <th>Электронные почты</th>
+                    <th>Электронная почта</th>
                     <td>
-                        <ul id="emails">
-                            @foreach($cafe->emails as $email)
-                                <li class="list-item list-inline-item">
-                                    <input type="email" class="form-control d-none mb-2" name="emails[]" value="{{ $email }}" readonly>
-                                    <span>{{ $email }}</span>
-                                    <button type="button" class="btn btn-danger btn-sm d-none" onclick="removeListItem(this)">Удалить</button>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="btn btn-secondary btn-sm d-none" id="addEmail">Добавить почту</button>
+                        <div class="list-item">
+                            <input type="email" class="form-control d-none" name="email" value="{{ $cafe->email }}" readonly>
+                            <span>{{ $cafe->email }}</span>
+                        </div>
                     </td>
                 </tr>
                 <tr id="imageRow">
@@ -130,7 +109,7 @@
                     <td>
                         <div class="list-item">
                             @if($cafe->image)
-                                <img src="/{{ $cafe->image }}" alt="" class="img-thumbnail" style="max-width: 150px;">
+                                <img src="{{ $cafe->getImage() }}" alt="" class="img-thumbnail" style="max-width: 150px;">
                             @endif
                         </div>
                     </td>
@@ -140,7 +119,7 @@
                     <td>
                         <div class="custom-file">
                             <input type="file" class="custom-file-input" id="image" name="image">
-                            <label class="custom-file-label" for="image">Выберите файл</label>
+                            <label class="custom-file-label form-control" for="image">Выберите файл</label>
                         </div>
                     </td>
                 </tr>
@@ -153,8 +132,10 @@
                     <td>{{ formatDate($cafe->updatedAt, true) }}</td>
                 </tr>
             </table>
-            <button type="button" id="editButton" class="btn btn-primary" onclick="toggleEdit()">Редактировать</button>
-            <button type="submit" id="saveButton" class="btn btn-primary d-none">Сохранить изменения</button>
+            <div class="w-100">
+                <button type="button" id="editButton" class="btn btn-primary w-25" onclick="toggleEdit()">Редактировать</button>
+                <button type="submit" id="saveButton" class="btn btn-primary d-none w-25">Сохранить изменения</button>
+            </div>
         </form>
     </div>
 @endsection
@@ -163,15 +144,11 @@
     <script>
         $(document).ready(function() {
             const $editButton = $('#editButton');
-            const $addAddressButton = $('#addAddress');
-            const $addPhoneButton = $('#addPhone');
-            const $addEmailButton = $('#addEmail');
 
             function toggleEdit() {
                 const $saveButton = $('#saveButton');
                 const $inputs = $('#cafeProfileForm input');
                 const $spans = $('#cafeProfileForm span');
-                const $removeButtons = $('.list-item .btn-danger');
                 const $imageLabel = $('.custom-file-label');
                 const $newImageRow = $('#newImageRow');
                 const $h2 = $('#h2');
@@ -185,79 +162,14 @@
 
                 $spans.toggleClass('d-none');
 
-                $removeButtons.toggleClass('d-none');
                 $editButton.toggleClass('d-none');
                 $saveButton.toggleClass('d-none');
-                $addAddressButton.toggleClass('d-none');
-                $addPhoneButton.toggleClass('d-none');
-                $addEmailButton.toggleClass('d-none');
-                $imageLabel.toggleClass('d-none');
                 $newImageRow.toggleClass('d-none');
             }
 
             $editButton.on('click', toggleEdit);
 
-            $addAddressButton.on('click', function() {
-                const $addressesDiv = $('#addresses');
-                const newAddressInput = $('<input>', {
-                    type: 'text',
-                    class: 'form-control mb-2',
-                    name: 'addresses[]'
-                });
-
-                const newListItem = $('<li>', { class: 'list-item' }).append(newAddressInput).append(
-                    $('<button>', {
-                        type: 'button',
-                        class: 'btn btn-danger btn-sm',
-                        text: 'Удалить',
-                        click: function() { newListItem.remove(); }
-                    })
-                );
-
-                $addressesDiv.append(newListItem);
-            });
-
-            $addPhoneButton.on('click', function() {
-                const $phonesDiv = $('#phones');
-                const newPhoneInput = $('<input>', {
-                    type: 'text',
-                    class: 'form-control mb-2',
-                    name: 'phones[]'
-                });
-
-                const newListItem = $('<li>', { class: 'list-item' }).append(newPhoneInput).append(
-                    $('<button>', {
-                        type: 'button',
-                        class: 'btn btn-danger btn-sm',
-                        text: 'Удалить',
-                        click: function() { newListItem.remove(); }
-                    })
-                );
-
-                $phonesDiv.append(newListItem);
-            });
-
-            $addEmailButton.on('click', function() {
-                const $emailsDiv = $('#emails');
-                const newEmailInput = $('<input>', {
-                    type: 'email',
-                    class: 'form-control mb-2',
-                    name: 'emails[]'
-                });
-
-                const newListItem = $('<li>', { class: 'list-item' }).append(newEmailInput).append(
-                    $('<button>', {
-                        type: 'button',
-                        class: 'btn btn-danger btn-sm',
-                        text: 'Удалить',
-                        click: function() { newListItem.remove(); }
-                    })
-                );
-
-                $emailsDiv.append(newListItem);
-            });
-
-            $('#image, #newImage').on('change', function(e) {
+            $('#image').on('change', function(e) {
                 const fileName = e.target.files[0].name;
                 $(this).next('.custom-file-label').text(fileName);
             });

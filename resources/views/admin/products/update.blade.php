@@ -114,16 +114,6 @@
 
             reader.readAsDataURL(file);
 
-            const mainField = document.createElement('div');
-            mainField.className = 'form-group';
-            mainField.innerHTML = `
-            <label for="main" class="form-label">Основное изображение?</label>
-            <select class="form-control" id="main" name="main">
-                <option value="1"> Да </option>
-                <option value="0"> Нет </option>
-            </select>
-        `;
-
             const imageNameField = document.createElement('div');
             imageNameField.className = 'form-group';
             imageNameField.innerHTML = `
@@ -139,7 +129,6 @@
         `;
 
             const form = document.getElementById('productForm');
-            form.appendChild(mainField);
             form.appendChild(imageNameField);
             form.appendChild(imageDescriptionField);
         });
