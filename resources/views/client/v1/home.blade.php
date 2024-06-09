@@ -99,7 +99,7 @@
                     @if ($product->category->id === 1)
                         <div class="grid-item">
                             <div class="item-header">
-                                <a href="{{route("product", ['id' => $id])}}">
+                                <a href="{{route("product.index", ['id' => $id])}}">
                                     <img
                                         src="{{$product->getPath()}}"
                                         alt="{{ $name }}"

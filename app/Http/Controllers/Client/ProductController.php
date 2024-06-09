@@ -28,7 +28,8 @@ class ProductController extends Controller
             $this->abortNotFound();
         }
 
-        return view('product', compact('product'));
+        $data = compact('product');
+        return viewClient('product')->with($data);
     }
 
     /**

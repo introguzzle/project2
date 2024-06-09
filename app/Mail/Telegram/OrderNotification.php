@@ -44,8 +44,8 @@ class OrderNotification extends Notification
 
         $productDetails = '';
         foreach ($this->order->products as $product) {
-            $productDetails .= "<b>{$product->name}</b>";
-            $productDetails .= "<b> - {$product->getOrderQuantity($this->order)} шт. {$eol}</b>";
+            $productDetails .= "<b>$product->name</b>";
+            $productDetails .= "<b> - {$product->getOrderQuantity($this->order)} шт. $eol</b>";
         }
 
         return "<b>Заказ {$this->order->id}</b>{$eol}
@@ -54,8 +54,8 @@ class OrderNotification extends Notification
 <b>Адрес:</b> {$this->order->address}
 <b>Общая сумма:</b> {$this->order->totalAmount} ₽
 <b>Количество товаров:</b> {$this->order->totalQuantity}
-<b>Статус:</b> {$status->getName()}{$eol}
-<b>Продукты:</b>{$eol}{$productDetails}
+<b>Статус:</b> $status->name{$eol}
+<b>Продукты:</b>$eol{$productDetails}
 <b><a href=\"$orderDetails\">Перейти к заказу</a></b>";
     }
 }

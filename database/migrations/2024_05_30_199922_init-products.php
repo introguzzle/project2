@@ -11,7 +11,7 @@ return new class extends Populate
         for ($i = 1; $i <= 40; $i++) {
             $this->insert('products', [
                 'name'              => 'Товар ' . $i,
-                'category_id'       => random_int(1, 10),
+                'category_id'       => random_int(1, 8),
                 'short_description' => $faker->realText(40),
                 'full_description'  => $faker->realText(400),
                 'price'             => $i * 100,

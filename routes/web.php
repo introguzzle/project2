@@ -23,16 +23,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/test', static function () {
-    return view('test');
-});
-
-Route::get('/test2', static function () {
-    $categories = Category::ordered('id');
-
-    return viewClient('nav.nav')->with(compact('categories'));
-});
-
 Route::get('/images/{name}', [ImageController::class, 'show'])
     ->name('images.show');
 

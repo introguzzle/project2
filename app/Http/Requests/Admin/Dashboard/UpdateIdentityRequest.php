@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin\Dashboard;
 
 use App\Http\Requests\Core\FormRequest;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -47,21 +46,19 @@ class UpdateIdentityRequest extends FormRequest
 
     /**
      * @throws ValidationException
-     * @throws AuthenticationException
      */
     public function prepareForValidation(): void
     {
         if ($this->user() === null) {
-            throw new AuthenticationException();
+            $this->append('internal', 'Внутренняя ошибка сервера');
+            $this->throw();
         }
 
         $actual = $this->user()->getAuthPassword();
 
         if (!Hash::check($this->input('current_password'), $actual)) {
-            $validator = $this->getValidatorInstance();
-            $validator->errors()->add('new_password', 'Введенный пароль неверен');
-
-            throw new ValidationException($validator);
+            $this->append('new_password', 'Введенный текущий пароль неверен');
+            $this->throw();
         }
     }
 }

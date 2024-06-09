@@ -21,11 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CartProduct extends Pivot
 {
     protected $table = 'cart_product';
-    protected $primaryKey = [
-        'cart_id',
-        'product_id'
-    ];
-
     protected $fillable = [
         'cart_id',
         'product_id',

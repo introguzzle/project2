@@ -5,27 +5,36 @@ namespace App\Http\Controllers\Client;
 use App\DTO\LoginDTO;
 use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
+
 use App\Http\Controllers\Core\Controller;
+
 use App\Http\Requests\Client\ForgotPasswordRequest;
 use App\Http\Requests\Client\LoginRequest;
 use App\Http\Requests\Client\PasswordResetRequest;
 use App\Http\Requests\Client\RegistrationRequest;
 use App\Http\Requests\Client\TemporaryResourceRequest;
 use App\Http\Requests\Client\UpdateIdentityRequest;
-use App\Models\Order;
+
 use App\Models\Role;
 use App\Models\User\Identity;
 use App\Models\User\PasswordResetToken;
+
 use App\Services\Auth\EmailNotVerifiedException;
 use App\Services\Auth\IdentityService;
 use App\Services\Auth\InvalidCredentialsException;
+
 use Illuminate\Contracts\View\View;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+
 use Illuminate\Routing\Redirector;
+
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
+
 use Throwable;
 
 class AuthController extends Controller
@@ -44,22 +53,22 @@ class AuthController extends Controller
 
     public function showLoginForm(): View
     {
-        return view('login');
+        return viewClient('auth.login');
     }
 
     public function showRegistrationForm(): View
     {
-        return view('registration');
+        return viewClient('auth.registration');
     }
 
     public function showForgotPasswordForm(): View
     {
-        return view('forgot');
+        return viewClient('auth.forgot');
     }
 
     public function showForgotPasswordSuccess(): View
     {
-        return view('forgot-success');
+        return viewClient('auth.forgot-success');
     }
 
     public function requestPasswordReset(
@@ -71,7 +80,7 @@ class AuthController extends Controller
             'Письмо успешно отправлено',
             'Не удалось отправить письмо для сброса пароля',
 
-            fn() => $this->identityService->requestPasswordReset($request->getLoginInput())
+            fn () => $this->identityService->requestPasswordReset($request->getLoginInput())
         );
     }
 
@@ -84,7 +93,9 @@ class AuthController extends Controller
             $this->abortNotFound();
         }
 
-        return view('forgot-proceed', compact('token'));
+        $data = compact('token');
+
+        return viewClient('auth.forgot-proceed')->with($data);
     }
 
     /**
@@ -102,7 +113,7 @@ class AuthController extends Controller
             'Пароль успешно обновлен',
             'Не удалось обновить пароль',
 
-            fn() => $this->identityService->updatePasswordWithToken(PasswordResetDTO::fromRequest($request))
+            fn () => $this->identityService->updatePasswordWithToken(PasswordResetDTO::fromRequest($request))
         );
     }
 
@@ -170,7 +181,7 @@ class AuthController extends Controller
             'Письмо для подтверждения было отправлено на вашу почту',
             'Не удалось создать аккаунт',
 
-            fn() => $this->identityService->register(
+            static fn() => $this->identityService->register(
                 RegistrationDTO::fromRequest($request),
                 Role::USER
             )
@@ -199,7 +210,20 @@ class AuthController extends Controller
             'Пароль успешно обновлен',
             'Не удалось обновить пароль',
 
-            fn() => $request->user()->updatePassword($request->newPassword)
+            static function () use ($request): bool {
+                $identity = $request->user();
+
+                if ($identity === null) {
+                    return false;
+                }
+
+                $identity->password = Hash::make($request->newPassword);
+                $identity->email = $request->input('email');
+                $identity->phone = $request->input('phone');
+
+                $identity->save();
+                return true;
+            }
         );
     }
 

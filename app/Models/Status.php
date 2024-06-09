@@ -78,11 +78,6 @@ class Status extends Model
         return static::findUnique('name', $name);
     }
 
-    public function getName(): mixed
-    {
-        return $this->getAttribute('name');
-    }
-
     public static function pending(): static
     {
         return static::findByName(self::PENDING);

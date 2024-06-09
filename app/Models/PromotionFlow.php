@@ -15,11 +15,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PromotionFlow extends Pivot
 {
     protected $table = 'promotion_flow';
-    protected $primaryKey = [
-        'promotion_id',
-        'flow_id',
-    ];
-
     protected $fillable = [
         'promotion_id',
         'flow_id',

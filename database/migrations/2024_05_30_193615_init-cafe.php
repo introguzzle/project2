@@ -9,15 +9,16 @@ return new class extends Populate
         $this->insert('cafes', [
             'name'               => 'С огоньком!',
 
-            'address'            => 'ул. Ленина',
-            'phone'              => '',
+            'address'            => 'ул. Ленина, 74',
+            'phone'              => '79149999999',
             'email'              => '',
-            'settings'           => null,
+            'settings'           => jsonEncode([
+                'show_logo' => false
+            ]),
 
             'description'        => 'Кафе в посёлке Агинское',
             'required_order_sum' => 500,
             'image'              => null,
-
         ]);
     }
 };

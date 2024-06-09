@@ -49,13 +49,16 @@ class UpdateIdentityRequest extends FormRequest
      */
     public function prepareForValidation(): void
     {
+        if ($this->user() === null) {
+            $this->append('internal', 'Внутренняя ошибка сервера');
+            $this->throw();
+        }
+
         $actual = $this->user()->getAuthPassword();
 
         if (!Hash::check($this->input('current_password'), $actual)) {
-            $validator = $this->getValidatorInstance();
-            $validator->errors()->add('new_password', 'Введенный пароль неверен');
-
-            throw new ValidationException($validator);
+            $this->append('new_password', 'Введенный текущий пароль неверен');
+            $this->throw();
         }
     }
 }

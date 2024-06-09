@@ -22,11 +22,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderPromotion extends Pivot
 {
     protected $table = 'order_promotion';
-    protected $primaryKey = [
-        'order_id',
-        'promotion_id'
-    ];
-
     protected $fillable = [
         'order_id',
         'promotion_id',

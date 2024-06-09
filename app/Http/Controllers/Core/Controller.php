@@ -19,6 +19,13 @@ abstract class Controller extends \Illuminate\Routing\Controller
         return ['success' => $message];
     }
 
+    public function notification(
+        string $message = 'Notification'
+    ): array
+    {
+        return ['notification' => $message];
+    }
+
     public function internal(
         string $message = 'Внутренняя ошибка сервера'
     ): array

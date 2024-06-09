@@ -6,22 +6,18 @@ use App\Http\Controllers\Core\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        /**
-         * @var Product[] $products
-         */
-        $products = Product::all()->all();
+        $categoryQuery = $request->query('category-id');
 
-        /**
-         * @var Category[] $categories
-         */
+        $products = Product::ordered('id');
+        $categories = Category::ordered('id');
 
-        $categories = Category::all()->all();
-
-        return view('home', compact('products', 'categories'));
+        $data = compact('products', 'categories', 'categoryQuery');
+        return viewClient('home-main')->with($data);
     }
 }

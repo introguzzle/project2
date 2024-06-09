@@ -1,41 +1,40 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+use App\Other\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * @return string
      */
-    public function up(): void
+    public function table(): string
     {
-        Schema::create('order_product', static function(Blueprint $blueprint) {
-            $blueprint->primary(['order_id', 'product_id']);
-
-            $blueprint
-                ->foreignId('order_id')
-                ->index()
-                ->constrained('orders')
-                ->cascadeOnDelete();
-
-            $blueprint
-                ->foreignId('product_id')
-                ->index()
-                ->constrained('products')
-                ->cascadeOnDelete();
-
-            $blueprint->integer('quantity');
-            $blueprint->timestamps();
-        });
+        return 'order_product';
     }
 
     /**
-     * Reverse the migrations.
+     * @param Blueprint $blueprint
+     * @return void
      */
-    public function down(): void
+    public function definition(Blueprint $blueprint): void
     {
-        Schema::dropIfExists('order_product');
+        $blueprint->id();
+
+        $blueprint
+            ->foreignId('order_id')
+            ->index()
+            ->constrained('orders')
+            ->cascadeOnDelete();
+
+        $blueprint
+            ->foreignId('product_id')
+            ->index()
+            ->constrained('products')
+            ->cascadeOnDelete();
+
+        $blueprint->integer('quantity');
+        $blueprint->unique(['order_id', 'product_id']);
+        $blueprint->timestamps();
     }
 };

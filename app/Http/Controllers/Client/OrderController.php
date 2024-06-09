@@ -45,7 +45,7 @@ class OrderController extends Controller
 
         $data = compact('profile', 'price', 'receiptMethods');
 
-        return view('checkout', $data);
+        return viewClient('checkout')->with($data);
     }
 
     public function order(
@@ -64,7 +64,7 @@ class OrderController extends Controller
                 ->with($this->internal());
         }
 
-        return redirect('home');
+        return redirect('home')->with($this->notification('Заказ успешно создан'));
     }
 
     public function getPaymentMethods(PaymentMethodsRequest $request): JsonResponse

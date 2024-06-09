@@ -22,19 +22,10 @@ use Illuminate\Support\Facades\DB;
  */
 class ProductImage extends Pivot
 {
-    protected $primaryKey = ['product_id', 'image_id'];
     protected $table = 'product_image';
     protected $fillable = [
         'product_id',
         'image_id',
         'main'
     ];
-
-    public function setMain(bool $main): bool
-    {
-        return DB::statement(
-            'UPDATE product_image SET main = ? WHERE product_id = ? AND image_id = ?',
-            [$main, $this->productId, $this->imageId]
-        );
-    }
 }

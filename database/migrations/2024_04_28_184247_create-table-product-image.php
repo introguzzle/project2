@@ -12,7 +12,7 @@ return new class extends Migration
 
     public function definition(Blueprint $blueprint): void
     {
-        $blueprint->primary(['product_id', 'image_id']);
+        $blueprint->id();
 
         $blueprint
             ->foreignId('product_id')

@@ -74,6 +74,15 @@ class Profile extends Model
         return $this->hasMany(Order::class, 'profile_id');
     }
 
+    /**
+     * @return Collection<Order>
+     */
+
+    public function getLatestOrders(): Collection
+    {
+        return $this->orders()->latest()->get();
+    }
+
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -82,11 +91,6 @@ class Profile extends Model
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class, 'profile_id');
-    }
-
-    public function getSerializedBirthday(): mixed
-    {
-        return $this->jsonSerialize()['birthday'];
     }
 
     public function isAdmin(): bool

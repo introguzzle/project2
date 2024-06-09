@@ -47,7 +47,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
 
         static::created(static function (self $identity) {
             if ($identity->email) {
-                Event::dispatch(new RegisteredEvent($identity));
+                static::$dispatcher->dispatch(new RegisteredEvent($identity));
             }
         });
     }
@@ -109,7 +109,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
      */
     public function sendEmailVerificationNotification(): never
     {
-        throw new RuntimeException('Unsupported method');
+        throw new RuntimeException('Unsupported method: sendEmailVerificationNotification');
     }
 
     public function getEmailForVerification(): ?string
@@ -137,7 +137,7 @@ class Identity extends Model implements MustVerifyEmail, Authenticatable
             $builder->orWhere('id', '=', (int) $credential);
         }
 
-        return (static fn($static): ?Identity => $static)($builder->first());
+        return (static fn($static): ?static => $static)($builder->first());
     }
 
     /**

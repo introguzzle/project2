@@ -29,7 +29,11 @@ class CartService
         );
 
         $cartId = $cart->id;
-        $cartProduct = CartProduct::find(['cart_id' => $cartId, 'product_id' => $productId]);
+
+        $cartProduct = CartProduct::query()
+            ->where('cart_id', '=', $cartId)
+            ->where('product_id', '=', $productId)
+            ->first();
 
         if ($cartProduct !== null) {
             $newQuantity = $cartProduct->quantity + $quantityChange;

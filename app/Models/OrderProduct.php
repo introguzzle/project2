@@ -22,11 +22,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OrderProduct extends Pivot
 {
     protected $table = 'order_product';
-    protected $primaryKey = [
-        'order_id',
-        'product_id'
-    ];
-
     protected $fillable = [
         'quantity',
         'order_id',

@@ -102,16 +102,24 @@ class CategoryController extends Controller
             'parent_id' => $request->parentId
         ]);
 
-        return redirect()->back()->with($this->success('Категория была успешно обновлена'));
+        return $this
+            ->back()
+            ->with($this->success('Категория была успешно обновлена'));
     }
 
     public function create(CreateRequest $request): RedirectResponse
     {
-        Category::create([
-            'name'      => $request->name,
-            'parent_id' => $request->parentId
-        ]);
+        $category = new Category();
+        $category->name = $request->name;
 
-        return redirect()->back()->with($this->success('Категория была успешно создана'));
+        if (($parent = $request->parentId) !== null) {
+            $category->parent()->associate(Category::find($parent));
+        }
+
+        $category->save();
+
+        return $this
+            ->back()
+            ->with($this->success('Категория была успешно создана'));
     }
 }

@@ -2,16 +2,17 @@
 
 namespace App\Mail;
 
-use App\Services\PasswordReset;
 use Illuminate\Bus\Queueable;
+
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+
 use Illuminate\Queue\SerializesModels;
+
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 
 class PasswordResetMail extends Mailable
 {
@@ -71,7 +72,7 @@ class PasswordResetMail extends Mailable
     private function generateUrl(): string
     {
         return URL::temporarySignedRoute(
-            'password.reset',
+            'password.reset.index',
             now()->addMinutes(self::DEFAULT_EXPIRE_MINUTES),
             ['token' => $this->token]
         );

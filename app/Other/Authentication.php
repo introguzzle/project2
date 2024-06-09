@@ -32,4 +32,11 @@ class Authentication extends Auth
         return (static fn($static):?Identity => static::user() instanceof Identity
             ? $static : null)(static::user());
     }
+
+    public static function isAdmin(): bool
+    {
+        return static::isAuthenticated()
+                && static::identity()
+                && static::identity()->profile->isAdmin();
+    }
 }

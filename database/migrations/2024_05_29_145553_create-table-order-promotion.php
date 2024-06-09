@@ -12,7 +12,8 @@ return new class extends Migration
 
     public function definition(Blueprint $blueprint): void
     {
-        $blueprint->primary(['order_id', 'promotion_id']);
+        $blueprint->id();
+
         $blueprint
             ->foreignId('order_id')
             ->index()
@@ -24,6 +25,8 @@ return new class extends Migration
             ->index()
             ->constrained('promotions')
             ->cascadeOnDelete();
+
+        $blueprint->unique(['order_id', 'promotion_id']);
 
         $blueprint->timestamps();
     }

@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers\Client;
 
-use App\DTO\UpdateProfileDTO;
 use App\Http\Controllers\Core\Controller;
 use App\Http\Requests\Client\UpdateProfileRequest;
 use App\Other\Authentication;
-use App\Services\ProfileService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,33 +13,25 @@ use Throwable;
 
 class ProfileController extends Controller
 {
-    private ProfileService $profileService;
-
-    /**
-     * @param ProfileService $profileService
-     */
-    public function __construct(
-        ProfileService $profileService
-    )
-    {
-        $this->profileService = $profileService;
-    }
-
-
     public function index(): View|RedirectResponse
     {
         $profile = Authentication::profile();
 
-        return view('profile', compact('profile'));
+        $data = compact('profile');
+        return viewClient('profile2')->with($data);
     }
 
     public function update(UpdateProfileRequest $request): JsonResponse
     {
         try {
-            $this->profileService->update(
-                $request->user()->profile,
-                UpdateProfileDTO::fromRequest($request)
-            );
+            $profile = $request->user()->profile;
+
+            $profile->address = $request->address;
+            $profile->birthday = $request->birthday;
+            $profile->name = $request->name;
+
+            $profile->save();
+
         } catch (Throwable) {
             return response()
                 ->json()

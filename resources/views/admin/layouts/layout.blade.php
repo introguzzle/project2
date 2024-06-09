@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.css"/>
-    <link rel="icon" href="{{ asset('storage/favicon.ico') }}" type="image/x-icon"/>
+    <link rel="icon" href="{{ asset('storage/favicon.ico') }}?" type="image/x-icon"/>
     @yield('style')
     <style>
         body {
@@ -61,6 +61,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="cafeDropdown">
                         <li><a class="dropdown-item" href="{{ route('admin.cafe.index') }}">Профиль кафе</a></li>
+                        <li><a class="dropdown-item" href="{{ route('home.index') }}">Перейти на сайт</a></li>
                         <li><a class="dropdown-item" href="{{ route('admin.flows.index') }}">Настройки</a></li>
                         <li><a class="dropdown-item" href="{{ route('admin.promotions.index') }}">Акции</a></li>
                         <li>

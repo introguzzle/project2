@@ -5,17 +5,20 @@ namespace App\Services\Auth;
 use App\DTO\LoginDTO;
 use App\DTO\PasswordResetDTO;
 use App\DTO\RegistrationDTO;
-use App\DTO\UpdateIdentityDTO;
+
 use App\Models\Role;
 use App\Models\User\Identity;
 use App\Models\User\PasswordResetToken;
 use App\Models\User\Profile;
+
 use App\Services\Verification;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+
 use InvalidArgumentException;
 use Throwable;
 
@@ -221,10 +224,12 @@ class IdentityService
             return false;
         }
 
-        PasswordResetToken::query()->create([
-            'identity_id' => $identity->getAttribute('id'),
-            'token'       => Str::random(100)
-        ]);
+        $passwordResetToken = new PasswordResetToken();
+
+        $passwordResetToken->identity()->associate($identity);
+        $passwordResetToken->token = Str::random(100);
+
+        $passwordResetToken->save();
 
         return true;
     }
@@ -248,6 +253,10 @@ class IdentityService
         }
 
         $identity = Identity::find($passwordResetToken->identity->id);
+
+        if ($identity === null) {
+            return false;
+        }
 
         DB::beginTransaction();
 

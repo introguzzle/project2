@@ -10,7 +10,7 @@ if (!function_exists('toString')) {
             return $value instanceof Stringable
             || (is_object($value) && method_exists($value, '__toString'))
                 ? $value->__toString()
-                : (string)$value;
+                : (string) $value;
         } catch (Throwable) {
             try {
                 return jsonEncode($value);
